@@ -1,0 +1,59 @@
+/**
+ * Global Styles
+ * 
+ * This file imports Tailwind's base styles and defines any
+ * global custom styles for the application.
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom base styles */
+@layer base {
+  /* Smooth scrolling for the entire page */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Default body styling */
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+}
+
+/* Custom component classes */
+@layer components {
+  /* Reusable button styles */
+  .btn-primary {
+    @apply px-4 py-2 bg-primary-600 text-white font-medium rounded-lg
+           hover:bg-primary-700 focus:outline-none focus:ring-2 
+           focus:ring-primary-500 focus:ring-offset-2 
+           transition-colors duration-200;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-gray-200 text-gray-800 font-medium rounded-lg
+           hover:bg-gray-300 focus:outline-none focus:ring-2 
+           focus:ring-gray-500 focus:ring-offset-2 
+           transition-colors duration-200;
+  }
+
+  /* Card container */
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6;
+  }
+
+  /* Form input styling */
+  .input {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg
+           focus:outline-none focus:ring-2 focus:ring-primary-500 
+           focus:border-transparent transition-colors duration-200;
+  }
+
+  /* Tag/badge styling */
+  .tag {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm
+           font-medium bg-primary-100 text-primary-800;
+  }
+}

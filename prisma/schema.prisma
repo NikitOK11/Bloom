@@ -1,0 +1,88 @@
+// This is your Prisma schema file
+// Learn more at: https://pris.ly/d/prisma-schema
+
+/**
+ * ARCHITECTURE DECISION:
+ * We use SQLite for simplicity in MVP. It's file-based, 
+ * requires no external database server, and is perfect for development.
+ * Can be easily swapped to PostgreSQL for production.
+ */
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+/**
+ * User Model
+ * 
+ * Represents an olympiad participant who can:
+ * - Create a profile with skills and olympiad interests
+ * - Create and join teams
+ * - Browse other users
+ * 
+ * Skills and olympiads are stored as comma-separated strings
+ * for simplicity. In production, consider separate tables.
+ */
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  bio       String?
+  skills    String   // Comma-separated: "math,physics,programming"
+  olympiads String   // Comma-separated: "IMO,IPhO,IOI"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  createdTeams Team[]       @relation("TeamCreator")
+  teamMembers  TeamMember[]
+}
+
+/**
+ * Team Model
+ * 
+ * Represents a team looking for members.
+ * Teams have required skills that potential members should have.
+ */
+model Team {
+  id             String   @id @default(cuid())
+  name           String
+  description    String?
+  olympiad       String   // Target olympiad: "IMO", "IOI", etc.
+  requiredSkills String   // Comma-separated skills needed
+  maxMembers     Int      @default(4)
+  isOpen         Boolean  @default(true) // Whether team is accepting members
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  creatorId String
+  creator   User         @relation("TeamCreator", fields: [creatorId], references: [id])
+  members   TeamMember[]
+}
+
+/**
+ * TeamMember Model (Join Table)
+ * 
+ * Links users to teams with additional metadata.
+ * Allows tracking when someone joined and their role.
+ */
+model TeamMember {
+  id       String   @id @default(cuid())
+  role     String   @default("member") // "creator" or "member"
+  joinedAt DateTime @default(now())
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  // Ensure a user can only be in a team once
+  @@unique([userId, teamId])
+}
