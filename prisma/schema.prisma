@@ -1,12 +1,10 @@
 // This is your Prisma schema file
 // Learn more at: https://pris.ly/d/prisma-schema
 
-/**
- * ARCHITECTURE DECISION:
- * We use SQLite for simplicity in MVP. It's file-based, 
- * requires no external database server, and is perfect for development.
- * Can be easily swapped to PostgreSQL for production.
- */
+// ARCHITECTURE DECISION:
+// We use SQLite for simplicity in MVP. It's file-based, 
+// requires no external database server, and is perfect for development.
+// Can be easily swapped to PostgreSQL for production.
 
 generator client {
   provider = "prisma-client-js"
@@ -17,17 +15,15 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-/**
- * User Model
- * 
- * Represents an olympiad participant who can:
- * - Create a profile with skills and olympiad interests
- * - Create and join teams
- * - Browse other users
- * 
- * Skills and olympiads are stored as comma-separated strings
- * for simplicity. In production, consider separate tables.
- */
+// User Model
+// 
+// Represents an olympiad participant who can:
+// - Create a profile with skills and olympiad interests
+// - Create and join teams
+// - Browse other users
+// 
+// Skills and olympiads are stored as comma-separated strings
+// for simplicity. In production, consider separate tables.
 model User {
   id        String   @id @default(cuid())
   name      String
@@ -43,12 +39,10 @@ model User {
   teamMembers  TeamMember[]
 }
 
-/**
- * Team Model
- * 
- * Represents a team looking for members.
- * Teams have required skills that potential members should have.
- */
+// Team Model
+// 
+// Represents a team looking for members.
+// Teams have required skills that potential members should have.
 model Team {
   id             String   @id @default(cuid())
   name           String
@@ -66,12 +60,10 @@ model Team {
   members   TeamMember[]
 }
 
-/**
- * TeamMember Model (Join Table)
- * 
- * Links users to teams with additional metadata.
- * Allows tracking when someone joined and their role.
- */
+// TeamMember Model (Join Table)
+// 
+// Links users to teams with additional metadata.
+// Allows tracking when someone joined and their role.
 model TeamMember {
   id       String   @id @default(cuid())
   role     String   @default("member") // "creator" or "member"
