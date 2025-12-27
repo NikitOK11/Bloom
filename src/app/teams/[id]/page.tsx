@@ -13,15 +13,17 @@ interface TeamPageProps {
  * Team Detail Page
  * 
  * Shows full details of a team including all members.
+ * DOMAIN RULE: Teams belong to exactly one olympiad.
  */
 export default async function TeamDetailPage({ params }: TeamPageProps) {
   const { id } = await params;
 
-  // Fetch team with all related data
+  // Fetch team with all related data including olympiad
   const team = await prisma.team.findUnique({
     where: { id },
     include: {
       creator: true,
+      olympiad: true,  // Include olympiad context
       members: {
         include: {
           user: true,
@@ -41,9 +43,12 @@ export default async function TeamDetailPage({ params }: TeamPageProps) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Back Link */}
-      <Link href="/teams" className="text-primary-600 hover:text-primary-700 mb-4 inline-block">
-        ← Back to Teams
+      {/* Back Link - to olympiad page */}
+      <Link 
+        href={`/olympiads/${team.olympiad.id}`} 
+        className="text-primary-600 hover:text-primary-700 mb-4 inline-block"
+      >
+        ← Back to {team.olympiad.shortName}
       </Link>
 
       <div className="grid lg:grid-cols-3 gap-8">
@@ -63,9 +68,13 @@ export default async function TeamDetailPage({ params }: TeamPageProps) {
               </span>
             </div>
 
-            {/* Olympiad Badge */}
+            {/* Olympiad Badge - links to olympiad */}
             <div className="mb-4">
-              <span className="tag">{team.olympiad}</span>
+              <Link href={`/olympiads/${team.olympiad.id}`}>
+                <span className="tag hover:bg-primary-200 transition-colors cursor-pointer">
+                  {team.olympiad.shortName} - {team.olympiad.name}
+                </span>
+              </Link>
             </div>
 
             {/* Description */}
@@ -160,8 +169,15 @@ export default async function TeamDetailPage({ params }: TeamPageProps) {
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-gray-500">Target Olympiad</dt>
-                <dd className="text-gray-900">{team.olympiad}</dd>
+                <dt className="text-gray-500">Olympiad</dt>
+                <dd className="text-gray-900">
+                  <Link 
+                    href={`/olympiads/${team.olympiad.id}`}
+                    className="text-primary-600 hover:underline"
+                  >
+                    {team.olympiad.shortName}
+                  </Link>
+                </dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-gray-500">Status</dt>

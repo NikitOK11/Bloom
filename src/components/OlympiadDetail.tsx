@@ -3,12 +3,13 @@ import TeamCard from "./TeamCard";
 
 /**
  * Team type for OlympiadDetail component
+ * DOMAIN RULE: Teams belong to an olympiad via olympiadId
  */
 interface TeamData {
   id: string;
   name: string;
   description: string | null;
-  olympiad: string;
+  olympiadId: string;  // Required relation to olympiad
   requiredSkills: string;
   maxMembers: number;
   isOpen: boolean;
@@ -154,7 +155,7 @@ export default function OlympiadDetail({
             Teams for {shortName} {year}
           </h2>
           <Link
-            href={`/teams/create?olympiad=${shortName}`}
+            href={`/olympiads/${id}/teams/create`}
             className="btn-primary"
           >
             Create Team
@@ -169,7 +170,7 @@ export default function OlympiadDetail({
                 id={team.id}
                 name={team.name}
                 description={team.description}
-                olympiad={team.olympiad}
+                olympiad={shortName}
                 requiredSkills={team.requiredSkills}
                 memberCount={team._count.members}
                 maxMembers={team.maxMembers}
@@ -189,7 +190,7 @@ export default function OlympiadDetail({
               Be the first to create a team for {shortName}!
             </p>
             <Link
-              href={`/teams/create?olympiad=${shortName}`}
+              href={`/olympiads/${id}/teams/create`}
               className="btn-primary"
             >
               Create a Team

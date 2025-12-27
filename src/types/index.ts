@@ -41,11 +41,12 @@ export interface UpdateUserInput {
 }
 
 // Base Team type
+// DOMAIN RULE: Teams must belong to exactly one olympiad
 export interface Team {
   id: string;
   name: string;
   description: string | null;
-  olympiad: string;
+  olympiadId: string;  // Required relation to olympiad
   requiredSkills: string;
   maxMembers: number;
   isOpen: boolean;
@@ -54,9 +55,10 @@ export interface Team {
   updatedAt: Date;
 }
 
-// Team with creator and members included
+// Team with creator, olympiad, and members included
 export interface TeamWithDetails extends Team {
   creator: User;
+  olympiad: Olympiad;
   members: TeamMemberWithUser[];
   _count?: {
     members: number;
@@ -78,10 +80,11 @@ export interface TeamMemberWithUser extends TeamMember {
 }
 
 // Data needed to create a team
+// DOMAIN RULE: olympiadId is required - teams must belong to an olympiad
 export interface CreateTeamInput {
   name: string;
   description?: string;
-  olympiad: string;
+  olympiadId: string;  // Required - teams are created within olympiad context
   requiredSkills: string[];
   maxMembers?: number;
   creatorId: string;
@@ -96,30 +99,20 @@ export interface ApiResponse<T> {
 
 // List of common olympiads (for dropdowns, etc.)
 export const OLYMPIADS = [
-  "IMO",   // International Mathematical Olympiad
-  "IPhO",  // International Physics Olympiad
   "IOI",   // International Olympiad in Informatics
-  "IChO",  // International Chemistry Olympiad
-  "IBO",   // International Biology Olympiad
-  "IAO",   // International Astronomy Olympiad
-  "IPHO",  // International Philosophy Olympiad
-  "ILO",   // International Linguistics Olympiad
 ] as const;
 
 // Common skills (for suggestions)
 export const COMMON_SKILLS = [
   "Mathematics",
-  "Physics",
   "Programming",
-  "Chemistry",
-  "Biology",
-  "Problem Solving",
+  "Machine Learning",
+  "Data Analysis",
   "Algorithms",
   "Data Structures",
-  "Geometry",
-  "Number Theory",
-  "Combinatorics",
-  "Calculus",
+  "Statistics",
+  "Python",
+  "SQL",
 ] as const;
 
 // Olympiad levels

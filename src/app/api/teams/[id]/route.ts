@@ -8,7 +8,8 @@ interface RouteParams {
 /**
  * GET /api/teams/[id]
  * 
- * Fetches a single team with full details including all members.
+ * Fetches a single team with full details including all members and olympiad.
+ * DOMAIN RULE: Teams always belong to an olympiad.
  */
 export async function GET(request: Request, { params }: RouteParams) {
   try {
@@ -18,6 +19,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       where: { id },
       include: {
         creator: true,
+        olympiad: true,  // Include olympiad context
         members: {
           include: {
             user: true,
@@ -48,19 +50,19 @@ export async function GET(request: Request, { params }: RouteParams) {
  * PATCH /api/teams/[id]
  * 
  * Updates team details. Only the creator should be able to do this.
+ * Note: olympiadId cannot be changed - teams are bound to their olympiad.
  * Note: Authorization check would be added with authentication.
  */
 export async function PATCH(request: Request, { params }: RouteParams) {
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, description, olympiad, requiredSkills, maxMembers, isOpen } = body;
+    const { name, description, requiredSkills, maxMembers, isOpen } = body;
 
-    // Build update object
+    // Build update object (olympiadId is not updatable)
     const updateData: Record<string, unknown> = {};
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
-    if (olympiad !== undefined) updateData.olympiad = olympiad;
     if (requiredSkills !== undefined) {
       updateData.requiredSkills = Array.isArray(requiredSkills) 
         ? requiredSkills.join(",") 
@@ -74,6 +76,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       data: updateData,
       include: {
         creator: true,
+        olympiad: true,
         members: {
           include: { user: true },
         },

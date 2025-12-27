@@ -55,12 +55,12 @@ export default function Navbar() {
               </Link>
             ))}
 
-            {/* CTA Button */}
+            {/* CTA Button - Browse Olympiads to create teams */}
             <Link
-              href="/teams/create"
+              href="/olympiads"
               className="ml-4 btn-primary"
             >
-              Create Team
+              Find Teams
             </Link>
           </div>
         </div>

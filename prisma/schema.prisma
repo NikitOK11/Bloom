@@ -57,13 +57,14 @@ model Olympiad {
 }
 
 // Team Model
-// Represents a team looking for members.
-// Teams have required skills that potential members should have.
+// DOMAIN RULE: A team MUST belong to exactly one olympiad.
+// Teams cannot exist independently - they are always created
+// within the context of a specific olympiad competition.
+// This ensures data integrity and clear team-olympiad association.
 model Team {
   id             String   @id @default(cuid())
   name           String
   description    String?
-  olympiad       String   // Target olympiad short name: "IMO", "IOI", etc.
   requiredSkills String   // Comma-separated skills needed
   maxMembers     Int      @default(4)
   isOpen         Boolean  @default(true) // Whether team is accepting members
@@ -74,7 +75,10 @@ model Team {
   creatorId   String
   creator     User         @relation("TeamCreator", fields: [creatorId], references: [id])
   members     TeamMember[]
-  olympiadRef Olympiad?    @relation(fields: [olympiad], references: [shortName])
+  
+  // Required relation to Olympiad - teams must belong to an olympiad
+  olympiadId  String
+  olympiad    Olympiad     @relation(fields: [olympiadId], references: [id])
 }
 
 // TeamMember Model (Join Table)

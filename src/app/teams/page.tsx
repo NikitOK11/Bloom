@@ -6,16 +6,26 @@ import Link from "next/link";
  * Teams List Page
  * 
  * Server Component that fetches and displays all teams.
- * Uses Prisma directly since this is a server component.
+ * 
+ * DOMAIN RULE: Teams always belong to an olympiad.
+ * This page shows all teams across olympiads, but team creation
+ * must happen within an olympiad context (via /olympiads/[id]/teams/create).
  */
 export default async function TeamsPage() {
-  // Fetch all open teams with creator info
+  // Fetch all open teams with creator and olympiad info
   const teams = await prisma.team.findMany({
     where: { isOpen: true },
     include: {
       creator: {
         select: {
           id: true,
+          name: true,
+        },
+      },
+      olympiad: {
+        select: {
+          id: true,
+          shortName: true,
           name: true,
         },
       },
@@ -36,37 +46,17 @@ export default async function TeamsPage() {
             Find a team that matches your skills and interests
           </p>
         </div>
-        <Link href="/teams/create" className="btn-primary">
-          Create Team
+        <Link href="/olympiads" className="btn-primary">
+          Browse Olympiads
         </Link>
       </div>
 
-      {/* Filter Section (simplified for MVP) */}
-      <div className="card mb-8">
-        <div className="flex flex-wrap gap-4">
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Olympiad
-            </label>
-            <select className="input">
-              <option value="">All Olympiads</option>
-              <option value="IMO">IMO - Mathematics</option>
-              <option value="IPhO">IPhO - Physics</option>
-              <option value="IOI">IOI - Informatics</option>
-              <option value="IChO">IChO - Chemistry</option>
-              <option value="IBO">IBO - Biology</option>
-            </select>
-          </div>
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Status
-            </label>
-            <select className="input">
-              <option value="open">Open for Members</option>
-              <option value="all">All Teams</option>
-            </select>
-          </div>
-        </div>
+      {/* Info Banner */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+        <p className="text-sm text-blue-700">
+          💡 <strong>Tip:</strong> To create a team, first browse to an olympiad page and click "Create Team" there.
+          Teams are always created within the context of a specific olympiad.
+        </p>
       </div>
 
       {/* Teams Grid */}
@@ -78,7 +68,7 @@ export default async function TeamsPage() {
               id={team.id}
               name={team.name}
               description={team.description}
-              olympiad={team.olympiad}
+              olympiad={team.olympiad.shortName}
               requiredSkills={team.requiredSkills}
               memberCount={team._count.members}
               maxMembers={team.maxMembers}
@@ -95,10 +85,10 @@ export default async function TeamsPage() {
             No teams found
           </h3>
           <p className="text-gray-600 mb-6">
-            Be the first to create a team!
+            Browse olympiads to create or find teams!
           </p>
-          <Link href="/teams/create" className="btn-primary">
-            Create a Team
+          <Link href="/olympiads" className="btn-primary">
+            Browse Olympiads
           </Link>
         </div>
       )}
