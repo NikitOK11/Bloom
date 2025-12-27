@@ -121,3 +121,55 @@ export const COMMON_SKILLS = [
   "Combinatorics",
   "Calculus",
 ] as const;
+
+// Olympiad levels
+export const OLYMPIAD_LEVELS = [
+  "international",
+  "national",
+  "regional",
+] as const;
+
+export type OlympiadLevel = typeof OLYMPIAD_LEVELS[number];
+
+// Base Olympiad type (matches Prisma model)
+export interface Olympiad {
+  id: string;
+  name: string;
+  shortName: string;
+  description: string | null;
+  year: number;
+  level: string;
+  subject: string;
+  website: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Olympiad with related teams count
+export interface OlympiadWithTeams extends Olympiad {
+  teams?: Team[];
+  _count?: {
+    teams: number;
+  };
+}
+
+// Data needed to create an olympiad
+export interface CreateOlympiadInput {
+  name: string;
+  shortName: string;
+  description?: string;
+  year: number;
+  level?: string;
+  subject: string;
+  website?: string;
+}
+
+// Data for updating an olympiad
+export interface UpdateOlympiadInput {
+  name?: string;
+  description?: string;
+  year?: number;
+  level?: string;
+  subject?: string;
+  website?: string;
+}

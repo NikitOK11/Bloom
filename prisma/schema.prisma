@@ -16,12 +16,10 @@ datasource db {
 }
 
 // User Model
-// 
 // Represents an olympiad participant who can:
 // - Create a profile with skills and olympiad interests
 // - Create and join teams
 // - Browse other users
-// 
 // Skills and olympiads are stored as comma-separated strings
 // for simplicity. In production, consider separate tables.
 model User {
@@ -39,15 +37,33 @@ model User {
   teamMembers  TeamMember[]
 }
 
+// Olympiad Model
+// Represents an academic olympiad competition.
+// Teams can be associated with a specific olympiad.
+model Olympiad {
+  id          String   @id @default(cuid())
+  name        String   // Full name: "International Mathematical Olympiad"
+  shortName   String   @unique // Short code: "IMO", "IOI", etc.
+  description String?  // Description of the olympiad
+  year        Int      // Competition year
+  level       String   @default("international") // "international", "national", "regional"
+  subject     String   // Main subject: "Mathematics", "Physics", etc.
+  website     String?  // Official website URL
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  teams Team[]
+}
+
 // Team Model
-// 
 // Represents a team looking for members.
 // Teams have required skills that potential members should have.
 model Team {
   id             String   @id @default(cuid())
   name           String
   description    String?
-  olympiad       String   // Target olympiad: "IMO", "IOI", etc.
+  olympiad       String   // Target olympiad short name: "IMO", "IOI", etc.
   requiredSkills String   // Comma-separated skills needed
   maxMembers     Int      @default(4)
   isOpen         Boolean  @default(true) // Whether team is accepting members
@@ -55,13 +71,13 @@ model Team {
   updatedAt      DateTime @updatedAt
 
   // Relations
-  creatorId String
-  creator   User         @relation("TeamCreator", fields: [creatorId], references: [id])
-  members   TeamMember[]
+  creatorId   String
+  creator     User         @relation("TeamCreator", fields: [creatorId], references: [id])
+  members     TeamMember[]
+  olympiadRef Olympiad?    @relation(fields: [olympiad], references: [shortName])
 }
 
 // TeamMember Model (Join Table)
-// 
 // Links users to teams with additional metadata.
 // Allows tracking when someone joined and their role.
 model TeamMember {

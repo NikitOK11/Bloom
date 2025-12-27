@@ -16,6 +16,7 @@ export default function Navbar() {
   // Navigation links configuration
   const navLinks = [
     { href: "/", label: "Home" },
+    { href: "/olympiads", label: "Olympiads" },
     { href: "/teams", label: "Teams" },
     { href: "/profile", label: "Profile" },
   ];
