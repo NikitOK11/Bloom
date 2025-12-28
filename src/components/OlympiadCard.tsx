@@ -2,6 +2,9 @@ import Link from "next/link";
 
 /**
  * OlympiadCard Component Props
+ * 
+ * Props for displaying olympiad summary cards in the listing.
+ * Includes optional startDate/endDate for 2025 competition dates.
  */
 interface OlympiadCardProps {
   id: string;
@@ -12,6 +15,8 @@ interface OlympiadCardProps {
   level: string;
   subject: string;
   teamCount: number;
+  startDate?: Date | string | null;  // Competition start date
+  endDate?: Date | string | null;    // Competition end date
 }
 
 /**
@@ -19,6 +24,7 @@ interface OlympiadCardProps {
  * 
  * Displays a summary of an olympiad in a card format.
  * Used in the olympiads listing page.
+ * Shows name, short description, dates, and link to details.
  */
 export default function OlympiadCard({
   id,
@@ -29,7 +35,42 @@ export default function OlympiadCard({
   level,
   subject,
   teamCount,
+  startDate,
+  endDate,
 }: OlympiadCardProps) {
+  /**
+   * Format date range for display
+   * Shows "Feb 15 - Apr 20, 2025" style format
+   */
+  const formatDateRange = (start?: Date | string | null, end?: Date | string | null): string | null => {
+    if (!start && !end) return null;
+    
+    const formatDate = (date: Date | string) => {
+      const d = new Date(date);
+      return d.toLocaleDateString("ru-RU", { 
+        month: "short", 
+        day: "numeric" 
+      });
+    };
+    
+    if (start && end) {
+      const startD = new Date(start);
+      const endD = new Date(end);
+      const startStr = formatDate(start);
+      const endStr = formatDate(end);
+      // If same year, show year once at the end
+      if (startD.getFullYear() === endD.getFullYear()) {
+        return `${startStr} — ${endStr}, ${startD.getFullYear()}`;
+      }
+      return `${startStr}, ${startD.getFullYear()} — ${endStr}, ${endD.getFullYear()}`;
+    }
+    
+    if (start) return formatDate(start);
+    if (end) return formatDate(end);
+    return null;
+  };
+
+  const dateRange = formatDateRange(startDate, endDate);
   // Get level badge styling based on level type
   const getLevelBadgeClass = (level: string) => {
     switch (level) {
@@ -44,14 +85,17 @@ export default function OlympiadCard({
     }
   };
 
-  // Get subject emoji
+  // Get subject emoji based on subject/category
+  // Updated for 2025 competitions: ML, Data Analysis, Programming
   const getSubjectEmoji = (subject: string) => {
     const subjectLower = subject.toLowerCase();
+    if (subjectLower.includes("машинн") || subjectLower.includes("ml") || subjectLower.includes("machine")) return "🤖";
+    if (subjectLower.includes("анализ") || subjectLower.includes("data") || subjectLower.includes("данн")) return "📊";
+    if (subjectLower.includes("программ") || subjectLower.includes("informatics") || subjectLower.includes("computer")) return "💻";
     if (subjectLower.includes("math")) return "📐";
     if (subjectLower.includes("physics")) return "⚛️";
     if (subjectLower.includes("chemistry")) return "🧪";
     if (subjectLower.includes("biology")) return "🧬";
-    if (subjectLower.includes("informatics") || subjectLower.includes("computer")) return "💻";
     if (subjectLower.includes("astronomy")) return "🔭";
     if (subjectLower.includes("linguistics")) return "📚";
     if (subjectLower.includes("philosophy")) return "🤔";
@@ -71,7 +115,10 @@ export default function OlympiadCard({
               <h3 className="text-lg font-semibold text-gray-900 hover:text-primary-600 transition-colors">
                 {shortName}
               </h3>
-              <p className="text-sm text-gray-500">{year}</p>
+              {/* Show date range if available, otherwise just year */}
+              <p className="text-sm text-gray-500">
+                {dateRange || year}
+              </p>
             </div>
           </div>
           {/* Level Badge */}

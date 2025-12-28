@@ -125,6 +125,7 @@ export const OLYMPIAD_LEVELS = [
 export type OlympiadLevel = typeof OLYMPIAD_LEVELS[number];
 
 // Base Olympiad type (matches Prisma model)
+// Updated with startDate/endDate for 2025 competitions
 export interface Olympiad {
   id: string;
   name: string;
@@ -134,6 +135,8 @@ export interface Olympiad {
   level: string;
   subject: string;
   website: string | null;
+  startDate: Date | null;  // Competition start date
+  endDate: Date | null;    // Competition end date
   createdAt: Date;
   updatedAt: Date;
 }
@@ -147,6 +150,7 @@ export interface OlympiadWithTeams extends Olympiad {
 }
 
 // Data needed to create an olympiad
+// Includes optional date fields for 2025 competitions
 export interface CreateOlympiadInput {
   name: string;
   shortName: string;
@@ -155,6 +159,8 @@ export interface CreateOlympiadInput {
   level?: string;
   subject: string;
   website?: string;
+  startDate?: Date;
+  endDate?: Date;
 }
 
 // Data for updating an olympiad
@@ -165,4 +171,6 @@ export interface UpdateOlympiadInput {
   level?: string;
   subject?: string;
   website?: string;
+  startDate?: Date;
+  endDate?: Date;
 }

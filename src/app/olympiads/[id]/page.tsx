@@ -67,6 +67,8 @@ export default async function OlympiadDetailPage({
         level={olympiad.level}
         subject={olympiad.subject}
         website={olympiad.website}
+        startDate={olympiad.startDate}
+        endDate={olympiad.endDate}
         teams={olympiad.teams}
         teamCount={olympiad._count.teams}
       />

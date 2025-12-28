@@ -24,6 +24,9 @@ interface TeamData {
 
 /**
  * OlympiadDetail Component Props
+ * 
+ * Props for the detailed olympiad view page.
+ * Includes dates for 2025 competitions.
  */
 interface OlympiadDetailProps {
   id: string;
@@ -34,6 +37,8 @@ interface OlympiadDetailProps {
   level: string;
   subject: string;
   website: string | null;
+  startDate?: Date | string | null;  // Competition start date
+  endDate?: Date | string | null;    // Competition end date
   teams: TeamData[];
   teamCount: number;
 }
@@ -53,9 +58,42 @@ export default function OlympiadDetail({
   level,
   subject,
   website,
+  startDate,
+  endDate,
   teams,
   teamCount,
 }: OlympiadDetailProps) {
+  /**
+   * Format date range for display
+   * Shows "15 февр. — 20 апр. 2025" style format
+   */
+  const formatDateRange = (start?: Date | string | null, end?: Date | string | null): string | null => {
+    if (!start && !end) return null;
+    
+    const formatDate = (date: Date | string) => {
+      const d = new Date(date);
+      return d.toLocaleDateString("ru-RU", { 
+        month: "short", 
+        day: "numeric",
+        year: "numeric"
+      });
+    };
+    
+    if (start && end) {
+      const startD = new Date(start);
+      const endD = new Date(end);
+      const startStr = startD.toLocaleDateString("ru-RU", { month: "short", day: "numeric" });
+      const endStr = formatDate(end);
+      return `${startStr} — ${endStr}`;
+    }
+    
+    if (start) return formatDate(start);
+    if (end) return `до ${formatDate(end)}`;
+    return null;
+  };
+
+  const dateRange = formatDateRange(startDate, endDate);
+
   // Get level badge styling based on level type
   const getLevelBadgeClass = (level: string) => {
     switch (level) {
@@ -70,14 +108,17 @@ export default function OlympiadDetail({
     }
   };
 
-  // Get subject emoji
+  // Get subject emoji based on subject/category
+  // Updated for 2025 competitions: ML, Data Analysis, Programming
   const getSubjectEmoji = (subject: string) => {
     const subjectLower = subject.toLowerCase();
+    if (subjectLower.includes("машинн") || subjectLower.includes("ml") || subjectLower.includes("machine")) return "🤖";
+    if (subjectLower.includes("анализ") || subjectLower.includes("data") || subjectLower.includes("данн")) return "📊";
+    if (subjectLower.includes("программ") || subjectLower.includes("informatics") || subjectLower.includes("computer")) return "💻";
     if (subjectLower.includes("math")) return "📐";
     if (subjectLower.includes("physics")) return "⚛️";
     if (subjectLower.includes("chemistry")) return "🧪";
     if (subjectLower.includes("biology")) return "🧬";
-    if (subjectLower.includes("informatics") || subjectLower.includes("computer")) return "💻";
     if (subjectLower.includes("astronomy")) return "🔭";
     if (subjectLower.includes("linguistics")) return "📚";
     if (subjectLower.includes("philosophy")) return "🤔";
@@ -110,8 +151,9 @@ export default function OlympiadDetail({
             </div>
             <p className="text-lg text-gray-700 mb-2">{name}</p>
             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+              {/* Show date range if available, otherwise just year */}
               <span className="flex items-center gap-1">
-                📅 {year}
+                📅 {dateRange || year}
               </span>
               <span className="flex items-center gap-1">
                 📚 {subject}

@@ -41,16 +41,18 @@ model User {
 // Represents an academic olympiad competition.
 // Teams can be associated with a specific olympiad.
 model Olympiad {
-  id          String   @id @default(cuid())
-  name        String   // Full name: "International Mathematical Olympiad"
-  shortName   String   @unique // Short code: "IMO", "IOI", etc.
-  description String?  // Description of the olympiad
-  year        Int      // Competition year
-  level       String   @default("international") // "international", "national", "regional"
-  subject     String   // Main subject: "Mathematics", "Physics", etc.
-  website     String?  // Official website URL
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id          String    @id @default(cuid())
+  name        String    // Full name: "International Mathematical Olympiad"
+  shortName   String    @unique // Short code: "IMO", "IOI", etc.
+  description String?   // Description of the olympiad
+  year        Int       // Competition year
+  level       String    @default("international") // "international", "national", "regional"
+  subject     String    // Main subject: "Mathematics", "Physics", etc.
+  website     String?   // Official website URL
+  startDate   DateTime? // Competition start date
+  endDate     DateTime? // Competition end date
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   // Relations
   teams Team[]
