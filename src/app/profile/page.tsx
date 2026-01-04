@@ -1,232 +1,126 @@
 "use client";
 
-import { useState } from "react";
-import { OLYMPIADS, COMMON_SKILLS } from "@/types";
+import { useState, useEffect } from "react";
+import ProfileForm from "@/components/ProfileForm";
+
+/**
+ * User data from API
+ */
+interface UserData {
+  id: string;
+  name: string;
+  email: string;
+}
 
 /**
  * Profile Page
  * 
- * Allows users to create/edit their profile.
- * In MVP, this creates a new user each time (no auth).
- * In production, this would load/save the authenticated user's profile.
+ * Allows users to create/edit their extended profile.
+ * In MVP without auth, users select their identity from a dropdown.
+ * In production, this would load the authenticated user automatically.
+ * 
+ * PRIVACY NOTE: This page only allows editing your own profile.
+ * Viewing other users' profiles is restricted and handled separately.
  */
 export default function ProfilePage() {
-  const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<string>("");
+  const [loading, setLoading] = useState(true);
 
-  // Form state
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    bio: "",
-    skills: [] as string[],
-    olympiads: [] as string[],
-  });
-
-  // Toggle skill selection
-  const toggleSkill = (skill: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      skills: prev.skills.includes(skill)
-        ? prev.skills.filter((s) => s !== skill)
-        : [...prev.skills, skill],
-    }));
-  };
-
-  // Toggle olympiad selection
-  const toggleOlympiad = (olympiad: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      olympiads: prev.olympiads.includes(olympiad)
-        ? prev.olympiads.filter((o) => o !== olympiad)
-        : [...prev.olympiads, olympiad],
-    }));
-  };
-
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    setMessage({ type: "", text: "" });
-
-    try {
-      const res = await fetch("/api/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        setMessage({
-          type: "success",
-          text: "Profile created successfully! You can now create or join teams.",
-        });
-        // Reset form
-        setFormData({
-          name: "",
-          email: "",
-          bio: "",
-          skills: [],
-          olympiads: [],
-        });
-      } else {
-        throw new Error(data.error || "Failed to save profile");
+  // Fetch available users on mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch("/api/users");
+        const data = await res.json();
+        if (data.success && data.data.length > 0) {
+          setUsers(data.data);
+          setSelectedUserId(data.data[0].id);
+        }
+      } catch (err) {
+        console.error("Error fetching users:", err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setMessage({
-        type: "error",
-        text: err instanceof Error ? err.message : "Something went wrong",
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
+    };
+
+    fetchUsers();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <div className="text-center text-gray-500">Loading...</div>
+      </div>
+    );
+  }
+
+  if (users.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Your Profile</h1>
+        <div className="card bg-yellow-50 border-yellow-200">
+          <p className="text-yellow-700">
+            No users found. Please create a user first before setting up your profile.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const selectedUser = users.find((u) => u.id === selectedUserId);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <h1 className="text-3xl font-bold text-gray-900 mb-2">Your Profile</h1>
-      <p className="text-gray-600 mb-8">
-        Tell us about yourself so teams can find you
+      <p className="text-gray-600 mb-6">
+        Complete your profile to help team leaders learn more about you when reviewing join requests.
       </p>
 
-      {/* Status Message */}
-      {message.text && (
-        <div
-          className={`px-4 py-3 rounded-lg mb-6 ${
-            message.type === "success"
-              ? "bg-green-50 border border-green-200 text-green-700"
-              : "bg-red-50 border border-red-200 text-red-700"
-          }`}
+      {/* User Selector (MVP - would be replaced with auth in production) */}
+      <div className="card bg-gray-50 mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Editing profile as (demo):
+        </label>
+        <select
+          value={selectedUserId}
+          onChange={(e) => setSelectedUserId(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
         >
-          {message.text}
+          {users.map((user) => (
+            <option key={user.id} value={user.id}>
+              {user.name} ({user.email})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Current User Info */}
+      {selectedUser && (
+        <div className="card mb-6">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
+              <span className="text-2xl text-primary-700 font-bold">
+                {selectedUser.name.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">
+                {selectedUser.name}
+              </h2>
+              <p className="text-gray-500">{selectedUser.email}</p>
+            </div>
+          </div>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Name */}
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-            Full Name *
-          </label>
-          <input
-            type="text"
-            id="name"
-            required
-            className="input"
-            placeholder="Your name"
-            value={formData.name}
-            onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-          />
-        </div>
-
-        {/* Email */}
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email Address *
-          </label>
-          <input
-            type="email"
-            id="email"
-            required
-            className="input"
-            placeholder="your@email.com"
-            value={formData.email}
-            onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
-          />
-          <p className="text-sm text-gray-500 mt-1">
-            Used for team communication (not displayed publicly)
-          </p>
-        </div>
-
-        {/* Bio */}
-        <div>
-          <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">
-            About You
-          </label>
-          <textarea
-            id="bio"
-            rows={4}
-            className="input"
-            placeholder="Tell us about your olympiad experience, achievements, and what you're looking for..."
-            value={formData.bio}
-            onChange={(e) => setFormData((prev) => ({ ...prev, bio: e.target.value }))}
-          />
-        </div>
-
-        {/* Skills */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Your Skills
-          </label>
-          <p className="text-sm text-gray-500 mb-3">
-            Select all that apply
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {COMMON_SKILLS.map((skill) => (
-              <button
-                key={skill}
-                type="button"
-                onClick={() => toggleSkill(skill)}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                  formData.skills.includes(skill)
-                    ? "bg-primary-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {skill}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Olympiads */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Olympiads of Interest
-          </label>
-          <p className="text-sm text-gray-500 mb-3">
-            Which olympiads are you interested in?
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {OLYMPIADS.map((olympiad) => (
-              <button
-                key={olympiad}
-                type="button"
-                onClick={() => toggleOlympiad(olympiad)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
-                  formData.olympiads.includes(olympiad)
-                    ? "bg-primary-600 text-white border-primary-600"
-                    : "bg-white text-gray-700 border-gray-300 hover:border-primary-300"
-                }`}
-              >
-                {olympiad}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Submit Button */}
-        <div className="pt-4">
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSaving ? "Saving..." : "Save Profile"}
-          </button>
-        </div>
-      </form>
-
-      {/* Note about MVP */}
-      <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <p className="text-sm text-yellow-800">
-          <strong>MVP Note:</strong> In the full version, this page would load your
-          existing profile if you&apos;re logged in, and update it instead of creating
-          a new one each time.
-        </p>
-      </div>
+      {/* Profile Form */}
+      {selectedUserId && (
+        <ProfileForm
+          key={selectedUserId} // Force remount when user changes
+          userId={selectedUserId}
+        />
+      )}
     </div>
   );
 }

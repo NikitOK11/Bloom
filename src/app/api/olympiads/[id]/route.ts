@@ -15,7 +15,7 @@ export async function GET(
       where: { id: params.id },
       include: {
         teams: {
-          where: { isOpen: true },
+          where: { isOpen: true},
           include: {
             creator: {
               select: {

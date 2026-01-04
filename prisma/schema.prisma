@@ -33,8 +33,31 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relations
-  createdTeams Team[]       @relation("TeamCreator")
+  createdTeams Team[]        @relation("TeamCreator")
   teamMembers  TeamMember[]
+  joinRequests JoinRequest[] // User's requests to join teams
+  profile      Profile?      // 1-to-1 relation to Profile
+}
+
+// Profile Model
+// PRIVACY RULE: Profiles are NOT publicly browsable.
+// They can only be viewed by:
+// 1. The profile owner (for editing)
+// 2. Team leaders reviewing join requests from this user
+// This ensures user data is only shared in relevant contexts.
+model Profile {
+  id                 String   @id @default(cuid())
+  role               String   @default("school_student") // school_student, college_student, graduate, other
+  gradeOrYear        String?  // e.g., "11th grade", "2nd year", "PhD"
+  interests          String   // Comma-separated: "algorithms,ml,data_science"
+  olympiadExperience String?  // Free text about past olympiad participation
+  about              String?  // General "about me" section
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // 1-to-1 relation to User
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // Olympiad Model
@@ -74,9 +97,10 @@ model Team {
   updatedAt      DateTime @updatedAt
 
   // Relations
-  creatorId   String
-  creator     User         @relation("TeamCreator", fields: [creatorId], references: [id])
-  members     TeamMember[]
+  creatorId    String
+  creator      User          @relation("TeamCreator", fields: [creatorId], references: [id])
+  members      TeamMember[]
+  joinRequests JoinRequest[] // Incoming join requests for this team
   
   // Required relation to Olympiad - teams must belong to an olympiad
   olympiadId  String
@@ -99,4 +123,30 @@ model TeamMember {
 
   // Ensure a user can only be in a team once
   @@unique([userId, teamId])
+}
+
+// JoinRequest Model
+// DOMAIN RULE: Users cannot be added to teams directly.
+// They must submit a join request that the team leader approves.
+// This ensures proper control over team membership.
+model JoinRequest {
+  id        String   @id @default(cuid())
+  // Status: "PENDING", "APPROVED", "REJECTED"
+  // Using String instead of enum for SQLite compatibility
+  status    String   @default("PENDING")
+  message   String?  // Optional message from the requester
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  // Ensure a user can only have one active request per team
+  // Note: This doesn't prevent multiple requests with different statuses,
+  // but business logic enforces only one PENDING request at a time
+  @@unique([userId, teamId, status])
+  @@index([teamId, status]) // For efficient querying of pending requests
 }

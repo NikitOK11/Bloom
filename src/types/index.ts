@@ -174,3 +174,109 @@ export interface UpdateOlympiadInput {
   startDate?: Date;
   endDate?: Date;
 }
+
+// ==========================================
+// JOIN REQUEST TYPES
+// ==========================================
+
+// JoinRequest status values
+// DOMAIN RULE: Users join teams only via approved requests
+export type JoinRequestStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+// Base JoinRequest type (matches Prisma model)
+export interface JoinRequest {
+  id: string;
+  status: JoinRequestStatus;
+  message: string | null;
+  userId: string;
+  teamId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// JoinRequest with user details (for team leader view)
+export interface JoinRequestWithUser extends JoinRequest {
+  user: User;
+}
+
+// JoinRequest with team details (for user view)
+export interface JoinRequestWithTeam extends JoinRequest {
+  team: Team;
+}
+
+// JoinRequest with full details
+export interface JoinRequestWithDetails extends JoinRequest {
+  user: User;
+  team: TeamWithDetails;
+}
+
+// Data needed to create a join request
+export interface CreateJoinRequestInput {
+  userId: string;
+  teamId: string;
+  message?: string;
+}
+
+// ==========================================
+// PROFILE TYPES
+// ==========================================
+
+// Profile role options
+// Describes the user's educational status
+export type ProfileRole = "school_student" | "college_student" | "graduate" | "other";
+
+export const PROFILE_ROLES: { value: ProfileRole; label: string }[] = [
+  { value: "school_student", label: "School Student" },
+  { value: "college_student", label: "College Student" },
+  { value: "graduate", label: "Graduate" },
+  { value: "other", label: "Other" },
+];
+
+// Common interests for profile selection
+export const PROFILE_INTERESTS = [
+  "algorithms",
+  "data_structures",
+  "machine_learning",
+  "data_science",
+  "competitive_programming",
+  "mathematics",
+  "physics",
+  "web_development",
+  "mobile_development",
+  "cybersecurity",
+] as const;
+
+export type ProfileInterest = typeof PROFILE_INTERESTS[number];
+
+// Base Profile type (matches Prisma model)
+// PRIVACY: Profiles are NOT publicly browsable
+export interface Profile {
+  id: string;
+  userId: string;
+  role: ProfileRole;
+  gradeOrYear: string | null;
+  interests: string; // Comma-separated
+  olympiadExperience: string | null;
+  about: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Profile with parsed interests array (for frontend)
+export interface ProfileWithArrays extends Omit<Profile, "interests"> {
+  interests: string[];
+}
+
+// Profile with user details
+export interface ProfileWithUser extends Profile {
+  user: User;
+}
+
+// Data needed to create/update a profile
+export interface UpdateProfileInput {
+  role?: ProfileRole;
+  gradeOrYear?: string;
+  interests?: string[];
+  olympiadExperience?: string;
+  about?: string;
+}

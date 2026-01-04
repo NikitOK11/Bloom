@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { TeamJoinSection } from "@/components";
 
 /**
  * Team Detail Page Props
@@ -14,6 +15,7 @@ interface TeamPageProps {
  * 
  * Shows full details of a team including all members.
  * DOMAIN RULE: Teams belong to exactly one olympiad.
+ * DOMAIN RULE: Users join teams via approved join requests only.
  */
 export default async function TeamDetailPage({ params }: TeamPageProps) {
   const { id } = await params;
@@ -40,6 +42,10 @@ export default async function TeamDetailPage({ params }: TeamPageProps) {
 
   // Parse required skills
   const skills = team.requiredSkills ? team.requiredSkills.split(",").filter(Boolean) : [];
+  
+  // Extract member user IDs for checking membership
+  const memberUserIds = team.members.map((m) => m.userId);
+  const isTeamFull = team.members.length >= team.maxMembers;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -97,21 +103,14 @@ export default async function TeamDetailPage({ params }: TeamPageProps) {
             )}
           </div>
 
-          {/* Join Team Section */}
-          {team.isOpen && team.members.length < team.maxMembers && (
-            <div className="card bg-primary-50 border-primary-200">
-              <h3 className="font-semibold text-gray-900 mb-2">Interested in joining?</h3>
-              <p className="text-gray-600 mb-4">
-                This team is looking for {team.maxMembers - team.members.length} more member(s).
-              </p>
-              <button className="btn-primary">
-                Request to Join
-              </button>
-              <p className="text-sm text-gray-500 mt-2">
-                Note: In the full version, this would send a join request to the team creator.
-              </p>
-            </div>
-          )}
+          {/* Join Team Section - Using the new join request workflow */}
+          <TeamJoinSection
+            teamId={team.id}
+            teamCreatorId={team.creatorId}
+            isTeamOpen={team.isOpen}
+            isTeamFull={isTeamFull}
+            memberUserIds={memberUserIds}
+          />
         </div>
 
         {/* Sidebar - Team Members */}
