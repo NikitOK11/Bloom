@@ -59,6 +59,41 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const preference = stored || "dark"; // Default to dark (primary theme)
     setThemePreferenceState(preference);
     setTheme(getResolvedTheme(preference));
+    
+    // Also load and apply accent color from storage
+    const savedAccent = localStorage.getItem("bloom-accent");
+    if (savedAccent) {
+      const accentColors: Record<string, string> = {
+        rose: "#f43f5e",
+        orange: "#f97316",
+        amber: "#f59e0b",
+        emerald: "#10b981",
+        cyan: "#06b6d4",
+        blue: "#3b82f6",
+        violet: "#8b5cf6",
+        pink: "#ec4899",
+      };
+      const color = accentColors[savedAccent];
+      if (color) {
+        document.documentElement.style.setProperty("--accent-color", color);
+        document.documentElement.style.setProperty("--accent-subtle", `${color}15`);
+      }
+    }
+    
+    // Also load and apply font size from storage
+    const savedFontSize = localStorage.getItem("bloom-font-size");
+    if (savedFontSize) {
+      const fontSizes: Record<string, string> = {
+        small: "14px",
+        medium: "16px",
+        large: "18px",
+      };
+      const size = fontSizes[savedFontSize];
+      if (size) {
+        document.documentElement.style.fontSize = size;
+      }
+    }
+    
     setMounted(true);
   }, []);
 

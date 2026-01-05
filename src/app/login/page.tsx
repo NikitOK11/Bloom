@@ -5,90 +5,82 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 /**
- * Register Page
+ * Login Page
  * 
- * Clean, premium registration experience matching the login page.
+ * Clean, minimal login experience with email and password.
+ * Focuses on simplicity and quick access.
  * 
- * USER FLOW:
- * 1. User fills in name, email, password
- * 2. On submit → POST /api/auth/register
- * 3. On success → redirect to /profile/create
- * 
- * DOMAIN RULES:
- * - Creates User (auth identity) only
- * - Does NOT create Profile (must be done on next page)
- * - Email must be unique
- * - Password minimum 6 characters
+ * UX Features:
+ * - Social login options (future expansion)
+ * - Remember me option
+ * - Forgot password link
+ * - Smooth error handling
  */
-export default function RegisterPage() {
+export default function LoginPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    name: "",
     email: "",
     password: "",
-    confirmPassword: "",
+    rememberMe: false,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+    // Clear error when user starts typing
     if (error) setError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     setError(null);
 
-    // Client-side validation
-    if (!formData.email || !formData.password || !formData.name) {
-      setError("All fields are required");
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters");
-      return;
-    }
-
-    setIsLoading(true);
-
     try {
-      const response = await fetch("/api/auth/register", {
+      // Call the login API
+      const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
-          name: formData.name,
         }),
       });
 
-      const result = await response.json();
+      const data = await response.json();
 
-      if (!response.ok || !result.success) {
-        setError(result.error || "Registration failed");
-        return;
+      if (!response.ok) {
+        throw new Error(data.error || "Invalid email or password");
       }
 
-      // Store user ID for profile creation & navbar update
-      sessionStorage.setItem("pendingUserId", result.data.id);
-      sessionStorage.setItem("pendingUserName", result.data.name);
-      
+      // Store user info based on remember preference
+      const storage = formData.rememberMe ? localStorage : sessionStorage;
+      storage.setItem("userId", data.user.id);
+      storage.setItem("userName", data.user.name);
+      if (data.user.email) storage.setItem("userEmail", data.user.email);
+
+      // Also set in localStorage if remember me is checked
+      if (formData.rememberMe) {
+        localStorage.setItem("userId", data.user.id);
+        localStorage.setItem("userName", data.user.name);
+      }
+
       // Dispatch auth change event for Navbar to update
       window.dispatchEvent(new Event("authChange"));
 
-      // Redirect to profile creation
-      router.push("/profile/create");
+      // Redirect to profile or home
+      if (data.user.hasProfile) {
+        router.push("/profile");
+      } else {
+        router.push("/profile/create");
+      }
     } catch (err) {
-      console.error("Registration error:", err);
-      setError("Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -112,14 +104,14 @@ export default function RegisterPage() {
             <span className="font-bold text-2xl text-[var(--text-primary)]">Bloom</span>
           </Link>
           <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
-            Create your account
+            Welcome back
           </h1>
           <p className="text-[var(--text-secondary)]">
-            Join Bloom to find teammates for olympiads
+            Sign in to continue to your account
           </p>
         </div>
 
-        {/* Registration Card */}
+        {/* Login Card */}
         <div className="card p-8">
           {/* Error Alert */}
           {error && (
@@ -134,25 +126,6 @@ export default function RegisterPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Name Field */}
-            <div className="form-group">
-              <label htmlFor="name" className="form-label">
-                Full name
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="form-input"
-                placeholder="John Doe"
-                required
-                autoComplete="name"
-                autoFocus
-              />
-            </div>
-
             {/* Email Field */}
             <div className="form-group">
               <label htmlFor="email" className="form-label">
@@ -168,14 +141,23 @@ export default function RegisterPage() {
                 placeholder="you@example.com"
                 required
                 autoComplete="email"
+                autoFocus
               />
             </div>
 
             {/* Password Field */}
             <div className="form-group">
-              <label htmlFor="password" className="form-label">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="password" className="form-label mb-0">
+                  Password
+                </label>
+                <Link 
+                  href="/forgot-password" 
+                  className="text-sm text-[var(--accent-color)] hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <input
                 type="password"
                 id="password"
@@ -183,28 +165,25 @@ export default function RegisterPage() {
                 value={formData.password}
                 onChange={handleChange}
                 className="form-input"
-                placeholder="At least 6 characters"
+                placeholder="••••••••"
                 required
-                autoComplete="new-password"
+                autoComplete="current-password"
               />
             </div>
 
-            {/* Confirm Password Field */}
-            <div className="form-group">
-              <label htmlFor="confirmPassword" className="form-label">
-                Confirm password
-              </label>
+            {/* Remember Me */}
+            <div className="flex items-center gap-3">
               <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
+                type="checkbox"
+                id="rememberMe"
+                name="rememberMe"
+                checked={formData.rememberMe}
                 onChange={handleChange}
-                className="form-input"
-                placeholder="Confirm your password"
-                required
-                autoComplete="new-password"
+                className="w-4 h-4 rounded border-[var(--surface-border)] bg-[var(--bg-tertiary)] text-[var(--accent-color)] focus:ring-[var(--accent-color)] focus:ring-offset-0"
               />
+              <label htmlFor="rememberMe" className="text-sm text-[var(--text-secondary)] cursor-pointer">
+                Remember me for 30 days
+              </label>
             </div>
 
             {/* Submit Button */}
@@ -219,10 +198,10 @@ export default function RegisterPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  Creating account...
+                  Signing in...
                 </span>
               ) : (
-                "Create account"
+                "Sign in"
               )}
             </button>
           </form>
@@ -265,37 +244,13 @@ export default function RegisterPage() {
               GitHub
             </button>
           </div>
-
-          {/* Steps Info */}
-          <div className="mt-6 p-4 rounded-xl bg-[var(--accent-subtle)] border border-[var(--accent-color)]/10">
-            <h3 className="text-sm font-semibold text-[var(--accent-color)] flex items-center gap-2 mb-3">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              What happens next?
-            </h3>
-            <div className="space-y-2">
-              {[
-                { step: 1, text: "Create your account" },
-                { step: 2, text: "Complete your profile" },
-                { step: 3, text: "Start finding teammates!" },
-              ].map((item) => (
-                <div key={item.step} className="flex items-center gap-3 text-sm text-[var(--text-secondary)]">
-                  <span className="w-6 h-6 rounded-full bg-[var(--accent-color)] text-white flex items-center justify-center text-xs font-bold shrink-0">
-                    {item.step}
-                  </span>
-                  {item.text}
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* Footer Links */}
         <p className="text-center mt-6 text-[var(--text-secondary)]">
-          Already have an account?{" "}
-          <Link href="/login" className="text-[var(--accent-color)] font-medium hover:underline">
-            Sign in
+          Don't have an account?{" "}
+          <Link href="/register" className="text-[var(--accent-color)] font-medium hover:underline">
+            Create one free
           </Link>
         </p>
       </div>
