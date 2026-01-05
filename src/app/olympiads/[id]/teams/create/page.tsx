@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { COMMON_SKILLS } from "@/types";
+import { COMMON_SKILLS, PROFILE_INTERESTS, TEAM_LEVELS, TeamLevel } from "@/types";
 
 /**
  * Olympiad info for display
@@ -40,6 +40,10 @@ export default function CreateTeamForOlympiadPage({
     description: "",
     requiredSkills: [] as string[],
     maxMembers: 4,
+    // NEW: Team requirement fields for smart filtering
+    requiredInterests: [] as string[],
+    requiredLevel: "any" as TeamLevel,
+    requirementsNote: "",
   });
 
   // Fetch olympiad info on mount
@@ -68,6 +72,16 @@ export default function CreateTeamForOlympiadPage({
       requiredSkills: prev.requiredSkills.includes(skill)
         ? prev.requiredSkills.filter((s) => s !== skill)
         : [...prev.requiredSkills, skill],
+    }));
+  };
+
+  // Handle interest toggle for team requirements
+  const toggleInterest = (interest: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      requiredInterests: prev.requiredInterests.includes(interest)
+        ? prev.requiredInterests.filter((i) => i !== interest)
+        : [...prev.requiredInterests, interest],
     }));
   };
 
@@ -260,6 +274,83 @@ export default function CreateTeamForOlympiadPage({
               </option>
             ))}
           </select>
+        </div>
+
+        {/* ============================================ */}
+        {/* TEAM REQUIREMENTS SECTION                   */}
+        {/* Helps users find matching teams faster      */}
+        {/* ============================================ */}
+        <div className="border-t border-gray-200 pt-6 mt-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+            Team Requirements
+          </h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Specify what you're looking for to help candidates find your team
+          </p>
+
+          {/* Required Level */}
+          <div className="mb-4">
+            <label htmlFor="requiredLevel" className="block text-sm font-medium text-gray-700 mb-1">
+              Experience Level Needed
+            </label>
+            <select
+              id="requiredLevel"
+              className="input"
+              value={formData.requiredLevel}
+              onChange={(e) => setFormData((prev) => ({ ...prev, requiredLevel: e.target.value as TeamLevel }))}
+            >
+              {TEAM_LEVELS.map((level) => (
+                <option key={level.value} value={level.value}>
+                  {level.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Required Interests */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Interest Areas
+            </label>
+            <p className="text-sm text-gray-500 mb-3">
+              Select the interest areas relevant for your team
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {PROFILE_INTERESTS.map((interest) => (
+                <button
+                  key={interest}
+                  type="button"
+                  onClick={() => toggleInterest(interest)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    formData.requiredInterests.includes(interest)
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  {interest.replace(/_/g, " ")}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Requirements Note */}
+          <div>
+            <label htmlFor="requirementsNote" className="block text-sm font-medium text-gray-700 mb-1">
+              Additional Notes
+            </label>
+            <textarea
+              id="requirementsNote"
+              rows={2}
+              maxLength={200}
+              className="input"
+              placeholder="Any specific requirements or preferences? (e.g., 'Looking for someone with ICPC experience')"
+              value={formData.requirementsNote}
+              onChange={(e) => setFormData((prev) => ({ ...prev, requirementsNote: e.target.value }))}
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              {formData.requirementsNote.length}/200 characters
+            </p>
+          </div>
         </div>
 
         {/* Submit Button */}

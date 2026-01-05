@@ -54,7 +54,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       where.status = status;
     }
 
-    // Fetch join requests with user details
+    // Fetch join requests with user details and profile
     const joinRequests = await prisma.joinRequest.findMany({
       where,
       include: {
@@ -63,9 +63,7 @@ export async function GET(request: Request, { params }: RouteParams) {
             id: true,
             name: true,
             email: true,
-            bio: true,
-            skills: true,
-            olympiads: true,
+            profile: true, // Include user's profile for team leaders to review
           },
         },
       },

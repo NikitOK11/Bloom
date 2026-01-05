@@ -15,20 +15,20 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-// User Model
-// Represents an olympiad participant who can:
-// - Create a profile with skills and olympiad interests
-// - Create and join teams
-// - Browse other users
-// Skills and olympiads are stored as comma-separated strings
-// for simplicity. In production, consider separate tables.
+// ==========================================
+// USER MODEL - AUTHENTICATION ONLY
+// ==========================================
+// DOMAIN RULE: User represents authentication identity only.
+// Personal information is stored in the Profile model.
+// This separation allows:
+// - Clear domain boundaries (auth vs profile data)
+// - Users can exist without profiles (pre-onboarding state)
+// - Profile can be required for certain actions (e.g., join requests)
 model User {
   id        String   @id @default(cuid())
-  name      String
   email     String   @unique
-  bio       String?
-  skills    String   // Comma-separated: "math,physics,programming"
-  olympiads String   // Comma-separated: "IMO,IPhO,IOI"
+  password  String   @default("") // Hashed password (placeholder for MVP, default empty for migration)
+  name      String   // Display name for identification
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -36,20 +36,28 @@ model User {
   createdTeams Team[]        @relation("TeamCreator")
   teamMembers  TeamMember[]
   joinRequests JoinRequest[] // User's requests to join teams
-  profile      Profile?      // 1-to-1 relation to Profile
+  profile      Profile?      // 1-to-1 relation to Profile (optional until created)
 }
 
-// Profile Model
+// ==========================================
+// PROFILE MODEL - USER'S EXTENDED INFO
+// ==========================================
+// DOMAIN RULE: Profile is REQUIRED to:
+// - Send join requests to teams
+// - Be visible to team leaders reviewing requests
+// 
 // PRIVACY RULE: Profiles are NOT publicly browsable.
 // They can only be viewed by:
 // 1. The profile owner (for editing)
 // 2. Team leaders reviewing join requests from this user
-// This ensures user data is only shared in relevant contexts.
+//
+// FLOW: User registers → User creates profile → User can join teams
 model Profile {
   id                 String   @id @default(cuid())
   role               String   @default("school_student") // school_student, college_student, graduate, other
   gradeOrYear        String?  // e.g., "11th grade", "2nd year", "PhD"
   interests          String   // Comma-separated: "algorithms,ml,data_science"
+  skills             String   @default("") // Comma-separated: "python,sql,math"
   olympiadExperience String?  // Free text about past olympiad participation
   about              String?  // General "about me" section
   createdAt          DateTime @default(now())
@@ -95,6 +103,13 @@ model Team {
   isOpen         Boolean  @default(true) // Whether team is accepting members
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  // TEAM REQUIREMENTS:
+  // These fields help users understand what the team is looking for
+  // and enable smart filtering on the team list page.
+  requiredInterests String?  // Comma-separated: "algorithms,machine_learning,data_science"
+  requiredLevel     String   @default("any") // "beginner", "intermediate", "advanced", "any"
+  requirementsNote  String?  // Short free-text note from team leader about what they're looking for
 
   // Relations
   creatorId    String

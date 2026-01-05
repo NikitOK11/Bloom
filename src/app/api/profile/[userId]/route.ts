@@ -50,45 +50,28 @@ export async function GET(request: Request, { params }: RouteParams) {
     // Fetch the profile with user details
     const profile = await prisma.profile.findUnique({
       where: { userId: profileUserId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            bio: true,
-            skills: true,
-            olympiads: true,
-            createdAt: true,
-          },
-        },
+    });
+
+    // Get user info separately
+    const user = await prisma.user.findUnique({
+      where: { id: profileUserId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        createdAt: true,
       },
     });
 
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "User not found" },
+        { status: 404 }
+      );
+    }
+
     if (!profile) {
       // User exists but hasn't created a profile yet
-      // Return basic user info instead
-      const user = await prisma.user.findUnique({
-        where: { id: profileUserId },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          bio: true,
-          skills: true,
-          olympiads: true,
-          createdAt: true,
-        },
-      });
-
-      if (!user) {
-        return NextResponse.json(
-          { success: false, error: "User not found" },
-          { status: 404 }
-        );
-      }
-
-      // Return user without profile
       return NextResponse.json({
         success: true,
         data: {
@@ -103,12 +86,13 @@ export async function GET(request: Request, { params }: RouteParams) {
     return NextResponse.json({
       success: true,
       data: {
-        user: profile.user,
+        user,
         profile: {
           id: profile.id,
           role: profile.role,
           gradeOrYear: profile.gradeOrYear,
           interests: profile.interests,
+          skills: profile.skills,
           olympiadExperience: profile.olympiadExperience,
           about: profile.about,
           createdAt: profile.createdAt,

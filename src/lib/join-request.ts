@@ -7,6 +7,7 @@
  * - Users cannot request to join teams they are already members of
  * - Only team leaders (creators) can approve/reject requests
  * - When approved, user is added to team and request status becomes APPROVED
+ * - **PROFILE REQUIRED**: Users MUST have a profile to submit join requests
  */
 
 import prisma from "@/lib/prisma";
@@ -18,6 +19,14 @@ export const JOIN_REQUEST_STATUSES: JoinRequestStatus[] = ["PENDING", "APPROVED"
 /**
  * Validates that a user can submit a join request to a team
  * Returns an error message if invalid, or null if valid
+ * 
+ * VALIDATION ORDER:
+ * 1. Team exists and is open
+ * 2. Team is not full
+ * 3. User exists
+ * 4. User has a profile (REQUIRED - enforced domain rule)
+ * 5. User is not already a member
+ * 6. User doesn't have a pending request
  */
 export async function validateJoinRequest(
   userId: string,
@@ -46,10 +55,23 @@ export async function validateJoinRequest(
   // Check if user exists
   const user = await prisma.user.findUnique({
     where: { id: userId },
+    include: {
+      profile: true, // Include profile to check if exists
+    },
   });
 
   if (!user) {
     return { valid: false, error: "User not found", status: 404 };
+  }
+
+  // DOMAIN RULE: Profile is REQUIRED to send join requests
+  // This ensures team leaders have information about applicants
+  if (!user.profile) {
+    return { 
+      valid: false, 
+      error: "You must complete your profile before requesting to join a team. Please create your profile first.",
+      status: 403 
+    };
   }
 
   // Check if user is already a member

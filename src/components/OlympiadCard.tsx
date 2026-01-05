@@ -4,7 +4,7 @@ import Link from "next/link";
  * OlympiadCard Component Props
  * 
  * Props for displaying olympiad summary cards in the listing.
- * Includes optional startDate/endDate for 2025 competition dates.
+ * Includes optional startDate/endDate for competition dates.
  */
 interface OlympiadCardProps {
   id: string;
@@ -15,16 +15,17 @@ interface OlympiadCardProps {
   level: string;
   subject: string;
   teamCount: number;
-  startDate?: Date | string | null;  // Competition start date
-  endDate?: Date | string | null;    // Competition end date
+  startDate?: Date | string | null;
+  endDate?: Date | string | null;
 }
 
 /**
  * OlympiadCard Component
  * 
- * Displays a summary of an olympiad in a card format.
- * Used in the olympiads listing page.
- * Shows name, short description, dates, and link to details.
+ * Premium glass-morphism card displaying olympiad information.
+ * Features subtle hover animations and clear visual hierarchy.
+ * 
+ * Design: Inspired by Linear and Apple card patterns
  */
 export default function OlympiadCard({
   id,
@@ -40,14 +41,13 @@ export default function OlympiadCard({
 }: OlympiadCardProps) {
   /**
    * Format date range for display
-   * Shows "Feb 15 - Apr 20, 2025" style format
    */
   const formatDateRange = (start?: Date | string | null, end?: Date | string | null): string | null => {
     if (!start && !end) return null;
     
     const formatDate = (date: Date | string) => {
       const d = new Date(date);
-      return d.toLocaleDateString("ru-RU", { 
+      return d.toLocaleDateString("en-US", { 
         month: "short", 
         day: "numeric" 
       });
@@ -58,7 +58,6 @@ export default function OlympiadCard({
       const endD = new Date(end);
       const startStr = formatDate(start);
       const endStr = formatDate(end);
-      // If same year, show year once at the end
       if (startD.getFullYear() === endD.getFullYear()) {
         return `${startStr} — ${endStr}, ${startD.getFullYear()}`;
       }
@@ -71,23 +70,19 @@ export default function OlympiadCard({
   };
 
   const dateRange = formatDateRange(startDate, endDate);
-  // Get level badge styling based on level type
-  const getLevelBadgeClass = (level: string) => {
-    switch (level) {
-      case "international":
-        return "bg-purple-100 text-purple-700";
-      case "national":
-        return "bg-blue-100 text-blue-700";
-      case "regional":
-        return "bg-green-100 text-green-700";
-      default:
-        return "bg-gray-100 text-gray-600";
-    }
+
+  // Get level badge styling
+  const getLevelBadge = (level: string) => {
+    const classes: Record<string, string> = {
+      international: "tag-accent",
+      national: "tag-info",
+      regional: "tag-success",
+    };
+    return classes[level] || "";
   };
 
-  // Get subject emoji based on subject/category
-  // Updated for 2025 competitions: ML, Data Analysis, Programming
-  const getSubjectEmoji = (subject: string) => {
+  // Get subject icon
+  const getSubjectIcon = (subject: string) => {
     const subjectLower = subject.toLowerCase();
     if (subjectLower.includes("машинн") || subjectLower.includes("ml") || subjectLower.includes("machine")) return "🤖";
     if (subjectLower.includes("анализ") || subjectLower.includes("data") || subjectLower.includes("данн")) return "📊";
@@ -97,44 +92,44 @@ export default function OlympiadCard({
     if (subjectLower.includes("chemistry")) return "🧪";
     if (subjectLower.includes("biology")) return "🧬";
     if (subjectLower.includes("astronomy")) return "🔭";
-    if (subjectLower.includes("linguistics")) return "📚";
-    if (subjectLower.includes("philosophy")) return "🤔";
     return "🏆";
   };
 
   return (
-    <Link href={`/olympiads/${id}`} className="block">
-      <article className="card hover:shadow-md transition-shadow cursor-pointer h-full">
+    <Link href={`/olympiads/${id}`} className="block group">
+      <article className="card card-interactive card-glow h-full flex flex-col">
         {/* Header */}
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl" aria-hidden="true">
-              {getSubjectEmoji(subject)}
+        <div className="flex items-start gap-4 mb-4">
+          {/* Icon */}
+          <div className="w-12 h-12 rounded-xl bg-[var(--accent-subtle)] flex items-center justify-center shrink-0">
+            <span className="text-2xl" aria-hidden="true">
+              {getSubjectIcon(subject)}
             </span>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 hover:text-primary-600 transition-colors">
+          </div>
+          
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="text-lg font-semibold text-[var(--text-primary)] group-hover:text-[var(--accent-color)] transition-colors">
                 {shortName}
               </h3>
-              {/* Show date range if available, otherwise just year */}
-              <p className="text-sm text-gray-500">
-                {dateRange || year}
-              </p>
+              <span className={`tag shrink-0 capitalize ${getLevelBadge(level)}`}>
+                {level}
+              </span>
             </div>
+            <p className="text-sm text-[var(--text-tertiary)] mt-0.5">
+              {dateRange || year}
+            </p>
           </div>
-          {/* Level Badge */}
-          <span
-            className={`text-xs font-medium px-2 py-1 rounded-full capitalize ${getLevelBadgeClass(level)}`}
-          >
-            {level}
-          </span>
         </div>
 
         {/* Full Name */}
-        <p className="text-gray-700 font-medium mb-2">{name}</p>
+        <h4 className="text-[var(--text-secondary)] font-medium mb-2 line-clamp-1">
+          {name}
+        </h4>
 
-        {/* Description (truncated) */}
+        {/* Description */}
         {description && (
-          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+          <p className="text-sm text-[var(--text-tertiary)] mb-4 line-clamp-2 flex-1">
             {description}
           </p>
         )}
@@ -144,17 +139,30 @@ export default function OlympiadCard({
           <span className="tag">{subject}</span>
         </div>
 
-        {/* Footer - Team Count */}
-        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-          <div className="flex items-center gap-2">
-            <span className="text-lg" aria-hidden="true">👥</span>
-            <span className="text-sm text-gray-600">
-              {teamCount} {teamCount === 1 ? "team" : "teams"} looking for members
+        {/* Footer */}
+        <div className="mt-auto pt-4 border-t border-[var(--surface-border)]">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex -space-x-1.5">
+                {teamCount > 0 && Array.from({ length: Math.min(teamCount, 3) }).map((_, i) => (
+                  <div 
+                    key={i}
+                    className="w-5 h-5 rounded-full bg-[var(--bg-tertiary)] border-2 border-[var(--bg-elevated)]"
+                  />
+                ))}
+              </div>
+              <span className="text-sm text-[var(--text-secondary)]">
+                {teamCount} {teamCount === 1 ? "team" : "teams"}
+              </span>
+            </div>
+            
+            <span className="text-sm text-[var(--accent-color)] font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
+              View
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
             </span>
           </div>
-          <span className="text-xs text-primary-600 font-medium">
-            View details →
-          </span>
         </div>
       </article>
     </Link>

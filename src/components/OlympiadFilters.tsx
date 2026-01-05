@@ -15,8 +15,8 @@ interface OlympiadFiltersProps {
 /**
  * OlympiadFilters Component
  * 
- * Client component for filtering olympiads by year and level.
- * Uses URL search params for filter state (enables sharing filtered views).
+ * Premium filter bar with glassmorphism styling.
+ * Uses URL search params for shareable filtered views.
  */
 export default function OlympiadFilters({ years, levels, subjects }: OlympiadFiltersProps) {
   const router = useRouter();
@@ -26,34 +26,24 @@ export default function OlympiadFilters({ years, levels, subjects }: OlympiadFil
   const currentLevel = searchParams.get("level") || "";
   const currentSubject = searchParams.get("subject") || "";
 
-  // Handle filter changes by updating URL params
   const handleYearChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set("year", value);
-    } else {
-      params.delete("year");
-    }
+    if (value) params.set("year", value);
+    else params.delete("year");
     router.push(`/olympiads?${params.toString()}`);
   };
 
   const handleLevelChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set("level", value);
-    } else {
-      params.delete("level");
-    }
+    if (value) params.set("level", value);
+    else params.delete("level");
     router.push(`/olympiads?${params.toString()}`);
   };
 
   const handleSubjectChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set("subject", value);
-    } else {
-      params.delete("subject");
-    }
+    if (value) params.set("subject", value);
+    else params.delete("subject");
     router.push(`/olympiads?${params.toString()}`);
   };
 
@@ -61,43 +51,35 @@ export default function OlympiadFilters({ years, levels, subjects }: OlympiadFil
 
   return (
     <div className="card mb-8">
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-4 items-end">
         {/* Year Filter */}
-        <div className="flex-1 min-w-[200px]">
-          <label
-            htmlFor="year-filter"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+        <div className="flex-1 min-w-[180px]">
+          <label htmlFor="year-filter" className="label">
             Year
           </label>
           <select
             id="year-filter"
             value={currentYear}
             onChange={(e) => handleYearChange(e.target.value)}
-            className="input"
+            className="input select"
           >
             <option value="">All Years</option>
             {years.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
+              <option key={year} value={year}>{year}</option>
             ))}
           </select>
         </div>
 
         {/* Level Filter */}
-        <div className="flex-1 min-w-[200px]">
-          <label
-            htmlFor="level-filter"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+        <div className="flex-1 min-w-[180px]">
+          <label htmlFor="level-filter" className="label">
             Level
           </label>
           <select
             id="level-filter"
             value={currentLevel}
             onChange={(e) => handleLevelChange(e.target.value)}
-            className="input"
+            className="input select"
           >
             <option value="">All Levels</option>
             {levels.map((level) => (
@@ -109,38 +91,31 @@ export default function OlympiadFilters({ years, levels, subjects }: OlympiadFil
         </div>
 
         {/* Subject Filter */}
-        <div className="flex-1 min-w-[200px]">
-          <label
-            htmlFor="subject-filter"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+        <div className="flex-1 min-w-[180px]">
+          <label htmlFor="subject-filter" className="label">
             Subject
           </label>
           <select
             id="subject-filter"
             value={currentSubject}
             onChange={(e) => handleSubjectChange(e.target.value)}
-            className="input"
+            className="input select"
           >
             <option value="">All Subjects</option>
             {subjects.map((subject) => (
-              <option key={subject} value={subject}>
-                {subject}
-              </option>
+              <option key={subject} value={subject}>{subject}</option>
             ))}
           </select>
         </div>
 
         {/* Clear Filters */}
         {hasFilters && (
-          <div className="flex items-end">
-            <Link
-              href="/olympiads"
-              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              Clear Filters
-            </Link>
-          </div>
+          <Link href="/olympiads" className="btn btn-ghost btn-sm">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Clear
+          </Link>
         )}
       </div>
     </div>

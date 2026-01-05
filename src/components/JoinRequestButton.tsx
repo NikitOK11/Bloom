@@ -103,8 +103,8 @@ export default function JoinRequestButton({
   // Don't show button if user is a member
   if (isMember) {
     return (
-      <div className="text-green-600 font-medium flex items-center gap-2">
-        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+      <div className="tag tag-success">
+        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
         </svg>
         You are a member
@@ -115,10 +115,8 @@ export default function JoinRequestButton({
   // Show status for existing requests
   if (status === "pending") {
     return (
-      <div className="text-yellow-600 font-medium flex items-center gap-2">
-        <svg className="w-5 h-5 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-        </svg>
+      <div className="tag tag-warning">
+        <span className="status-dot bg-[var(--warning)]" />
         Request pending
       </div>
     );
@@ -126,22 +124,22 @@ export default function JoinRequestButton({
 
   if (status === "approved") {
     return (
-      <div className="text-green-600 font-medium flex items-center gap-2">
-        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+      <div className="tag tag-success">
+        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
         </svg>
-        Request approved! Refresh to see changes.
+        Approved! Refresh to see changes
       </div>
     );
   }
 
   if (status === "rejected") {
     return (
-      <div className="text-red-600 font-medium flex items-center gap-2">
-        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+      <div className="tag tag-error">
+        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
         </svg>
-        Request was rejected
+        Request rejected
       </div>
     );
   }
@@ -149,10 +147,7 @@ export default function JoinRequestButton({
   // Team is closed or full
   if (!isTeamOpen || isTeamFull) {
     return (
-      <button
-        disabled
-        className="btn-primary opacity-50 cursor-not-allowed"
-      >
+      <button disabled className="btn btn-primary">
         {isTeamFull ? "Team is full" : "Team is closed"}
       </button>
     );
@@ -161,22 +156,29 @@ export default function JoinRequestButton({
   // Show request form
   if (showMessageInput) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-4 animate-fadeIn">
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Introduce yourself (optional)..."
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
+          className="input textarea"
           rows={3}
           maxLength={500}
         />
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <button
             onClick={handleSubmitRequest}
             disabled={status === "loading"}
-            className="btn-primary flex-1"
+            className="btn btn-primary flex-1"
           >
-            {status === "loading" ? "Sending..." : "Send Request"}
+            {status === "loading" ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Sending...
+              </>
+            ) : (
+              "Send Request"
+            )}
           </button>
           <button
             onClick={() => {
@@ -184,13 +186,13 @@ export default function JoinRequestButton({
               setMessage("");
               setError(null);
             }}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            className="btn btn-secondary"
           >
             Cancel
           </button>
         </div>
         {error && (
-          <p className="text-red-600 text-sm">{error}</p>
+          <p className="text-[var(--error)] text-sm">{error}</p>
         )}
       </div>
     );
@@ -201,12 +203,15 @@ export default function JoinRequestButton({
     <div>
       <button
         onClick={() => setShowMessageInput(true)}
-        className="btn-primary"
+        className="btn btn-primary"
       >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+        </svg>
         Request to Join
       </button>
       {error && (
-        <p className="text-red-600 text-sm mt-2">{error}</p>
+        <p className="text-[var(--error)] text-sm mt-2">{error}</p>
       )}
     </div>
   );

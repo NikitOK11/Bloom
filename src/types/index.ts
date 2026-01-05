@@ -51,9 +51,23 @@ export interface Team {
   maxMembers: number;
   isOpen: boolean;
   creatorId: string;
+  // TEAM REQUIREMENTS: Help users find matching teams
+  requiredInterests: string | null;  // Comma-separated interests
+  requiredLevel: TeamLevel;          // Required experience level
+  requirementsNote: string | null;   // Free-text note from team leader
   createdAt: Date;
   updatedAt: Date;
 }
+
+// Team experience level options
+export type TeamLevel = "any" | "beginner" | "intermediate" | "advanced";
+
+export const TEAM_LEVELS: { value: TeamLevel; label: string }[] = [
+  { value: "any", label: "Any Level" },
+  { value: "beginner", label: "Beginner" },
+  { value: "intermediate", label: "Intermediate" },
+  { value: "advanced", label: "Advanced" },
+];
 
 // Team with creator, olympiad, and members included
 export interface TeamWithDetails extends Team {
@@ -88,6 +102,10 @@ export interface CreateTeamInput {
   requiredSkills: string[];
   maxMembers?: number;
   creatorId: string;
+  // Team requirements
+  requiredInterests?: string[];
+  requiredLevel?: TeamLevel;
+  requirementsNote?: string;
 }
 
 // API Response wrapper for consistency

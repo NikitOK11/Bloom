@@ -2,16 +2,30 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
+import ThemeToggle from "./ThemeToggle";
 
 /**
  * Navbar Component
  * 
- * Main navigation bar that appears on all pages.
- * Highlights the current active route.
- * Uses "use client" for usePathname hook.
+ * Premium navigation bar with glassmorphism effect.
+ * Features smooth animations and theme toggle.
+ * 
+ * Design: Inspired by Linear and Vercel navigation
  */
 export default function Navbar() {
   const pathname = usePathname();
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Track scroll for glass effect intensity
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Navigation links configuration
   const navLinks = [
@@ -28,39 +42,112 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
-      <div className="container mx-auto px-4">
+    <nav 
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled 
+          ? "bg-[var(--bg-secondary)]/80 backdrop-blur-xl border-b border-[var(--surface-border)]" 
+          : "bg-transparent"
+      }`}
+    >
+      <div className="container">
         <div className="flex items-center justify-between h-16">
           {/* Logo / Brand */}
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl">🏆</span>
-            <span className="font-bold text-xl text-gray-900">
-              Olympiad Teammates
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-9 h-9 rounded-xl bg-[var(--accent-subtle)] flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
+              <span className="text-lg">🌸</span>
+            </div>
+            <span className="font-bold text-xl text-[var(--text-primary)]">
+              Bloom
             </span>
           </Link>
 
-          {/* Navigation Links */}
-          <div className="flex items-center gap-1">
+          {/* Desktop Navigation Links */}
+          <div className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                className={`nav-link ${isActive(link.href) ? "nav-link-active" : ""}`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+
+          {/* Right Section: Theme Toggle & CTA */}
+          <div className="flex items-center gap-3">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
+            {/* Register Link */}
+            <Link
+              href="/register"
+              className={`hidden sm:flex btn-secondary btn-sm ${
+                pathname === "/register" ? "border-[var(--accent-color)]" : ""
+              }`}
+            >
+              Register
+            </Link>
+
+            {/* CTA Button */}
+            <Link
+              href="/olympiads"
+              className="btn btn-primary btn-sm"
+            >
+              <span className="hidden sm:inline">Find Teams</span>
+              <span className="sm:hidden">Teams</span>
+            </Link>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden btn-icon btn-ghost"
+              aria-label="Toggle menu"
+            >
+              <svg
+                className={`w-5 h-5 transition-transform duration-200 ${mobileMenuOpen ? "rotate-90" : ""}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                {mobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        <div
+          className={`md:hidden overflow-hidden transition-all duration-300 ease-out ${
+            mobileMenuOpen ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
+          <div className="py-4 space-y-1">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`block px-4 py-3 rounded-lg transition-colors ${
                   isActive(link.href)
-                    ? "bg-primary-100 text-primary-700"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    ? "bg-[var(--accent-subtle)] text-[var(--accent-color)]"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-glass)]"
                 }`}
               >
                 {link.label}
               </Link>
             ))}
-
-            {/* CTA Button - Browse Olympiads to create teams */}
             <Link
-              href="/olympiads"
-              className="ml-4 btn-primary"
+              href="/register"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-4 py-3 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-glass)] transition-colors"
             >
-              Find Teams
+              Register
             </Link>
           </div>
         </div>

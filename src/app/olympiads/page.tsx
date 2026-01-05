@@ -66,23 +66,21 @@ export default async function OlympiadsPage({
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container">
       {/* Page Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Browse Olympiads</h1>
-          <p className="text-gray-600 mt-2">
-            Explore academic olympiads and find teams to join
-          </p>
-        </div>
+      <div className="mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold mb-2">Browse Olympiads</h1>
+        <p className="text-[var(--text-secondary)]">
+          Explore academic olympiads and find teams to join
+        </p>
       </div>
 
-      {/* Filter Section (Client Component) */}
+      {/* Filter Section */}
       <OlympiadFilters years={years} levels={levels} subjects={subjects} />
 
       {/* Olympiads Grid */}
       {olympiads.length > 0 ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 stagger-children">
           {olympiads.map((olympiad) => (
             <OlympiadCard
               key={olympiad.id}
@@ -100,19 +98,20 @@ export default async function OlympiadsPage({
           ))}
         </div>
       ) : (
-        /* Empty State */
-        <div className="text-center py-16">
-          <div className="text-6xl mb-4">🏆</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+        <div className="card text-center py-16">
+          <div className="w-16 h-16 rounded-2xl bg-[var(--accent-subtle)] flex items-center justify-center mx-auto mb-4">
+            <span className="text-3xl">🏆</span>
+          </div>
+          <h3 className="text-xl font-semibold mb-2">
             No olympiads found
           </h3>
-          <p className="text-gray-600 mb-6">
+          <p className="text-[var(--text-secondary)] mb-6">
             {searchParams.year || searchParams.level || searchParams.subject
               ? "Try adjusting your filters"
               : "Check back later for upcoming olympiads!"}
           </p>
           {(searchParams.year || searchParams.level || searchParams.subject) && (
-            <Link href="/olympiads" className="btn-primary">
+            <Link href="/olympiads" className="btn btn-primary">
               Clear Filters
             </Link>
           )}

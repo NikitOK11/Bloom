@@ -7,7 +7,11 @@ import prisma from "@/lib/prisma";
  * Gets the profile for the current user.
  * In MVP without auth, requires userId query parameter.
  * 
- * PRIVACY: This route is only for the user's own profile.
+ * DOMAIN RULES:
+ * - Returns null if user exists but has no profile (valid state)
+ * - Profile is required to perform certain actions (e.g., join requests)
+ * 
+ * PRIVACY: This route is for own profile only.
  * To view other users' profiles, use /api/profile/[userId].
  */
 export async function GET(request: Request) {
@@ -22,26 +26,36 @@ export async function GET(request: Request) {
       );
     }
 
-    // Get user's profile
-    const profile = await prisma.profile.findUnique({
-      where: { userId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            skills: true,
-            olympiads: true,
-          },
-        },
+    // Verify user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
       },
     });
 
-    // If no profile exists, return null (user can create one)
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // Get user's profile
+    const profile = await prisma.profile.findUnique({
+      where: { userId },
+    });
+
+    // Return user info + profile (profile may be null)
     return NextResponse.json({
       success: true,
-      data: profile,
+      data: {
+        user,
+        profile,
+        hasProfile: profile !== null,
+      },
     });
   } catch (error) {
     console.error("Error fetching profile:", error);
@@ -53,21 +67,44 @@ export async function GET(request: Request) {
 }
 
 /**
- * PUT /api/profile
+ * POST /api/profile
  * 
- * Creates or updates the current user's profile.
- * Uses upsert to handle both create and update in one operation.
+ * Creates a new profile for a user.
  * 
- * PRIVACY: Users can only update their own profile.
+ * DOMAIN RULES:
+ * - User must exist and NOT already have a profile
+ * - This is the REQUIRED step after registration
+ * - Once created, use PUT to update
+ * 
+ * Required fields:
+ * - userId: the user's ID
+ * - role: school_student | college_student | graduate | other
+ * - interests: array of data analysis/ML/coding skills
+ * 
+ * Optional fields:
+ * - skills: additional skills (comma-separated)
+ * - gradeOrYear: grade level or year
+ * - olympiadExperience: past competition experience
+ * - about: free-form bio
  */
-export async function PUT(request: Request) {
+export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { userId, role, gradeOrYear, interests, olympiadExperience, about } = body;
+    const { userId, role, gradeOrYear, interests, skills, olympiadExperience, about } = body;
 
-    if (!userId) {
+    // Validate required fields
+    if (!userId || !role) {
       return NextResponse.json(
-        { success: false, error: "userId is required" },
+        { success: false, error: "userId and role are required" },
+        { status: 400 }
+      );
+    }
+
+    // Validate role
+    const validRoles = ["school_student", "college_student", "graduate", "other"];
+    if (!validRoles.includes(role)) {
+      return NextResponse.json(
+        { success: false, error: "Invalid role. Must be: school_student, college_student, graduate, or other" },
         { status: 400 }
       );
     }
@@ -84,12 +121,15 @@ export async function PUT(request: Request) {
       );
     }
 
-    // Validate role if provided
-    const validRoles = ["school_student", "college_student", "graduate", "other"];
-    if (role && !validRoles.includes(role)) {
+    // Check if profile already exists
+    const existingProfile = await prisma.profile.findUnique({
+      where: { userId },
+    });
+
+    if (existingProfile) {
       return NextResponse.json(
-        { success: false, error: "Invalid role" },
-        { status: 400 }
+        { success: false, error: "Profile already exists. Use PUT to update." },
+        { status: 409 }
       );
     }
 
@@ -98,38 +138,108 @@ export async function PUT(request: Request) {
       ? interests.join(",") 
       : (interests || "");
 
-    // Upsert profile (create if doesn't exist, update if it does)
-    const profile = await prisma.profile.upsert({
-      where: { userId },
-      create: {
+    // Create profile
+    const profile = await prisma.profile.create({
+      data: {
         userId,
-        role: role || "school_student",
+        role,
         gradeOrYear: gradeOrYear || null,
         interests: interestsString,
+        skills: skills || null,
         olympiadExperience: olympiadExperience || null,
         about: about || null,
       },
-      update: {
+    });
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: profile,
+        message: "Profile created successfully",
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Error creating profile:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to create profile" },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * PUT /api/profile
+ * 
+ * Updates an existing profile.
+ * 
+ * DOMAIN RULES:
+ * - Profile must already exist (use POST to create)
+ * - Only provided fields are updated (partial update)
+ * 
+ * All fields optional (partial update):
+ * - role: school_student | college_student | graduate | other
+ * - gradeOrYear: grade level or year
+ * - interests: array of data analysis/ML/coding skills
+ * - skills: additional skills
+ * - olympiadExperience: past competition experience
+ * - about: free-form bio
+ */
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    const { userId, role, gradeOrYear, interests, skills, olympiadExperience, about } = body;
+
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: "userId is required" },
+        { status: 400 }
+      );
+    }
+
+    // Verify profile exists
+    const existingProfile = await prisma.profile.findUnique({
+      where: { userId },
+    });
+
+    if (!existingProfile) {
+      return NextResponse.json(
+        { success: false, error: "Profile not found. Use POST to create a new profile." },
+        { status: 404 }
+      );
+    }
+
+    // Validate role if provided
+    const validRoles = ["school_student", "college_student", "graduate", "other"];
+    if (role && !validRoles.includes(role)) {
+      return NextResponse.json(
+        { success: false, error: "Invalid role. Must be: school_student, college_student, graduate, or other" },
+        { status: 400 }
+      );
+    }
+
+    // Convert interests array to comma-separated string
+    const interestsString = Array.isArray(interests) 
+      ? interests.join(",") 
+      : interests;
+
+    // Update profile (only provided fields)
+    const profile = await prisma.profile.update({
+      where: { userId },
+      data: {
         ...(role !== undefined && { role }),
         ...(gradeOrYear !== undefined && { gradeOrYear }),
-        ...(interests !== undefined && { interests: interestsString }),
+        ...(interestsString !== undefined && { interests: interestsString }),
+        ...(skills !== undefined && { skills }),
         ...(olympiadExperience !== undefined && { olympiadExperience }),
         ...(about !== undefined && { about }),
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
       },
     });
 
     return NextResponse.json({
       success: true,
       data: profile,
+      message: "Profile updated successfully",
     });
   } catch (error) {
     console.error("Error updating profile:", error);

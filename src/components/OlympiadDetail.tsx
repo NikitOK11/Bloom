@@ -1,9 +1,12 @@
 import Link from "next/link";
 import TeamCard from "./TeamCard";
+import TeamFilters from "./TeamFilters";
+import { TeamLevel } from "@/types";
 
 /**
  * Team type for OlympiadDetail component
  * DOMAIN RULE: Teams belong to an olympiad via olympiadId
+ * Includes team requirements for display and filtering
  */
 interface TeamData {
   id: string;
@@ -13,6 +16,10 @@ interface TeamData {
   requiredSkills: string;
   maxMembers: number;
   isOpen: boolean;
+  // NEW: Team requirements
+  requiredInterests: string | null;
+  requiredLevel: TeamLevel;
+  requirementsNote: string | null;
   creator: {
     id: string;
     name: string;
@@ -192,7 +199,7 @@ export default function OlympiadDetail({
 
       {/* Teams Section */}
       <div>
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900">
             Teams for {shortName} {year}
           </h2>
@@ -203,6 +210,9 @@ export default function OlympiadDetail({
             Create Team
           </Link>
         </div>
+
+        {/* Team Filters - helps users find matching teams */}
+        <TeamFilters olympiadId={id} />
 
         {teams.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -218,6 +228,9 @@ export default function OlympiadDetail({
                 maxMembers={team.maxMembers}
                 creatorName={team.creator.name}
                 isOpen={team.isOpen}
+                requiredInterests={team.requiredInterests}
+                requiredLevel={team.requiredLevel}
+                requirementsNote={team.requirementsNote}
               />
             ))}
           </div>

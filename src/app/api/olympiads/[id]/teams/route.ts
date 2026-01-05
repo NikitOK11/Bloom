@@ -16,7 +16,17 @@ export async function POST(
   try {
     const olympiadId = params.id;
     const body = await request.json();
-    const { name, description, requiredSkills, maxMembers, creatorId } = body;
+    const { 
+      name, 
+      description, 
+      requiredSkills, 
+      maxMembers, 
+      creatorId,
+      // NEW: Team requirement fields
+      requiredInterests,
+      requiredLevel,
+      requirementsNote,
+    } = body;
 
     // Validate required fields
     if (!name || !creatorId) {
@@ -52,7 +62,7 @@ export async function POST(
 
     // Create team and add creator as first member in a transaction
     const team = await prisma.$transaction(async (tx) => {
-      // Create the team with required olympiad relation
+      // Create the team with required olympiad relation and requirements
       const newTeam = await tx.team.create({
         data: {
           name,
@@ -63,6 +73,12 @@ export async function POST(
             : requiredSkills || "",
           maxMembers: maxMembers || 4,
           creatorId,
+          // NEW: Team requirements for smart filtering
+          requiredInterests: Array.isArray(requiredInterests)
+            ? requiredInterests.join(",")
+            : requiredInterests || null,
+          requiredLevel: requiredLevel || "any",
+          requirementsNote: requirementsNote || null,
         },
       });
 
@@ -115,7 +131,12 @@ export async function POST(
 /**
  * GET /api/olympiads/[id]/teams
  * 
- * Fetches all teams for a specific olympiad.
+ * Fetches all teams for a specific olympiad with optional filtering.
+ * 
+ * Query params:
+ * - interest: Filter by required interest area
+ * - level: Filter by required experience level
+ * - open: Filter by open status (true/false)
  */
 export async function GET(
   request: NextRequest,
@@ -123,6 +144,12 @@ export async function GET(
 ) {
   try {
     const olympiadId = params.id;
+    const { searchParams } = new URL(request.url);
+    
+    // Parse filter parameters
+    const interest = searchParams.get("interest");
+    const level = searchParams.get("level");
+    const openOnly = searchParams.get("open");
 
     // Verify olympiad exists
     const olympiad = await prisma.olympiad.findUnique({
@@ -136,9 +163,27 @@ export async function GET(
       );
     }
 
+    // Build where clause with filters
+    const where: {
+      olympiadId: string;
+      isOpen?: boolean;
+      requiredLevel?: string;
+      requiredInterests?: { contains: string };
+    } = { olympiadId };
+
+    // Filter by open status
+    if (openOnly === "true") {
+      where.isOpen = true;
+    }
+
+    // Filter by required level
+    if (level && level !== "any") {
+      where.requiredLevel = level;
+    }
+
     // Fetch teams for this olympiad
-    const teams = await prisma.team.findMany({
-      where: { olympiadId },
+    let teams = await prisma.team.findMany({
+      where,
       include: {
         creator: {
           select: {
@@ -153,6 +198,15 @@ export async function GET(
       },
       orderBy: { createdAt: "desc" },
     });
+
+    // Filter by interest (SQLite doesn't support array contains well)
+    // So we filter in-memory for the MVP
+    if (interest) {
+      teams = teams.filter((team) => {
+        const interests = team.requiredInterests?.split(",") || [];
+        return interests.includes(interest);
+      });
+    }
 
     return NextResponse.json({ success: true, data: teams });
   } catch (error) {
