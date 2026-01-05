@@ -71,15 +71,22 @@ model Profile {
 // Olympiad Model
 // Represents an academic olympiad competition.
 // Teams can be associated with a specific olympiad.
+// Updated: Now supports Russian olympiads with structured data
 model Olympiad {
   id          String    @id @default(cuid())
-  name        String    // Full name: "International Mathematical Olympiad"
-  shortName   String    @unique // Short code: "IMO", "IOI", etc.
-  description String?   // Description of the olympiad
+  slug        String    @unique // URL-friendly identifier: "icpc", "nto-ai"
+  name        String    // Original name (never translated)
+  shortName   String    @unique // Short code for display: "ICPC", "НТО"
+  description String?   // Russian description
   year        Int       // Competition year
-  level       String    @default("international") // "international", "national", "regional"
-  subject     String    // Main subject: "Mathematics", "Physics", etc.
+  level       String    @default("смешанная") // "школьная", "студенческая", "смешанная"
+  subject     String    // Main discipline for backwards compatibility
+  disciplines String?   // Comma-separated: "Алгоритмы,ML,Data Science"
+  teamSize    String?   // Russian string: "3–5 человек"
+  format      String?   // "онлайн", "оффлайн", "смешанный"
+  organizer   String?   // Organizer name
   website     String?   // Official website URL
+  logoEmoji   String?   // Emoji for visual identity
   startDate   DateTime? // Competition start date
   endDate     DateTime? // Competition end date
   createdAt   DateTime  @default(now())

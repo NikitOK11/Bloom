@@ -39,14 +39,15 @@ export default function SettingsPage() {
   const router = useRouter();
   const { themePreference, setThemePreference } = useTheme();
   
-  // Settings state
-  const [accentColor, setAccentColor] = useState("rose");
-  const [fontSize, setFontSize] = useState("medium");
+  // Settings state - initialize as null until loaded from storage
+  const [accentColor, setAccentColor] = useState<string | null>(null);
+  const [fontSize, setFontSize] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [clearSuccess, setClearSuccess] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   // Load settings and auth state on mount
   useEffect(() => {
@@ -56,9 +57,6 @@ export default function SettingsPage() {
     setAccentColor(savedAccent);
     setFontSize(savedFontSize);
 
-    // Apply font size
-    document.documentElement.style.fontSize = fontSizes.find(f => f.id === savedFontSize)?.size || "16px";
-
     // Load auth state
     const userId = sessionStorage.getItem("pendingUserId") || localStorage.getItem("userId");
     const name = sessionStorage.getItem("pendingUserName") || localStorage.getItem("userName");
@@ -66,18 +64,20 @@ export default function SettingsPage() {
     setIsLoggedIn(!!userId);
     setUserName(name);
     setUserEmail(email);
+    
+    setMounted(true);
   }, []);
 
-  // Apply accent color
-  useEffect(() => {
-    const selectedColor = accentColors.find(c => c.id === accentColor);
+  // Apply accent color only when explicitly changed by user (not on mount)
+  const handleAccentColorChange = (newAccent: string) => {
+    setAccentColor(newAccent);
+    const selectedColor = accentColors.find(c => c.id === newAccent);
     if (selectedColor) {
       document.documentElement.style.setProperty("--accent-color", selectedColor.color);
-      // Also set subtle variant
       document.documentElement.style.setProperty("--accent-subtle", `${selectedColor.color}15`);
-      localStorage.setItem("bloom-accent", accentColor);
+      localStorage.setItem("bloom-accent", newAccent);
     }
-  }, [accentColor]);
+  };
 
   // Apply font size
   const handleFontSizeChange = (newSize: string) => {
@@ -216,7 +216,7 @@ export default function SettingsPage() {
                 {accentColors.map((color) => (
                   <button
                     key={color.id}
-                    onClick={() => setAccentColor(color.id)}
+                    onClick={() => handleAccentColorChange(color.id)}
                     className={`w-10 h-10 rounded-xl transition-all duration-200 ${
                       accentColor === color.id
                         ? "ring-2 ring-offset-2 ring-offset-[var(--bg-secondary)] ring-[var(--text-primary)] scale-110"

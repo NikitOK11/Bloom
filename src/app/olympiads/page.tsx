@@ -4,32 +4,32 @@ import OlympiadFilters from "@/components/OlympiadFilters";
 import Link from "next/link";
 
 /**
- * Olympiads List Page
+ * Страница списка олимпиад
  * 
- * Server Component that fetches and displays all olympiads.
- * Supports filtering by year and level via URL search params.
+ * Server Component для отображения всех олимпиад.
+ * Поддерживает фильтрацию по уровню, формату и дисциплине.
  */
 export default async function OlympiadsPage({
   searchParams,
 }: {
-  searchParams: { year?: string; level?: string; subject?: string };
+  searchParams: { level?: string; format?: string; subject?: string };
 }) {
   // Build filter conditions based on search params
   const where: {
-    year?: number;
     level?: string;
+    format?: string;
     subject?: string;
   } = {};
 
-  if (searchParams.year) {
-    where.year = parseInt(searchParams.year, 10);
-  }
-
-  if (searchParams.level) {
+  if (searchParams.level && searchParams.level !== "all") {
     where.level = searchParams.level;
   }
 
-  if (searchParams.subject) {
+  if (searchParams.format && searchParams.format !== "all") {
+    where.format = searchParams.format;
+  }
+
+  if (searchParams.subject && searchParams.subject !== "all") {
     where.subject = searchParams.subject;
   }
 
@@ -47,36 +47,33 @@ export default async function OlympiadsPage({
     ],
   });
 
-  // Get unique years for filter dropdown
+  // Get unique levels for filter dropdown
+  const levels = ["школьная", "студенческая", "смешанная"];
+  
+  // Get unique formats for filter dropdown  
+  const formats = ["онлайн", "оффлайн", "смешанный"];
+
+  // Get unique subjects for filter
   const allOlympiads = await prisma.olympiad.findMany({
-    select: { year: true },
-    distinct: ["year"],
-    orderBy: { year: "desc" },
+    select: { subject: true },
+    distinct: ["subject"],
   });
-  const years = allOlympiads.map((o) => o.year);
-
-  // Available levels for filter
-  const levels = ["international", "national", "regional"];
-
-  // Available subjects for filter
-  const subjects = [
-    "Анализ данных",
-    "Машинное обучение",
-    "Спортивное программирование",
-  ];
+  const subjects = allOlympiads.map((o) => o.subject);
 
   return (
-    <div className="container">
+    <div className="container pt-24 pb-12">
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold mb-2">Browse Olympiads</h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-2">
+          Олимпиады
+        </h1>
         <p className="text-[var(--text-secondary)]">
-          Explore academic olympiads and find teams to join
+          Командные соревнования по программированию, анализу данных и ИИ
         </p>
       </div>
 
       {/* Filter Section */}
-      <OlympiadFilters years={years} levels={levels} subjects={subjects} />
+      <OlympiadFilters levels={levels} formats={formats} subjects={subjects} />
 
       {/* Olympiads Grid */}
       {olympiads.length > 0 ? (
@@ -84,16 +81,17 @@ export default async function OlympiadsPage({
           {olympiads.map((olympiad) => (
             <OlympiadCard
               key={olympiad.id}
-              id={olympiad.id}
+              id={olympiad.slug || olympiad.id}
               name={olympiad.name}
               shortName={olympiad.shortName}
               description={olympiad.description}
-              year={olympiad.year}
               level={olympiad.level}
+              format={olympiad.format}
               subject={olympiad.subject}
+              disciplines={olympiad.disciplines}
+              teamSize={olympiad.teamSize}
               teamCount={olympiad._count.teams}
-              startDate={olympiad.startDate}
-              endDate={olympiad.endDate}
+              logoEmoji={olympiad.logoEmoji}
             />
           ))}
         </div>
@@ -102,17 +100,17 @@ export default async function OlympiadsPage({
           <div className="w-16 h-16 rounded-2xl bg-[var(--accent-subtle)] flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl">🏆</span>
           </div>
-          <h3 className="text-xl font-semibold mb-2">
-            No olympiads found
+          <h3 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
+            Олимпиады не найдены
           </h3>
           <p className="text-[var(--text-secondary)] mb-6">
-            {searchParams.year || searchParams.level || searchParams.subject
-              ? "Try adjusting your filters"
-              : "Check back later for upcoming olympiads!"}
+            {searchParams.level || searchParams.format || searchParams.subject
+              ? "Попробуйте изменить фильтры"
+              : "Скоро здесь появятся олимпиады!"}
           </p>
-          {(searchParams.year || searchParams.level || searchParams.subject) && (
+          {(searchParams.level || searchParams.format || searchParams.subject) && (
             <Link href="/olympiads" className="btn btn-primary">
-              Clear Filters
+              Сбросить фильтры
             </Link>
           )}
         </div>

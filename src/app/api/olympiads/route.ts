@@ -4,24 +4,28 @@ import prisma from "@/lib/prisma";
 /**
  * GET /api/olympiads
  * 
- * Fetch all olympiads with optional filtering by year and level.
- * Returns olympiads sorted by year (newest first).
+ * Получить все олимпиады с фильтрацией.
  * 
  * Query params:
- * - year: Filter by specific year
- * - level: Filter by level (international, national, regional)
+ * - year: Фильтр по году
+ * - level: Фильтр по уровню (школьная, студенческая, смешанная)
+ * - format: Фильтр по формату (онлайн, оффлайн, смешанный)
+ * - subject: Фильтр по направлению
  */
 export async function GET(request: NextRequest) {
   try {
-    // Parse query parameters for filtering
     const { searchParams } = new URL(request.url);
     const year = searchParams.get("year");
     const level = searchParams.get("level");
+    const format = searchParams.get("format");
+    const subject = searchParams.get("subject");
 
     // Build the where clause based on filters
     const where: {
       year?: number;
       level?: string;
+      format?: string;
+      subject?: { contains: string };
     } = {};
 
     if (year) {
@@ -30,6 +34,14 @@ export async function GET(request: NextRequest) {
 
     if (level) {
       where.level = level;
+    }
+
+    if (format) {
+      where.format = format;
+    }
+
+    if (subject) {
+      where.subject = { contains: subject };
     }
 
     // Fetch olympiads with team count
@@ -59,31 +71,50 @@ export async function GET(request: NextRequest) {
 /**
  * POST /api/olympiads
  * 
- * Create a new olympiad.
- * Required fields: name, shortName, year, subject
- * Optional fields: description, level, website
+ * Создать новую олимпиаду.
+ * Обязательные поля: slug, name, shortName, year, subject
+ * Опциональные: description, level, format, disciplines, teamSize, organizer, website, logoEmoji
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, shortName, description, year, level, subject, website } = body;
+    const { 
+      slug,
+      name, 
+      shortName, 
+      description, 
+      year, 
+      level, 
+      subject, 
+      disciplines,
+      teamSize,
+      format,
+      organizer,
+      website,
+      logoEmoji,
+    } = body;
 
     // Validate required fields
-    if (!name || !shortName || !year || !subject) {
+    if (!slug || !name || !shortName || !year || !subject) {
       return NextResponse.json(
-        { error: "Missing required fields: name, shortName, year, and subject are required" },
+        { error: "Обязательные поля: slug, name, shortName, year, subject" },
         { status: 400 }
       );
     }
 
-    // Check if shortName already exists
-    const existing = await prisma.olympiad.findUnique({
-      where: { shortName },
+    // Check if slug or shortName already exists
+    const existing = await prisma.olympiad.findFirst({
+      where: {
+        OR: [
+          { slug },
+          { shortName },
+        ],
+      },
     });
 
     if (existing) {
       return NextResponse.json(
-        { error: `Olympiad with short name "${shortName}" already exists` },
+        { error: `Олимпиада с таким slug или shortName уже существует` },
         { status: 409 }
       );
     }
@@ -91,13 +122,19 @@ export async function POST(request: NextRequest) {
     // Create the olympiad
     const olympiad = await prisma.olympiad.create({
       data: {
+        slug,
         name,
         shortName,
         description: description || null,
         year: parseInt(year, 10),
-        level: level || "international",
+        level: level || "смешанная",
         subject,
+        disciplines: disciplines || null,
+        teamSize: teamSize || null,
+        format: format || null,
+        organizer: organizer || null,
         website: website || null,
+        logoEmoji: logoEmoji || null,
       },
     });
 

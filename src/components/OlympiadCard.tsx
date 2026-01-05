@@ -3,96 +3,64 @@ import Link from "next/link";
 /**
  * OlympiadCard Component Props
  * 
- * Props for displaying olympiad summary cards in the listing.
- * Includes optional startDate/endDate for competition dates.
+ * Пропсы для карточки олимпиады в списке.
+ * Поддерживает новую структуру данных с русским контентом.
  */
 interface OlympiadCardProps {
   id: string;
   name: string;
   shortName: string;
   description: string | null;
-  year: number;
   level: string;
+  format: string | null;
   subject: string;
+  disciplines: string | null;
+  teamSize: string | null;
   teamCount: number;
-  startDate?: Date | string | null;
-  endDate?: Date | string | null;
+  logoEmoji: string | null;
 }
 
 /**
  * OlympiadCard Component
  * 
- * Premium glass-morphism card displaying olympiad information.
- * Features subtle hover animations and clear visual hierarchy.
- * 
- * Design: Inspired by Linear and Apple card patterns
+ * Карточка олимпиады с glassmorphism-эффектом.
+ * Отображает основную информацию и теги дисциплин.
  */
 export default function OlympiadCard({
   id,
   name,
   shortName,
   description,
-  year,
   level,
+  format,
   subject,
+  disciplines,
+  teamSize,
   teamCount,
-  startDate,
-  endDate,
+  logoEmoji,
 }: OlympiadCardProps) {
-  /**
-   * Format date range for display
-   */
-  const formatDateRange = (start?: Date | string | null, end?: Date | string | null): string | null => {
-    if (!start && !end) return null;
-    
-    const formatDate = (date: Date | string) => {
-      const d = new Date(date);
-      return d.toLocaleDateString("en-US", { 
-        month: "short", 
-        day: "numeric" 
-      });
-    };
-    
-    if (start && end) {
-      const startD = new Date(start);
-      const endD = new Date(end);
-      const startStr = formatDate(start);
-      const endStr = formatDate(end);
-      if (startD.getFullYear() === endD.getFullYear()) {
-        return `${startStr} — ${endStr}, ${startD.getFullYear()}`;
-      }
-      return `${startStr}, ${startD.getFullYear()} — ${endStr}, ${endD.getFullYear()}`;
-    }
-    
-    if (start) return formatDate(start);
-    if (end) return formatDate(end);
-    return null;
-  };
-
-  const dateRange = formatDateRange(startDate, endDate);
+  // Parse disciplines into array
+  const disciplinesList = disciplines?.split(",").map((d) => d.trim()).slice(0, 3) || [];
 
   // Get level badge styling
   const getLevelBadge = (level: string) => {
     const classes: Record<string, string> = {
-      international: "tag-accent",
-      national: "tag-info",
-      regional: "tag-success",
+      "школьная": "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+      "студенческая": "bg-blue-500/10 text-blue-400 border-blue-500/20",
+      "смешанная": "bg-purple-500/10 text-purple-400 border-purple-500/20",
     };
-    return classes[level] || "";
+    return classes[level] || "tag-accent";
   };
 
-  // Get subject icon
-  const getSubjectIcon = (subject: string) => {
-    const subjectLower = subject.toLowerCase();
-    if (subjectLower.includes("машинн") || subjectLower.includes("ml") || subjectLower.includes("machine")) return "🤖";
-    if (subjectLower.includes("анализ") || subjectLower.includes("data") || subjectLower.includes("данн")) return "📊";
-    if (subjectLower.includes("программ") || subjectLower.includes("informatics") || subjectLower.includes("computer")) return "💻";
-    if (subjectLower.includes("math")) return "📐";
-    if (subjectLower.includes("physics")) return "⚛️";
-    if (subjectLower.includes("chemistry")) return "🧪";
-    if (subjectLower.includes("biology")) return "🧬";
-    if (subjectLower.includes("astronomy")) return "🔭";
-    return "🏆";
+  // Get format badge styling
+  const getFormatBadge = (format: string | null) => {
+    if (!format) return "";
+    const classes: Record<string, string> = {
+      "онлайн": "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+      "оффлайн": "bg-orange-500/10 text-orange-400 border-orange-500/20",
+      "смешанный": "bg-pink-500/10 text-pink-400 border-pink-500/20",
+    };
+    return classes[format] || "";
   };
 
   return (
@@ -103,27 +71,32 @@ export default function OlympiadCard({
           {/* Icon */}
           <div className="w-12 h-12 rounded-xl bg-[var(--accent-subtle)] flex items-center justify-center shrink-0">
             <span className="text-2xl" aria-hidden="true">
-              {getSubjectIcon(subject)}
+              {logoEmoji || "🏆"}
             </span>
           </div>
           
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
-              <h3 className="text-lg font-semibold text-[var(--text-primary)] group-hover:text-[var(--accent-color)] transition-colors">
+              <h3 className="text-lg font-semibold text-[var(--text-primary)] group-hover:text-[var(--accent-color)] transition-colors line-clamp-1">
                 {shortName}
               </h3>
-              <span className={`tag shrink-0 capitalize ${getLevelBadge(level)}`}>
+            </div>
+            {/* Level & Format badges */}
+            <div className="flex flex-wrap gap-1.5 mt-1.5">
+              <span className={`text-xs px-2 py-0.5 rounded-full border ${getLevelBadge(level)}`}>
                 {level}
               </span>
+              {format && (
+                <span className={`text-xs px-2 py-0.5 rounded-full border ${getFormatBadge(format)}`}>
+                  {format}
+                </span>
+              )}
             </div>
-            <p className="text-sm text-[var(--text-tertiary)] mt-0.5">
-              {dateRange || year}
-            </p>
           </div>
         </div>
 
         {/* Full Name */}
-        <h4 className="text-[var(--text-secondary)] font-medium mb-2 line-clamp-1">
+        <h4 className="text-sm text-[var(--text-secondary)] font-medium mb-3 line-clamp-2">
           {name}
         </h4>
 
@@ -134,33 +107,33 @@ export default function OlympiadCard({
           </p>
         )}
 
-        {/* Subject Tag */}
-        <div className="mb-4">
-          <span className="tag">{subject}</span>
-        </div>
+        {/* Discipline Tags */}
+        {disciplinesList.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            {disciplinesList.map((discipline) => (
+              <span key={discipline} className="tag text-xs">
+                {discipline}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Footer */}
         <div className="mt-auto pt-4 border-t border-[var(--surface-border)]">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex -space-x-1.5">
-                {teamCount > 0 && Array.from({ length: Math.min(teamCount, 3) }).map((_, i) => (
-                  <div 
-                    key={i}
-                    className="w-5 h-5 rounded-full bg-[var(--bg-tertiary)] border-2 border-[var(--bg-elevated)]"
-                  />
-                ))}
-              </div>
-              <span className="text-sm text-[var(--text-secondary)]">
-                {teamCount} {teamCount === 1 ? "team" : "teams"}
+          <div className="flex items-center justify-between text-sm">
+            {/* Team Size */}
+            {teamSize && (
+              <span className="text-[var(--text-muted)] flex items-center gap-1.5">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                {teamSize}
               </span>
-            </div>
+            )}
             
-            <span className="text-sm text-[var(--accent-color)] font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
-              View
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
+            {/* Team Count */}
+            <span className="text-[var(--accent-color)] font-medium">
+              {teamCount} {teamCount === 1 ? "команда" : teamCount < 5 ? "команды" : "команд"}
             </span>
           </div>
         </div>

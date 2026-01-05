@@ -4,15 +4,21 @@ import prisma from "@/lib/prisma";
 /**
  * GET /api/olympiads/[id]
  * 
- * Fetch a single olympiad by ID with its associated teams.
+ * Получить олимпиаду по ID или slug с командами.
  */
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const olympiad = await prisma.olympiad.findUnique({
-      where: { id: params.id },
+    // Try to find by slug first, then by id
+    const olympiad = await prisma.olympiad.findFirst({
+      where: {
+        OR: [
+          { slug: params.id },
+          { id: params.id },
+        ],
+      },
       include: {
         teams: {
           where: { isOpen: true},
@@ -37,7 +43,7 @@ export async function GET(
 
     if (!olympiad) {
       return NextResponse.json(
-        { error: "Olympiad not found" },
+        { error: "Олимпиада не найдена" },
         { status: 404 }
       );
     }
@@ -55,8 +61,7 @@ export async function GET(
 /**
  * PUT /api/olympiads/[id]
  * 
- * Update an existing olympiad.
- * Only updates the fields that are provided.
+ * Обновить существующую олимпиаду.
  */
 export async function PUT(
   request: NextRequest,
@@ -64,16 +69,33 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
-    const { name, description, year, level, subject, website } = body;
+    const { 
+      name, 
+      description, 
+      year, 
+      level, 
+      subject, 
+      disciplines,
+      teamSize,
+      format,
+      organizer,
+      website,
+      logoEmoji,
+    } = body;
 
-    // Check if olympiad exists
-    const existing = await prisma.olympiad.findUnique({
-      where: { id: params.id },
+    // Find by slug or id
+    const existing = await prisma.olympiad.findFirst({
+      where: {
+        OR: [
+          { slug: params.id },
+          { id: params.id },
+        ],
+      },
     });
 
     if (!existing) {
       return NextResponse.json(
-        { error: "Olympiad not found" },
+        { error: "Олимпиада не найдена" },
         { status: 404 }
       );
     }
@@ -85,7 +107,12 @@ export async function PUT(
       year?: number;
       level?: string;
       subject?: string;
+      disciplines?: string | null;
+      teamSize?: string | null;
+      format?: string | null;
+      organizer?: string | null;
       website?: string | null;
+      logoEmoji?: string | null;
     } = {};
 
     if (name !== undefined) updateData.name = name;
@@ -93,11 +120,16 @@ export async function PUT(
     if (year !== undefined) updateData.year = parseInt(year, 10);
     if (level !== undefined) updateData.level = level;
     if (subject !== undefined) updateData.subject = subject;
+    if (disciplines !== undefined) updateData.disciplines = disciplines;
+    if (teamSize !== undefined) updateData.teamSize = teamSize;
+    if (format !== undefined) updateData.format = format;
+    if (organizer !== undefined) updateData.organizer = organizer;
     if (website !== undefined) updateData.website = website;
+    if (logoEmoji !== undefined) updateData.logoEmoji = logoEmoji;
 
     // Update the olympiad
     const olympiad = await prisma.olympiad.update({
-      where: { id: params.id },
+      where: { id: existing.id },
       data: updateData,
     });
 
@@ -114,17 +146,21 @@ export async function PUT(
 /**
  * DELETE /api/olympiads/[id]
  * 
- * Delete an olympiad.
- * Note: This will only work if no teams are associated with the olympiad.
+ * Удалить олимпиаду (только если нет команд).
  */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    // Check if olympiad exists
-    const existing = await prisma.olympiad.findUnique({
-      where: { id: params.id },
+    // Find by slug or id
+    const existing = await prisma.olympiad.findFirst({
+      where: {
+        OR: [
+          { slug: params.id },
+          { id: params.id },
+        ],
+      },
       include: {
         _count: {
           select: { teams: true },
@@ -134,7 +170,7 @@ export async function DELETE(
 
     if (!existing) {
       return NextResponse.json(
-        { error: "Olympiad not found" },
+        { error: "Олимпиада не найдена" },
         { status: 404 }
       );
     }
@@ -142,14 +178,14 @@ export async function DELETE(
     // Check if olympiad has teams
     if (existing._count.teams > 0) {
       return NextResponse.json(
-        { error: "Cannot delete olympiad with associated teams" },
+        { error: "Нельзя удалить олимпиаду с командами" },
         { status: 400 }
       );
     }
 
     // Delete the olympiad
     await prisma.olympiad.delete({
-      where: { id: params.id },
+      where: { id: existing.id },
     });
 
     return NextResponse.json({ success: true }, { status: 200 });

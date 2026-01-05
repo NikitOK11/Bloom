@@ -1,18 +1,17 @@
 import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
 import OlympiadDetail from "@/components/OlympiadDetail";
-import Link from "next/link";
 import { TeamLevel } from "@/types";
 
 /**
  * Olympiad Detail Page
  * 
- * Server Component that displays detailed information about
- * a specific olympiad and its associated teams.
+ * Страница олимпиады с детальной информацией и командами.
+ * Поддерживает поиск как по id, так и по slug.
  * 
- * Supports filtering teams by:
- * - interest: Filter by required interest area
- * - level: Filter by required experience level
+ * Фильтрация команд:
+ * - interest: По направлению интересов
+ * - level: По уровню опыта
  */
 export default async function OlympiadDetailPage({
   params,
@@ -32,9 +31,14 @@ export default async function OlympiadDetailPage({
     teamWhere.requiredLevel = searchParams.level;
   }
 
-  // Fetch olympiad with teams
-  const olympiad = await prisma.olympiad.findUnique({
-    where: { id: params.id },
+  // Try to find by slug first, then by id
+  let olympiad = await prisma.olympiad.findFirst({
+    where: {
+      OR: [
+        { slug: params.id },
+        { id: params.id },
+      ],
+    },
     include: {
       teams: {
         where: teamWhere,
@@ -78,33 +82,22 @@ export default async function OlympiadDetailPage({
   }));
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Back Navigation */}
-      <div className="mb-6">
-        <Link
-          href="/olympiads"
-          className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <span className="mr-2">←</span>
-          Back to Olympiads
-        </Link>
-      </div>
-
-      {/* Olympiad Detail Component */}
-      <OlympiadDetail
-        id={olympiad.id}
-        name={olympiad.name}
-        shortName={olympiad.shortName}
-        description={olympiad.description}
-        year={olympiad.year}
-        level={olympiad.level}
-        subject={olympiad.subject}
-        website={olympiad.website}
-        startDate={olympiad.startDate}
-        endDate={olympiad.endDate}
-        teams={teamsWithTypes}
-        teamCount={olympiad._count.teams}
-      />
-    </div>
+    <OlympiadDetail
+      id={olympiad.id}
+      slug={olympiad.slug}
+      name={olympiad.name}
+      shortName={olympiad.shortName}
+      description={olympiad.description}
+      level={olympiad.level}
+      format={olympiad.format}
+      subject={olympiad.subject}
+      disciplines={olympiad.disciplines}
+      teamSize={olympiad.teamSize}
+      organizer={olympiad.organizer}
+      website={olympiad.website}
+      logoEmoji={olympiad.logoEmoji}
+      teams={teamsWithTypes}
+      teamCount={olympiad._count.teams}
+    />
   );
 }
