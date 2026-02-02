@@ -17,3 +17,8 @@ export { default as JoinRequestsList } from "./JoinRequestsList";
 export { default as TeamJoinSection } from "./TeamJoinSection";
 export { default as ProfileForm } from "./ProfileForm";
 export { default as ProfileView } from "./ProfileView";
+
+// External Platform Integrations
+export { default as ConnectedPlatforms } from "./ConnectedPlatforms";
+export { default as KaggleConnectForm } from "./KaggleConnectForm";
+export { default as KaggleProfileCard } from "./KaggleProfileCard";

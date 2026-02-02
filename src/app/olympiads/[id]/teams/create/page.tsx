@@ -343,7 +343,7 @@ export default function CreateTeamForOlympiadPage({
               rows={2}
               maxLength={200}
               className="input"
-              placeholder="Any specific requirements or preferences? (e.g., 'Looking for someone with ICPC experience')"
+              placeholder="Any specific requirements or preferences? (e.g., 'Ищем участника с опытом в Yandex Cup')"
               value={formData.requirementsNote}
               onChange={(e) => setFormData((prev) => ({ ...prev, requirementsNote: e.target.value }))}
             />

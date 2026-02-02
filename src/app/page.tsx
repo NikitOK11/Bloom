@@ -52,11 +52,11 @@ export default function HomePage() {
             <div className="mt-16 pt-8 border-t border-[var(--surface-border)] animate-fadeIn" style={{ animationDelay: "400ms" }}>
               <p className="text-sm text-[var(--text-muted)] mb-4">Trusted by participants from</p>
               <div className="flex flex-wrap justify-center gap-8 text-[var(--text-tertiary)]">
-                <span className="font-medium">IMO</span>
-                <span className="font-medium">IOI</span>
-                <span className="font-medium">IPhO</span>
-                <span className="font-medium">ICPC</span>
-                <span className="font-medium">NTO</span>
+                <span className="font-medium">Yandex Cup</span>
+                <span className="font-medium">AIIJC</span>
+                <span className="font-medium">RuCode</span>
+                <span className="font-medium">AIDAO</span>
+                <span className="font-medium">HSE</span>
               </div>
             </div>
           </div>

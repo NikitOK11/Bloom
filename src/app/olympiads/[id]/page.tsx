@@ -3,6 +3,9 @@ import prisma from "@/lib/prisma";
 import OlympiadDetail from "@/components/OlympiadDetail";
 import { TeamLevel } from "@/types";
 
+// Force dynamic rendering - fetch data at request time, not build time
+export const dynamic = 'force-dynamic';
+
 /**
  * Olympiad Detail Page
  * 

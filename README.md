@@ -5,35 +5,69 @@ A web platform that helps olympiad participants find teammates for competitions.
 ## Tech Stack
 
 - **Next.js 14** (App Router, TypeScript)
-- **Prisma** with SQLite
+- **Prisma** with PostgreSQL
 - **Tailwind CSS** for styling
+- **Docker** for containerization
 
-## Getting Started
+## Quick Start with Docker (Recommended)
+
+The easiest way to run this project is with Docker:
+
+```bash
+# Build and start all services
+docker compose build
+docker compose up
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+To stop the application:
+```bash
+docker compose down
+```
+
+To stop and remove all data (database):
+```bash
+docker compose down -v
+```
+
+## Getting Started (Manual Setup)
 
 ### Prerequisites
 
 - Node.js 18+ installed
 - npm or yarn
+- PostgreSQL database (or use Docker)
 
 ### Installation
 
-1. **Install dependencies:**
+1. **Copy environment file:**
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Configure DATABASE_URL in .env:**
+   ```
+   DATABASE_URL="postgresql://user:password@localhost:5432/olympiad_db"
+   ```
+
+3. **Install dependencies:**
    ```bash
    npm install
    ```
 
-2. **Initialize the database:**
+4. **Initialize the database:**
    ```bash
    npx prisma generate
    npx prisma db push
    ```
 
-3. **Run the development server:**
+5. **Run the development server:**
    ```bash
    npm run dev
    ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+6. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Project Structure
 

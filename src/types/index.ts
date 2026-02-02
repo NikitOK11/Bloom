@@ -298,3 +298,59 @@ export interface UpdateProfileInput {
   olympiadExperience?: string;
   about?: string;
 }
+
+// ==========================================
+// EXTERNAL PROFILE TYPES
+// ==========================================
+// External profiles store read-only data from third-party platforms
+// (Kaggle, GitHub, Codeforces, etc.)
+
+/**
+ * Supported external platform providers
+ * Extensible list - add new providers here as integrations are built
+ */
+export type ExternalProfileProvider = "kaggle" | "github" | "codeforces";
+
+/**
+ * Base ExternalProfile type (matches Prisma model)
+ * 
+ * INTEGRATION NOTES:
+ * - Read-only: Data is fetched from external APIs, not user-editable
+ * - No auto-sync: User must manually refresh to update stats
+ * - Public data only: Only publicly visible information is stored
+ */
+export interface ExternalProfile {
+  id: string;
+  userId: string;
+  provider: ExternalProfileProvider;
+  username: string;
+  profileUrl: string;
+  rankTier: string | null;
+  medalsGold: number | null;
+  medalsSilver: number | null;
+  medalsBronze: number | null;
+  competitionsCount: number | null;
+  lastSyncedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Kaggle-specific rank tiers
+ */
+export type KaggleRankTier = 
+  | "Grandmaster"
+  | "Master"
+  | "Expert"
+  | "Contributor"
+  | "Novice";
+
+/**
+ * Input for connecting an external profile
+ */
+export interface ConnectExternalProfileInput {
+  userId: string;
+  provider: ExternalProfileProvider;
+  username: string;
+  apiToken?: string; // Optional, used only during fetch, never stored
+}

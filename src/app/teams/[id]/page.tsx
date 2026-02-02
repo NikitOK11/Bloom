@@ -4,6 +4,9 @@ import { notFound } from "next/navigation";
 import { TeamJoinSection } from "@/components";
 import { TeamLevel, TEAM_LEVELS } from "@/types";
 
+// Force dynamic rendering - fetch data at request time, not build time
+export const dynamic = 'force-dynamic';
+
 /**
  * Team Detail Page Props
  */

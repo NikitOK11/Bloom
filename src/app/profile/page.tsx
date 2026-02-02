@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ProfileForm from "@/components/ProfileForm";
+import ConnectedPlatforms from "@/components/ConnectedPlatforms";
 
 /**
  * User data from API
@@ -376,6 +377,9 @@ export default function ProfilePage() {
               </span>
             </div>
           </div>
+
+          {/* Connected Platforms Section */}
+          <ConnectedPlatforms userId={selectedUserId} />
         </div>
       )}
 

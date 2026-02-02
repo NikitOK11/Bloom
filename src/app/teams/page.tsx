@@ -2,6 +2,9 @@ import prisma from "@/lib/prisma";
 import TeamCard from "@/components/TeamCard";
 import Link from "next/link";
 
+// Force dynamic rendering - fetch data at request time, not build time
+export const dynamic = 'force-dynamic';
+
 /**
  * Teams List Page
  * 

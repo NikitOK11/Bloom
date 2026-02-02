@@ -3,6 +3,9 @@ import OlympiadCard from "@/components/OlympiadCard";
 import OlympiadFilters from "@/components/OlympiadFilters";
 import Link from "next/link";
 
+// Force dynamic rendering - fetch data at request time, not build time
+export const dynamic = 'force-dynamic';
+
 /**
  * Страница списка олимпиад
  * 

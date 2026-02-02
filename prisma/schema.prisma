@@ -2,17 +2,17 @@
 // Learn more at: https://pris.ly/d/prisma-schema
 
 // ARCHITECTURE DECISION:
-// We use SQLite for simplicity in MVP. It's file-based, 
-// requires no external database server, and is perfect for development.
-// Can be easily swapped to PostgreSQL for production.
+// We use PostgreSQL for production-ready database support.
+// The DATABASE_URL is configured via environment variables,
+// allowing different configurations for local dev vs Docker vs production.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ==========================================
@@ -33,10 +33,11 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relations
-  createdTeams Team[]        @relation("TeamCreator")
-  teamMembers  TeamMember[]
-  joinRequests JoinRequest[] // User's requests to join teams
-  profile      Profile?      // 1-to-1 relation to Profile (optional until created)
+  createdTeams     Team[]            @relation("TeamCreator")
+  teamMembers      TeamMember[]
+  joinRequests     JoinRequest[]     // User's requests to join teams
+  profile          Profile?          // 1-to-1 relation to Profile (optional until created)
+  externalProfiles ExternalProfile[] // Connected external platform profiles (Kaggle, GitHub, etc.)
 }
 
 // ==========================================
@@ -74,9 +75,9 @@ model Profile {
 // Updated: Now supports Russian olympiads with structured data
 model Olympiad {
   id          String    @id @default(cuid())
-  slug        String    @unique // URL-friendly identifier: "icpc", "nto-ai"
+  slug        String    @unique // URL-friendly identifier: "yandex-cup", "aidao"
   name        String    // Original name (never translated)
-  shortName   String    @unique // Short code for display: "ICPC", "НТО"
+  shortName   String    @unique // Short code for display: "Yandex Cup", "AIDAO"
   description String?   // Russian description
   year        Int       // Competition year
   level       String    @default("смешанная") // "школьная", "студенческая", "смешанная"
@@ -154,7 +155,6 @@ model TeamMember {
 model JoinRequest {
   id        String   @id @default(cuid())
   // Status: "PENDING", "APPROVED", "REJECTED"
-  // Using String instead of enum for SQLite compatibility
   status    String   @default("PENDING")
   message   String?  // Optional message from the requester
   createdAt DateTime @default(now())
@@ -171,4 +171,57 @@ model JoinRequest {
   // but business logic enforces only one PENDING request at a time
   @@unique([userId, teamId, status])
   @@index([teamId, status]) // For efficient querying of pending requests
+}
+
+// ==========================================
+// EXTERNAL PROFILE MODEL - THIRD-PARTY INTEGRATIONS
+// ==========================================
+// DOMAIN RULE: ExternalProfile stores read-only data from external platforms.
+// This model is designed to be provider-agnostic, supporting multiple platforms
+// (Kaggle, GitHub, Codeforces, etc.) via the provider field.
+//
+// INTEGRATION LIMITATIONS:
+// - Read-only: We fetch public profile data, not submissions or activity
+// - No background sync: Data is only updated when user manually refreshes
+// - No API tokens stored: Tokens are used only during fetch, not persisted
+// - Public data only: We only store publicly visible profile information
+//
+// PRIVACY: Users control their connected profiles and can disconnect anytime.
+model ExternalProfile {
+  id        String   @id @default(cuid())
+  
+  // Which platform this profile is from
+  // Values: "kaggle", "github", "codeforces" (extensible)
+  provider  String
+  
+  // External platform username
+  username  String
+  
+  // Full URL to the external profile
+  profileUrl String
+  
+  // Platform-specific rank/tier (e.g., "Grandmaster", "Expert", "Novice")
+  rankTier  String?
+  
+  // Medal counts (nullable as not all platforms have these)
+  medalsGold   Int?
+  medalsSilver Int?
+  medalsBronze Int?
+  
+  // Competition/contest participation count
+  competitionsCount Int?
+  
+  // Last time we fetched data from the external platform
+  lastSyncedAt DateTime @default(now())
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relation to User
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // User can only have one profile per provider
+  @@unique([userId, provider])
+  @@index([userId])
 }
