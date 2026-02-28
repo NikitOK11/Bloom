@@ -4,7 +4,7 @@ import random
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
-from apps.competitions.models import CompetitionParticipant, CompetitionTeam, CompetitionTeamMembership
+from apps.competitions.models import CompetitionParticipant, CompetitionTeam, CompetitionTeamRequest
 
 
 def split_competition_teams(*, competition, owner, team_size: int, random_seed: int | None = None) -> list[dict]:
@@ -26,7 +26,7 @@ def split_competition_teams(*, competition, owner, team_size: int, random_seed: 
     team_count = max(1, math.ceil(len(users) / team_size))
 
     with transaction.atomic():
-        CompetitionTeamMembership.objects.filter(competition_team__competition=competition).delete()
+        CompetitionTeamRequest.objects.filter(competition_team__competition=competition).delete()
         CompetitionTeam.objects.filter(competition=competition).delete()
 
         teams = [
@@ -41,7 +41,7 @@ def split_competition_teams(*, competition, owner, team_size: int, random_seed: 
 
         for index, user in enumerate(users):
             team = teams[index % team_count]
-            CompetitionTeamMembership.objects.create(competition_team=team, user=user)
+            CompetitionTeamRequest.objects.create(competition_team=team, user=user)
             team_sizes[team.id] += 1
 
     return [

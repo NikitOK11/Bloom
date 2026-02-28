@@ -8,7 +8,7 @@ from rest_framework.test import APIClient
 
 from apps.accounts.models import User
 from apps.competitions.admin import CompetitionAdmin
-from apps.competitions.models import Competition, CompetitionParticipant, CompetitionTeam, CompetitionTeamMembership
+from apps.competitions.models import Competition, CompetitionParticipant, CompetitionTeam, CompetitionTeamRequest
 
 
 class CompetitionAPITestCase(TestCase):
@@ -118,19 +118,19 @@ class CompetitionAPITestCase(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        memberships = CompetitionTeamMembership.objects.filter(
+        requests = CompetitionTeamRequest.objects.filter(
             competition_team__competition=competition
         ).select_related("competition_team", "user")
 
-        self.assertEqual(memberships.count(), len(users))
+        self.assertEqual(requests.count(), len(users))
 
-        memberships_per_user = memberships.values("user_id").annotate(count=Count("id"))
-        self.assertEqual(memberships_per_user.count(), len(users))
-        self.assertTrue(all(row["count"] == 1 for row in memberships_per_user))
+        requests_per_user = requests.values("user_id").annotate(count=Count("id"))
+        self.assertEqual(requests_per_user.count(), len(users))
+        self.assertTrue(all(row["count"] == 1 for row in requests_per_user))
 
         team_sizes = list(
             CompetitionTeam.objects.filter(competition=competition)
-            .annotate(size=Count("memberships"))
+            .annotate(size=Count("requests"))
             .values_list("size", flat=True)
         )
         self.assertEqual(sum(team_sizes), len(users))

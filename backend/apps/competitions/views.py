@@ -142,15 +142,15 @@ class CompetitionViewSet(
                     output_field=IntegerField(),
                 )
             )
-            .prefetch_related("memberships__user")
+            .prefetch_related("requests__user")
             .order_by("-total_score", "id")
         )
 
         payload = []
         for team in team_queryset:
             members = []
-            for membership in team.memberships.all():
-                user = membership.user
+            for team_request in team.requests.all():
+                user = team_request.user
                 display_name = f"{user.first_name} {user.last_name}".strip() or user.email
                 members.append(
                     {

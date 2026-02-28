@@ -5,7 +5,7 @@ from apps.competitions.models import (
     Competition,
     CompetitionParticipant,
     CompetitionTeam,
-    CompetitionTeamMembership,
+    CompetitionTeamRequest,
     ScoreEntry,
 )
 
@@ -43,8 +43,8 @@ class CompetitionTeamAdmin(admin.ModelAdmin):
     list_filter = ("competition",)
 
 
-@admin.register(CompetitionTeamMembership)
-class CompetitionTeamMembershipAdmin(admin.ModelAdmin):
+@admin.register(CompetitionTeamRequest)
+class CompetitionTeamRequestAdmin(admin.ModelAdmin):
     list_display = ("id", "competition_team", "user")
     search_fields = ("competition_team__name", "user__email")
     list_filter = ("competition_team__competition",)

@@ -98,16 +98,16 @@ class CompetitionTeam(models.Model):
         return f"{self.competition_id}:{self.name}"
 
 
-class CompetitionTeamMembership(models.Model):
+class CompetitionTeamRequest(models.Model):
     competition_team = models.ForeignKey(
         CompetitionTeam,
         on_delete=models.CASCADE,
-        related_name="memberships",
+        related_name="requests",
     )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="competition_team_memberships",
+        related_name="competition_team_requests",
     )
 
     class Meta:
