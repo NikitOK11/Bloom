@@ -1,0 +1,23 @@
+{% extends "web/base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<h1>Bloom Web Demo</h1>
+<p>Scenario 1: olympiads, teams, and join requests.</p>
+<ul>
+    <li><a href="{% url 'web:olympiad-list' %}">View Olympiads</a></li>
+    <li><a href="/admin/">Admin</a></li>
+    {% if request.user.is_authenticated %}
+        <li>
+            <form action="{% url 'web:logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form>
+        </li>
+    {% else %}
+        <li><a href="{% url 'web:login' %}">Login</a></li>
+    {% endif %}
+</ul>
+{% endblock %}
+

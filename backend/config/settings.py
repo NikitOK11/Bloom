@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "apps.olympiads.apps.OlympiadsConfig",
     "apps.teams.apps.TeamsConfig",
     "apps.competitions.apps.CompetitionsConfig",
+    "apps.web.apps.WebConfig",
 ]
 
 MIDDLEWARE = [
@@ -104,3 +105,7 @@ LOGGING = {
         "level": "INFO",
     },
 }
+
+LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"

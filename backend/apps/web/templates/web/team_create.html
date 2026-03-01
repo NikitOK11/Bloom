@@ -1,0 +1,15 @@
+{% extends "web/base.html" %}
+
+{% block title %}Create Team{% endblock %}
+
+{% block content %}
+<h1>Create Team</h1>
+<p>Olympiad: <a href="{% url 'web:olympiad-detail' olympiad.pk %}">{{ olympiad.title }}</a></p>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create team</button>
+</form>
+{% endblock %}
+
