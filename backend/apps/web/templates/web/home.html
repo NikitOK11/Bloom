@@ -4,8 +4,9 @@
 
 {% block content %}
 <h1>Bloom Web Demo</h1>
-<p>Scenario 1: olympiads, teams, and join requests.</p>
+<p>Browse events and keep the existing olympiad team flows available.</p>
 <ul>
+    <li><a href="{% url 'web:event-list' %}">View Events</a></li>
     <li><a href="{% url 'web:olympiad-list' %}">View Olympiads</a></li>
     <li><a href="/admin/">Admin</a></li>
     {% if request.user.is_authenticated %}
@@ -20,4 +21,3 @@
     {% endif %}
 </ul>
 {% endblock %}
-

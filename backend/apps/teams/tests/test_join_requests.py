@@ -55,3 +55,57 @@ class TeamJoinRequestTests(TestCase):
                 role=TeamMembershipRole.MEMBER,
             ).exists()
         )
+
+    def test_joinrequest_allows_pending_to_approved(self):
+        team = Team.objects.create(
+            olympiad=self.olympiad,
+            owner=self.owner,
+            name="State Team 1",
+            is_open=True,
+        )
+        join_request = JoinRequest.objects.create(
+            team=team,
+            user=self.user,
+            status=JoinRequestStatus.PENDING,
+        )
+
+        join_request.approve()
+        join_request.save(update_fields=["status"])
+        join_request.refresh_from_db()
+
+        self.assertEqual(join_request.status, JoinRequestStatus.APPROVED)
+
+    def test_joinrequest_disallows_approved_to_rejected(self):
+        team = Team.objects.create(
+            olympiad=self.olympiad,
+            owner=self.owner,
+            name="State Team 2",
+            is_open=True,
+        )
+        join_request = JoinRequest.objects.create(
+            team=team,
+            user=self.user,
+            status=JoinRequestStatus.APPROVED,
+        )
+
+        with self.assertRaises(ValidationError):
+            join_request.reject()
+
+    def test_joinrequest_allows_pending_to_withdrawn(self):
+        team = Team.objects.create(
+            olympiad=self.olympiad,
+            owner=self.owner,
+            name="State Team 3",
+            is_open=True,
+        )
+        join_request = JoinRequest.objects.create(
+            team=team,
+            user=self.user,
+            status=JoinRequestStatus.PENDING,
+        )
+
+        join_request.withdraw()
+        join_request.save(update_fields=["status"])
+        join_request.refresh_from_db()
+
+        self.assertEqual(join_request.status, JoinRequestStatus.WITHDRAWN)

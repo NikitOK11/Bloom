@@ -1,0 +1,92 @@
+{% extends "web/base.html" %}
+
+{% block title %}Events{% endblock %}
+
+{% block content %}
+<h1>Events</h1>
+
+<form method="get">
+    <p>
+        <label for="id_q">Search</label>
+        <input id="id_q" type="search" name="q" value="{{ selected_filters.q }}">
+    </p>
+
+    <p>
+        <label for="id_profile">Profile</label>
+        <select id="id_profile" name="profile">
+            <option value="">All profiles</option>
+            {% for profile in profiles %}
+                <option value="{{ profile.slug }}"{% if selected_filters.profile == profile.slug %} selected{% endif %}>
+                    {{ profile.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </p>
+
+    <p>
+        <label for="id_event_type">Event type</label>
+        <select id="id_event_type" name="event_type">
+            <option value="">All event types</option>
+            {% for event_type in event_types %}
+                <option value="{{ event_type.slug }}"{% if selected_filters.event_type == event_type.slug %} selected{% endif %}>
+                    {{ event_type.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </p>
+
+    <p>
+        <label for="id_level">Event level</label>
+        <select id="id_level" name="level">
+            <option value="">All levels</option>
+            {% for level in levels %}
+                <option value="{{ level.slug }}"{% if selected_filters.level == level.slug %} selected{% endif %}>
+                    {{ level.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </p>
+
+    <p>
+        <label for="id_participation_type">Participation type</label>
+        <select id="id_participation_type" name="participation_type">
+            <option value="">All participation types</option>
+            {% for value, label in participation_types %}
+                <option value="{{ value }}"{% if selected_filters.participation_type == value %} selected{% endif %}>
+                    {{ label }}
+                </option>
+            {% endfor %}
+        </select>
+    </p>
+
+    <button type="submit">Apply filters</button>
+    <a href="{% url 'web:event-list' %}">Clear filters</a>
+</form>
+
+{% if events %}
+    <ul>
+        {% for event in events %}
+            <li>
+                <h2><a href="{% url 'web:event-detail' event.pk %}">{{ event.title }}</a></h2>
+                <p>Type: {{ event.event_type.name }}</p>
+                <p>Level: {% if event.level %}{{ event.level.name }}{% else %}Not specified{% endif %}</p>
+                <p>Participation: {{ event.get_participation_type_display }}</p>
+                <p>
+                    Profiles:
+                    {% for profile in event.profiles.all %}
+                        {{ profile.name }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        Not specified
+                    {% endfor %}
+                </p>
+                <p>Registration deadline: {{ event.registration_deadline|date:"Y-m-d"|default:"Not specified" }}</p>
+                {% if event.short_description %}
+                    <p>{{ event.short_description }}</p>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No events match the selected filters.</p>
+{% endif %}
+{% endblock %}

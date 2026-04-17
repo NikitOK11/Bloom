@@ -1,0 +1,64 @@
+{% extends "web/base.html" %}
+
+{% block title %}{{ event.title }}{% endblock %}
+
+{% block content %}
+<p><a href="{% url 'web:event-list' %}">Back to events</a></p>
+
+<h1>{{ event.title }}</h1>
+
+{% if not event.is_active %}
+    <p>Status: inactive</p>
+{% endif %}
+
+{% if event.short_description %}
+    <p>{{ event.short_description }}</p>
+{% endif %}
+
+<p>{{ event.description|default:"No description."|linebreaksbr }}</p>
+
+<dl>
+    <dt>Organizer</dt>
+    <dd>{{ event.organizer|default:"Not specified" }}</dd>
+
+    <dt>Official URL</dt>
+    <dd>
+        {% if event.official_url %}
+            <a href="{{ event.official_url }}">{{ event.official_url }}</a>
+        {% else %}
+            Not specified
+        {% endif %}
+    </dd>
+
+    <dt>Event type</dt>
+    <dd>{{ event.event_type.name }}</dd>
+
+    <dt>Event level</dt>
+    <dd>{% if event.level %}{{ event.level.name }}{% else %}Not specified{% endif %}</dd>
+
+    <dt>Participation type</dt>
+    <dd>{{ event.get_participation_type_display }}</dd>
+
+    <dt>Profiles</dt>
+    <dd>
+        {% for profile in event.profiles.all %}
+            {{ profile.name }}{% if not forloop.last %}, {% endif %}
+        {% empty %}
+            Not specified
+        {% endfor %}
+    </dd>
+
+    <dt>Preferences</dt>
+    <dd>{{ event.preferences|default:"Not specified"|linebreaksbr }}</dd>
+
+    <dt>Registration deadline</dt>
+    <dd>{{ event.registration_deadline|date:"Y-m-d"|default:"Not specified" }}</dd>
+</dl>
+
+{% if show_team_support_notice %}
+    <section>
+        <h2>Team participation</h2>
+        <p>Team support for events will be connected in a later step.</p>
+    </section>
+{% endif %}
+{% endblock %}

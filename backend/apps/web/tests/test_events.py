@@ -1,0 +1,98 @@
+from datetime import date
+
+from django.test import TestCase
+from django.urls import reverse
+
+from apps.events.models import Event, EventLevel, EventParticipationType, EventProfile, EventType
+
+
+class EventCatalogTests(TestCase):
+    def setUp(self):
+        self.event_type = EventType.objects.create(name="Olympiad", slug="olympiad")
+        self.level = EventLevel.objects.create(name="Level 1", slug="level-1")
+        self.profile = EventProfile.objects.create(name="Math", slug="math")
+
+    def create_event(self, title: str, **kwargs) -> Event:
+        event = Event.objects.create(
+            title=title,
+            short_description=kwargs.pop("short_description", "Short event description."),
+            description=kwargs.pop("description", "Full event description."),
+            official_url=kwargs.pop("official_url", "https://example.com/event"),
+            organizer=kwargs.pop("organizer", "Event Organizer"),
+            event_type=kwargs.pop("event_type", self.event_type),
+            level=kwargs.pop("level", self.level),
+            participation_type=kwargs.pop(
+                "participation_type",
+                EventParticipationType.INDIVIDUAL,
+            ),
+            registration_deadline=kwargs.pop("registration_deadline", date(2026, 5, 1)),
+            **kwargs,
+        )
+        event.profiles.add(self.profile)
+        return event
+
+    def test_event_list_shows_only_active_events(self):
+        self.create_event("Visible Event")
+        self.create_event("Hidden Event", is_active=False)
+
+        response = self.client.get(reverse("web:event-list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Visible Event")
+        self.assertNotContains(response, "Hidden Event")
+
+    def test_event_list_filters_by_participation_type(self):
+        self.create_event("Individual Event", participation_type=EventParticipationType.INDIVIDUAL)
+        self.create_event("Team Event", participation_type=EventParticipationType.TEAM)
+
+        response = self.client.get(
+            reverse("web:event-list"),
+            {"participation_type": EventParticipationType.TEAM},
+        )
+
+        self.assertContains(response, "Team Event")
+        self.assertNotContains(response, "Individual Event")
+
+    def test_event_list_filters_by_profile(self):
+        science_profile = EventProfile.objects.create(name="Science", slug="science")
+        self.create_event("Math Event")
+        science_event = self.create_event("Science Event")
+        science_event.profiles.set([science_profile])
+
+        response = self.client.get(reverse("web:event-list"), {"profile": "science"})
+
+        self.assertContains(response, "Science Event")
+        self.assertNotContains(response, "Math Event")
+
+    def test_event_list_filters_by_event_type_and_level(self):
+        hackathon_type = EventType.objects.create(name="Hackathon", slug="hackathon")
+        international_level = EventLevel.objects.create(name="International", slug="international")
+        self.create_event("Default Event")
+        self.create_event(
+            "International Hackathon",
+            event_type=hackathon_type,
+            level=international_level,
+        )
+
+        response = self.client.get(
+            reverse("web:event-list"),
+            {"event_type": "hackathon", "level": "international"},
+        )
+
+        self.assertContains(response, "International Hackathon")
+        self.assertNotContains(response, "Default Event")
+
+    def test_event_detail_renders_successfully(self):
+        event = self.create_event(
+            "Team Case Championship",
+            participation_type=EventParticipationType.BOTH,
+            preferences="Looking for product-minded participants.",
+        )
+
+        response = self.client.get(reverse("web:event-detail", kwargs={"pk": event.pk}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Team Case Championship")
+        self.assertContains(response, "Event Organizer")
+        self.assertContains(response, "Math")
+        self.assertContains(response, "Team support for events will be connected in a later step.")

@@ -3,14 +3,19 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import transaction
+from django.db.models import F, Q
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 
+from apps.events.models import Event, EventLevel, EventParticipationType, EventProfile, EventType
 from apps.olympiads.models import Olympiad
 from apps.teams.models import JoinRequest, JoinRequestStatus, Team, TeamMembership, TeamMembershipRole
 from apps.web.forms import JoinRequestForm, TeamCreateForm
+
+
+REFERENCE_ORDERING = ("sort_order", "name", "id")
 
 
 def _user_display_name(user) -> str:
@@ -82,6 +87,83 @@ def _add_validation_to_form(form, exc: ValidationError) -> None:
 
 class HomeView(TemplateView):
     template_name = "web/home.html"
+
+
+class EventListView(ListView):
+    model = Event
+    context_object_name = "events"
+    template_name = "web/event_list.html"
+
+    def get_queryset(self):
+        queryset = (
+            Event.objects.filter(is_active=True)
+            .select_related("event_type", "level")
+            .prefetch_related("profiles")
+        )
+
+        profile_slug = self.request.GET.get("profile", "").strip()
+        if profile_slug and EventProfile.objects.filter(slug=profile_slug, is_active=True).exists():
+            queryset = queryset.filter(profiles__slug=profile_slug).distinct()
+
+        event_type_slug = self.request.GET.get("event_type", "").strip()
+        if event_type_slug and EventType.objects.filter(slug=event_type_slug, is_active=True).exists():
+            queryset = queryset.filter(event_type__slug=event_type_slug)
+
+        level_slug = self.request.GET.get("level", "").strip()
+        if level_slug and EventLevel.objects.filter(slug=level_slug, is_active=True).exists():
+            queryset = queryset.filter(level__slug=level_slug)
+
+        participation_type = self.request.GET.get("participation_type", "").strip()
+        if participation_type in EventParticipationType.values:
+            queryset = queryset.filter(participation_type=participation_type)
+
+        search_query = self.request.GET.get("q", "").strip()
+        if search_query:
+            queryset = queryset.filter(
+                Q(title__icontains=search_query) | Q(organizer__icontains=search_query)
+            )
+
+        return queryset.order_by(
+            F("registration_deadline").asc(nulls_last=True),
+            "-created_at",
+            "-id",
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "profiles": EventProfile.objects.filter(is_active=True).order_by(*REFERENCE_ORDERING),
+                "event_types": EventType.objects.filter(is_active=True).order_by(*REFERENCE_ORDERING),
+                "levels": EventLevel.objects.filter(is_active=True).order_by(*REFERENCE_ORDERING),
+                "participation_types": EventParticipationType.choices,
+                "selected_filters": {
+                    "profile": self.request.GET.get("profile", "").strip(),
+                    "event_type": self.request.GET.get("event_type", "").strip(),
+                    "level": self.request.GET.get("level", "").strip(),
+                    "participation_type": self.request.GET.get("participation_type", "").strip(),
+                    "q": self.request.GET.get("q", "").strip(),
+                },
+            }
+        )
+        return context
+
+
+class EventDetailView(DetailView):
+    model = Event
+    context_object_name = "event"
+    template_name = "web/event_detail.html"
+
+    def get_queryset(self):
+        return Event.objects.select_related("event_type", "level").prefetch_related("profiles")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["show_team_support_notice"] = self.object.participation_type in {
+            EventParticipationType.TEAM,
+            EventParticipationType.BOTH,
+        }
+        return context
 
 
 class OlympiadListView(ListView):
@@ -264,7 +346,7 @@ def approve_join_request_view(request: HttpRequest, pk: int) -> HttpResponse:
             user=join_request.user,
             defaults={"role": TeamMembershipRole.MEMBER},
         )
-        join_request.status = JoinRequestStatus.APPROVED
+        join_request.approve()
         join_request.save(update_fields=["status"])
 
     messages.success(request, "Join request approved.")
@@ -288,7 +370,7 @@ def reject_join_request_view(request: HttpRequest, pk: int) -> HttpResponse:
         messages.warning(request, "Only pending requests can be rejected.")
         return redirect("web:team-detail", pk=team.pk)
 
-    join_request.status = JoinRequestStatus.REJECTED
+    join_request.reject()
     join_request.save(update_fields=["status"])
     messages.success(request, "Join request rejected.")
     return redirect("web:team-detail", pk=team.pk)

@@ -49,11 +49,13 @@ class JoinRequestAdmin(admin.ModelAdmin):
                     user=join_request.user,
                     defaults={"role": TeamMembershipRole.MEMBER},
                 )
-                join_request.status = JoinRequestStatus.APPROVED
+                join_request.approve()
                 join_request.save(update_fields=["status"])
 
     @admin.action(description="Reject selected pending requests")
     def reject_requests(self, request, queryset):
-        pending_requests = queryset.filter(status=JoinRequestStatus.PENDING)
+        pending_requests = queryset.filter(status=JoinRequestStatus.PENDING).select_related("team", "user")
         with transaction.atomic():
-            pending_requests.update(status=JoinRequestStatus.REJECTED)
+            for join_request in pending_requests:
+                join_request.reject()
+                join_request.save(update_fields=["status"])

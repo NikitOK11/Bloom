@@ -2,6 +2,8 @@ from django.contrib.auth import views as auth_views
 from django.urls import path
 
 from apps.web.views import (
+    EventDetailView,
+    EventListView,
     HomeView,
     OlympiadDetailView,
     OlympiadListView,
@@ -18,6 +20,8 @@ urlpatterns = [
     path("", HomeView.as_view(), name="home"),
     path("login/", auth_views.LoginView.as_view(template_name="registration/login.html"), name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
+    path("events/", EventListView.as_view(), name="event-list"),
+    path("events/<int:pk>/", EventDetailView.as_view(), name="event-detail"),
     path("olympiads/", OlympiadListView.as_view(), name="olympiad-list"),
     path("olympiads/<int:pk>/", OlympiadDetailView.as_view(), name="olympiad-detail"),
     path("olympiads/<int:pk>/teams/new/", TeamCreateView.as_view(), name="team-create"),
@@ -26,4 +30,3 @@ urlpatterns = [
     path("join-requests/<int:pk>/approve/", approve_join_request_view, name="join-request-approve"),
     path("join-requests/<int:pk>/reject/", reject_join_request_view, name="join-request-reject"),
 ]
-

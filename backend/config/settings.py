@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "apps.common.apps.CommonConfig",
     "apps.accounts.apps.AccountsConfig",
     "apps.olympiads.apps.OlympiadsConfig",
+    "apps.events.apps.EventsConfig",
     "apps.teams.apps.TeamsConfig",
     "apps.competitions.apps.CompetitionsConfig",
     "apps.web.apps.WebConfig",

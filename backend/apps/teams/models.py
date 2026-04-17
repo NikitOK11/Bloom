@@ -15,6 +15,7 @@ class JoinRequestStatus(models.TextChoices):
     PENDING = "PENDING", "Pending"
     APPROVED = "APPROVED", "Approved"
     REJECTED = "REJECTED", "Rejected"
+    WITHDRAWN = "WITHDRAWN", "Withdrawn"
 
 
 class Team(TimeStampedModel):
@@ -78,6 +79,17 @@ class TeamMembership(models.Model):
 
 
 class JoinRequest(models.Model):
+    ALLOWED_STATUS_TRANSITIONS = {
+        JoinRequestStatus.PENDING: {
+            JoinRequestStatus.APPROVED,
+            JoinRequestStatus.REJECTED,
+            JoinRequestStatus.WITHDRAWN,
+        },
+        JoinRequestStatus.APPROVED: set(),
+        JoinRequestStatus.REJECTED: set(),
+        JoinRequestStatus.WITHDRAWN: set(),
+    }
+
     team = models.ForeignKey(
         Team,
         on_delete=models.CASCADE,
@@ -104,15 +116,67 @@ class JoinRequest(models.Model):
             )
         ]
 
+    @classmethod
+    def _normalize_status(cls, status) -> str:
+        try:
+            return JoinRequestStatus(status)
+        except ValueError as exc:
+            raise ValidationError({"status": f"Invalid status '{status}'."}) from exc
+
+    @classmethod
+    def _is_transition_allowed(cls, current_status: str, new_status: str) -> bool:
+        if current_status == new_status:
+            return True
+        return new_status in cls.ALLOWED_STATUS_TRANSITIONS.get(current_status, set())
+
+    def can_transition_to(self, new_status) -> bool:
+        try:
+            normalized_status = JoinRequestStatus(new_status)
+        except ValueError:
+            return False
+        return self._is_transition_allowed(self.status, normalized_status)
+
+    def transition_to(self, new_status, *, by_user=None) -> None:
+        normalized_status = self._normalize_status(new_status)
+        if normalized_status == self.status:
+            return
+        if not self._is_transition_allowed(self.status, normalized_status):
+            raise ValidationError(
+                {"status": f"Cannot transition from {self.status} to {normalized_status}."}
+            )
+        self.status = normalized_status
+
+    def approve(self, *, by_user=None) -> None:
+        self.transition_to(JoinRequestStatus.APPROVED, by_user=by_user)
+
+    def reject(self, *, by_user=None) -> None:
+        self.transition_to(JoinRequestStatus.REJECTED, by_user=by_user)
+
+    def withdraw(self, *, by_user=None) -> None:
+        self.transition_to(JoinRequestStatus.WITHDRAWN, by_user=by_user)
+
     def clean(self):
         super().clean()
-        if not self._state.adding:
-            return
-        if not self.team_id or not self.user_id:
+        if self._state.adding:
+            if not self.team_id or not self.user_id:
+                return
+
+            if not self.team.is_open:
+                raise ValidationError({"team": "Cannot create join request for a closed team."})
+
+            if TeamMembership.objects.filter(team_id=self.team_id, user_id=self.user_id).exists():
+                raise ValidationError({"user": "User is already a member of this team."})
             return
 
-        if not self.team.is_open:
-            raise ValidationError({"team": "Cannot create join request for a closed team."})
+        if not self.pk:
+            return
 
-        if TeamMembership.objects.filter(team_id=self.team_id, user_id=self.user_id).exists():
-            raise ValidationError({"user": "User is already a member of this team."})
+        initial_status = (
+            JoinRequest.objects.filter(pk=self.pk).values_list("status", flat=True).first()
+        )
+        if initial_status is None:
+            return
+        if not self._is_transition_allowed(initial_status, self.status):
+            raise ValidationError(
+                {"status": f"Cannot transition from {initial_status} to {self.status}."}
+            )
