@@ -11,7 +11,10 @@ from apps.teams.models import Team
 
 class EventCatalogTests(TestCase):
     def setUp(self):
-        self.event_type = EventType.objects.create(name="Olympiad", slug="olympiad")
+        self.event_type, _ = EventType.objects.get_or_create(
+            slug="olympiad",
+            defaults={"name": "Olympiad"},
+        )
         self.level = EventLevel.objects.create(name="Level 1", slug="level-1")
         self.profile = EventProfile.objects.create(name="Math", slug="math")
 

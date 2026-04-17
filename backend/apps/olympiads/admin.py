@@ -12,7 +12,7 @@ class TeamInline(admin.TabularInline):
 
 @admin.register(Olympiad)
 class OlympiadAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "season", "is_active", "created_at")
-    search_fields = ("title", "season")
-    list_filter = ("is_active",)
+    list_display = ("id", "title", "season", "event", "is_active", "created_at")
+    search_fields = ("title", "season", "event__title")
+    list_filter = ("is_active", "event__event_type")
     inlines = [TeamInline]

@@ -18,10 +18,21 @@ class OlympiadSeason(models.TextChoices):
 
 
 class Olympiad(TimeStampedModel):
+    event = models.OneToOneField(
+        "events.Event",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="legacy_olympiad",
+    )
     title = models.CharField(max_length=255)
     season = models.CharField(max_length=9, choices=OlympiadSeason.choices)
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
+
+    @property
+    def resolved_event(self):
+        return self.event
 
     def __str__(self) -> str:
         if self.season:
