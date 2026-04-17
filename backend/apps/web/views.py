@@ -155,14 +155,19 @@ class EventDetailView(DetailView):
     template_name = "web/event_detail.html"
 
     def get_queryset(self):
-        return Event.objects.select_related("event_type", "level").prefetch_related("profiles")
+        return (
+            Event.objects.select_related("event_type", "level")
+            .prefetch_related("profiles", "teams")
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["show_team_support_notice"] = self.object.participation_type in {
+        show_teams_block = self.object.participation_type in {
             EventParticipationType.TEAM,
             EventParticipationType.BOTH,
         }
+        context["show_teams_block"] = show_teams_block
+        context["event_teams"] = self.object.teams.order_by("name", "id") if show_teams_block else []
         return context
 
 
@@ -206,6 +211,12 @@ class TeamCreateView(LoginRequiredMixin, FormView):
         context["olympiad"] = self.olympiad
         return context
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["olympiad"] = self.olympiad
+        kwargs["owner"] = self.request.user
+        return kwargs
+
     def form_valid(self, form):
         team = form.save(commit=False)
         team.olympiad = self.olympiad
@@ -236,7 +247,7 @@ class TeamDetailView(DetailView):
     template_name = "web/team_detail.html"
 
     def get_queryset(self):
-        return Team.objects.select_related("olympiad", "owner")
+        return Team.objects.select_related("olympiad", "event", "owner")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

@@ -3,7 +3,10 @@ from datetime import date
 from django.test import TestCase
 from django.urls import reverse
 
+from apps.accounts.models import User
 from apps.events.models import Event, EventLevel, EventParticipationType, EventProfile, EventType
+from apps.olympiads.models import Olympiad
+from apps.teams.models import Team
 
 
 class EventCatalogTests(TestCase):
@@ -96,3 +99,37 @@ class EventCatalogTests(TestCase):
         self.assertContains(response, "Event Organizer")
         self.assertContains(response, "Math")
         self.assertContains(response, "Team support for events will be connected in a later step.")
+
+    def test_event_detail_shows_teams_only_for_team_or_both_participation(self):
+        owner = User.objects.create_user(email="team-owner@example.com", password="password123")
+        team_event = self.create_event("Team Event", participation_type=EventParticipationType.TEAM)
+        individual_event = self.create_event(
+            "Individual Event",
+            participation_type=EventParticipationType.INDIVIDUAL,
+        )
+        Team.objects.create(
+            event=team_event,
+            owner=owner,
+            name="Event Linked Team",
+            is_open=True,
+        )
+        olympiad = Olympiad.objects.create(title="Legacy Olympiad", season="2025/2026")
+        Team.objects.create(
+            olympiad=olympiad,
+            owner=owner,
+            name="Olympiad Only Team",
+            is_open=True,
+        )
+
+        team_response = self.client.get(reverse("web:event-detail", kwargs={"pk": team_event.pk}))
+        individual_response = self.client.get(
+            reverse("web:event-detail", kwargs={"pk": individual_event.pk})
+        )
+
+        self.assertContains(team_response, "Team participation")
+        self.assertContains(team_response, "Event Linked Team")
+        self.assertContains(team_response, "(open)")
+        self.assertNotContains(team_response, "Olympiad Only Team")
+        self.assertNotContains(individual_response, "Team participation")
+        self.assertNotContains(individual_response, "Event Linked Team")
+        self.assertNotContains(individual_response, "No teams linked to this event yet.")

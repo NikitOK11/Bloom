@@ -19,7 +19,19 @@ class JoinRequestStatus(models.TextChoices):
 
 
 class Team(TimeStampedModel):
-    olympiad = models.ForeignKey("olympiads.Olympiad", on_delete=models.CASCADE)
+    olympiad = models.ForeignKey(
+        "olympiads.Olympiad",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    event = models.ForeignKey(
+        "events.Event",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="teams",
+    )
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -41,6 +53,11 @@ class Team(TimeStampedModel):
         if not self.owner_id:
             raise ValidationError({"owner": "Owner is required."})
         super().save(*args, **kwargs)
+
+    def clean(self):
+        super().clean()
+        if not self.olympiad_id and not self.event_id:
+            raise ValidationError({"olympiad": "Team must be linked to an olympiad or event."})
 
     def __str__(self) -> str:
         return self.name

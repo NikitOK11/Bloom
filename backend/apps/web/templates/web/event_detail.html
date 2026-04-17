@@ -55,10 +55,22 @@
     <dd>{{ event.registration_deadline|date:"Y-m-d"|default:"Not specified" }}</dd>
 </dl>
 
-{% if show_team_support_notice %}
+{% if show_teams_block %}
     <section>
         <h2>Team participation</h2>
         <p>Team support for events will be connected in a later step.</p>
+        {% if event_teams %}
+            <ul>
+                {% for team in event_teams %}
+                    <li>
+                        {{ team.name }}
+                        {% if team.is_open %}(open){% else %}(closed){% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No teams linked to this event yet.</p>
+        {% endif %}
     </section>
 {% endif %}
 {% endblock %}
