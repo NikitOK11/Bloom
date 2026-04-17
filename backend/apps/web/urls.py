@@ -3,6 +3,7 @@ from django.urls import path
 
 from apps.web.views import (
     EventDetailView,
+    EventTeamCreateView,
     EventListView,
     HomeView,
     OlympiadDetailView,
@@ -22,6 +23,7 @@ urlpatterns = [
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("events/", EventListView.as_view(), name="event-list"),
     path("events/<int:pk>/", EventDetailView.as_view(), name="event-detail"),
+    path("events/<int:pk>/teams/new/", EventTeamCreateView.as_view(), name="event-team-create"),
     path("olympiads/", OlympiadListView.as_view(), name="olympiad-list"),
     path("olympiads/<int:pk>/", OlympiadDetailView.as_view(), name="olympiad-detail"),
     path("olympiads/<int:pk>/teams/new/", TeamCreateView.as_view(), name="team-create"),

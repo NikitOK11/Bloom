@@ -6,7 +6,7 @@ from django.urls import reverse
 from apps.accounts.models import User
 from apps.events.models import Event, EventLevel, EventParticipationType, EventProfile, EventType
 from apps.olympiads.models import Olympiad
-from apps.teams.models import Team
+from apps.teams.models import Team, TeamMembership, TeamMembershipRole
 
 
 class EventCatalogTests(TestCase):
@@ -136,3 +136,64 @@ class EventCatalogTests(TestCase):
         self.assertNotContains(individual_response, "Team participation")
         self.assertNotContains(individual_response, "Event Linked Team")
         self.assertNotContains(individual_response, "No teams linked to this event yet.")
+
+    def test_event_team_create_view_creates_team_with_event(self):
+        event = self.create_event("Team Event", participation_type=EventParticipationType.TEAM)
+        olympiad = Olympiad.objects.create(
+            title="Legacy Olympiad",
+            season="2025/2026",
+            event=event,
+        )
+        user = User.objects.create_user(email="captain@example.com", password="password123")
+        self.client.force_login(user)
+
+        response = self.client.post(
+            reverse("web:event-team-create", kwargs={"pk": event.pk}),
+            data={
+                "name": "Event Team",
+                "description": "Team from event.",
+                "is_open": "on",
+            },
+        )
+
+        team = Team.objects.get(name="Event Team")
+        self.assertEqual(team.event_id, event.id)
+        self.assertEqual(team.olympiad_id, olympiad.id)
+        self.assertTrue(
+            TeamMembership.objects.filter(
+                team=team,
+                user=user,
+                role=TeamMembershipRole.CAPTAIN,
+            ).exists()
+        )
+        self.assertRedirects(response, reverse("web:team-detail", kwargs={"pk": team.pk}))
+
+    def test_event_team_create_for_individual_event_is_not_allowed(self):
+        event = self.create_event(
+            "Individual Event",
+            participation_type=EventParticipationType.INDIVIDUAL,
+        )
+        user = User.objects.create_user(email="user@example.com", password="password123")
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("web:event-team-create", kwargs={"pk": event.pk}))
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_event_detail_shows_linked_teams_for_team_event(self):
+        event = self.create_event("Team Event", participation_type=EventParticipationType.TEAM)
+        owner = User.objects.create_user(email="owner@example.com", password="password123")
+        team = Team.objects.create(
+            event=event,
+            owner=owner,
+            name="Linked Team",
+            description="A concise team description.",
+            is_open=True,
+        )
+
+        response = self.client.get(reverse("web:event-detail", kwargs={"pk": event.pk}))
+
+        self.assertContains(response, reverse("web:team-detail", kwargs={"pk": team.pk}))
+        self.assertContains(response, "Linked Team")
+        self.assertContains(response, "A concise team description.")
+        self.assertContains(response, "(open)")

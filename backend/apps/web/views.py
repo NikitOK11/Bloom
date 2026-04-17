@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import transaction
 from django.db.models import F, Q
-from django.http import HttpRequest, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, FormView, ListView, TemplateView
@@ -85,6 +85,12 @@ def _add_validation_to_form(form, exc: ValidationError) -> None:
         form.add_error(None, error)
 
 
+TEAM_CAPABLE_PARTICIPATION_TYPES = {
+    EventParticipationType.TEAM,
+    EventParticipationType.BOTH,
+}
+
+
 class HomeView(TemplateView):
     template_name = "web/home.html"
 
@@ -162,12 +168,13 @@ class EventDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        show_teams_block = self.object.participation_type in {
-            EventParticipationType.TEAM,
-            EventParticipationType.BOTH,
-        }
+        show_teams_block = self.object.participation_type in TEAM_CAPABLE_PARTICIPATION_TYPES
         context["show_teams_block"] = show_teams_block
-        context["event_teams"] = self.object.teams.order_by("name", "id") if show_teams_block else []
+        context["event_teams"] = (
+            self.object.teams.select_related("owner").order_by("name", "id")
+            if show_teams_block
+            else []
+        )
         return context
 
 
@@ -219,6 +226,58 @@ class TeamCreateView(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         team = form.save(commit=False)
+        team.olympiad = self.olympiad
+        team.owner = self.request.user
+
+        try:
+            with transaction.atomic():
+                team.full_clean()
+                team.save()
+                captain_membership = TeamMembership(
+                    team=team,
+                    user=self.request.user,
+                    role=TeamMembershipRole.CAPTAIN,
+                )
+                captain_membership.full_clean()
+                captain_membership.save()
+        except ValidationError as exc:
+            _add_validation_to_form(form, exc)
+            return self.form_invalid(form)
+
+        messages.success(self.request, "Team created successfully.")
+        return redirect("web:team-detail", pk=team.pk)
+
+
+class EventTeamCreateView(LoginRequiredMixin, FormView):
+    form_class = TeamCreateForm
+    template_name = "web/team_create.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.event = get_object_or_404(Event, pk=self.kwargs["pk"])
+        if self.event.participation_type not in TEAM_CAPABLE_PARTICIPATION_TYPES:
+            raise Http404("Teams are not available for this event.")
+        try:
+            self.olympiad = self.event.legacy_olympiad
+        except Olympiad.DoesNotExist:
+            self.olympiad = None
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["event"] = self.event
+        context["olympiad"] = self.olympiad
+        return context
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["event"] = self.event
+        kwargs["olympiad"] = self.olympiad
+        kwargs["owner"] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        team = form.save(commit=False)
+        team.event = self.event
         team.olympiad = self.olympiad
         team.owner = self.request.user
 
@@ -310,7 +369,7 @@ class TeamDetailView(DetailView):
 @login_required
 @require_POST
 def join_team_view(request: HttpRequest, pk: int) -> HttpResponse:
-    team = get_object_or_404(Team.objects.select_related("olympiad"), pk=pk)
+    team = get_object_or_404(Team.objects.select_related("olympiad", "event"), pk=pk)
     form = JoinRequestForm(request.POST)
     if not form.is_valid():
         messages.error(request, "Could not submit join request. Please check the form.")
