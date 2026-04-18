@@ -321,7 +321,7 @@ class TeamDetailView(DetailView):
     template_name = "web/team_detail.html"
 
     def get_queryset(self):
-        return Team.objects.select_related("olympiad", "event", "owner")
+        return Team.objects.select_related("event", "olympiad__event", "owner")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

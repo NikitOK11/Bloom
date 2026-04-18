@@ -18,22 +18,26 @@ class JoinRequestInline(admin.TabularInline):
 
 @admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "olympiad", "event", "is_open", "created_at", "owner")
-    search_fields = ("name",)
-    list_filter = ("olympiad", "event", "is_open")
+    list_display = ("id", "name", "event", "olympiad", "is_open", "created_at", "owner")
+    search_fields = ("name", "event__title", "olympiad__title")
+    list_filter = ("event", "olympiad", "is_open")
     inlines = [TeamMembershipInline, JoinRequestInline]
 
 
 @admin.register(JoinRequest)
 class JoinRequestAdmin(admin.ModelAdmin):
-    list_display = ("id", "team", "olympiad", "user", "status", "created_at")
-    list_filter = ("status", "team__olympiad", "team")
-    search_fields = ("team__name", "user__email")
+    list_display = ("id", "team", "event", "olympiad", "user", "status", "created_at")
+    list_filter = ("status", "team__event", "team__olympiad", "team")
+    search_fields = ("team__name", "team__event__title", "team__olympiad__title", "user__email")
     actions = ("approve_requests", "reject_requests")
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         return queryset.select_related("team", "team__olympiad", "team__event", "user")
+
+    @admin.display(ordering="team__event", description="Event")
+    def event(self, obj: JoinRequest):
+        return obj.team.event
 
     @admin.display(ordering="team__olympiad", description="Olympiad")
     def olympiad(self, obj: JoinRequest):

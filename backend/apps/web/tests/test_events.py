@@ -193,6 +193,30 @@ class EventCatalogTests(TestCase):
         )
         self.assertRedirects(response, reverse("web:team-detail", kwargs={"pk": team.pk}))
 
+    def test_product_facing_team_flow_does_not_require_olympiad(self):
+        event = self.create_event("Standalone Team Event", participation_type=EventParticipationType.TEAM)
+        user = User.objects.create_user(email="standalone-captain@example.com", password="password123")
+        self.client.force_login(user)
+
+        create_response = self.client.post(
+            reverse("web:event-team-create", kwargs={"pk": event.pk}),
+            data={
+                "name": "Standalone Event Team",
+                "description": "No legacy olympiad required.",
+                "is_open": "on",
+            },
+        )
+
+        team = Team.objects.get(name="Standalone Event Team")
+        self.assertEqual(team.event_id, event.id)
+        self.assertIsNone(team.olympiad_id)
+        self.assertRedirects(create_response, reverse("web:team-detail", kwargs={"pk": team.pk}))
+
+        detail_response = self.client.get(reverse("web:team-detail", kwargs={"pk": team.pk}))
+        self.assertContains(detail_response, "Standalone Team Event")
+        self.assertContains(detail_response, reverse("web:event-detail", kwargs={"pk": event.pk}))
+        self.assertNotContains(detail_response, "Olympiad:")
+
     def test_event_team_create_for_individual_event_is_not_allowed(self):
         event = self.create_event(
             "Individual Event",

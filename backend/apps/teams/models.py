@@ -59,6 +59,14 @@ class Team(TimeStampedModel):
         if not self.olympiad_id and not self.event_id:
             raise ValidationError({"olympiad": "Team must be linked to an olympiad or event."})
 
+    @property
+    def resolved_event(self):
+        if self.event_id:
+            return self.event
+        if self.olympiad_id:
+            return self.olympiad.event
+        return None
+
     def __str__(self) -> str:
         return self.name
 

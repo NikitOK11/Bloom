@@ -4,10 +4,10 @@
 
 {% block content %}
 <h1>{{ team.name }}</h1>
-{% if team.event %}
+{% if team.resolved_event %}
     <p>
         Event:
-        <a href="{% url 'web:event-detail' team.event.pk %}">{{ team.event.title }}</a>
+        <a href="{% url 'web:event-detail' team.resolved_event.pk %}">{{ team.resolved_event.title }}</a>
     </p>
 {% elif team.olympiad %}
     <p>
