@@ -184,7 +184,7 @@ class OlympiadListView(ListView):
     template_name = "web/olympiad_list.html"
 
     def get_queryset(self):
-        queryset = Olympiad.objects.all()
+        queryset = Olympiad.objects.select_related("event")
         if hasattr(Olympiad, "is_active"):
             queryset = queryset.filter(is_active=True)
 
@@ -199,9 +199,24 @@ class OlympiadDetailView(DetailView):
     context_object_name = "olympiad"
     template_name = "web/olympiad_detail.html"
 
+    def get_queryset(self):
+        return Olympiad.objects.select_related("event")
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["teams"] = Team.objects.filter(olympiad=self.object).select_related("owner").order_by("name")
+        linked_event = self.object.event
+        event_supports_teams = (
+            linked_event is not None
+            and linked_event.participation_type in TEAM_CAPABLE_PARTICIPATION_TYPES
+        )
+        teams = Team.objects.none()
+        if linked_event is not None:
+            teams = Team.objects.filter(event=linked_event)
+        if not teams.exists():
+            teams = Team.objects.filter(olympiad=self.object)
+
+        context["event_supports_teams"] = event_supports_teams
+        context["teams"] = teams.select_related("owner").order_by("name", "id")
         return context
 
 

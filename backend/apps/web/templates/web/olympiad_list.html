@@ -1,20 +1,23 @@
 {% extends "web/base.html" %}
 
-{% block title %}Olympiads{% endblock %}
+{% block title %}Legacy Olympiads{% endblock %}
 
 {% block content %}
-<h1>Olympiads</h1>
+<h1>Legacy Olympiads</h1>
+<p>This legacy view remains for compatibility. Use <a href="{% url 'web:event-list' %}">Events</a> for current discovery.</p>
 {% if olympiads %}
     <ul>
         {% for olympiad in olympiads %}
             <li>
                 <a href="{% url 'web:olympiad-detail' olympiad.pk %}">{{ olympiad.title }}</a>
                 ({{ olympiad.season }})
+                {% if olympiad.event %}
+                    - Event: <a href="{% url 'web:event-detail' olympiad.event.pk %}">{{ olympiad.event.title }}</a>
+                {% endif %}
             </li>
         {% endfor %}
     </ul>
 {% else %}
-    <p>No olympiads found.</p>
+    <p>No legacy olympiads found.</p>
 {% endif %}
 {% endblock %}
-
