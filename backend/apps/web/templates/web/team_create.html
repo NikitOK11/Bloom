@@ -6,8 +6,6 @@
 <h1>Create Team</h1>
 {% if event %}
     <p>Event: <a href="{% url 'web:event-detail' event.pk %}">{{ event.title }}</a></p>
-{% elif olympiad %}
-    <p>Olympiad: <a href="{% url 'web:olympiad-detail' olympiad.pk %}">{{ olympiad.title }}</a></p>
 {% endif %}
 
 <form method="post">

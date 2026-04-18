@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('olympiads', '0001_initial'),
+        ('events', '0001_initial'),
     ]
 
     operations = [
@@ -22,10 +22,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=255)),
                 ('description', models.TextField(blank=True)),
                 ('is_open', models.BooleanField(default=True)),
-                ('olympiad', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='olympiads.olympiad')),
+                ('event', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='teams', to='events.event')),
             ],
-            options={
-                'constraints': [models.UniqueConstraint(fields=('olympiad', 'name'), name='uniq_team_name_per_olympiad')],
-            },
         ),
     ]

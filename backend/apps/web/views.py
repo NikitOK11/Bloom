@@ -10,7 +10,6 @@ from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 
 from apps.events.models import Event, EventLevel, EventParticipationType, EventProfile, EventType
-from apps.olympiads.models import Olympiad
 from apps.teams.models import JoinRequest, JoinRequestStatus, Team, TeamMembership, TeamMembershipRole
 from apps.web.forms import JoinRequestForm, TeamCreateForm
 
@@ -178,91 +177,6 @@ class EventDetailView(DetailView):
         return context
 
 
-class OlympiadListView(ListView):
-    model = Olympiad
-    context_object_name = "olympiads"
-    template_name = "web/olympiad_list.html"
-
-    def get_queryset(self):
-        queryset = Olympiad.objects.select_related("event")
-        if hasattr(Olympiad, "is_active"):
-            queryset = queryset.filter(is_active=True)
-
-        has_created_at = any(field.name == "created_at" for field in Olympiad._meta.fields)
-        if has_created_at:
-            return queryset.order_by("-created_at", "-id")
-        return queryset.order_by("-id")
-
-
-class OlympiadDetailView(DetailView):
-    model = Olympiad
-    context_object_name = "olympiad"
-    template_name = "web/olympiad_detail.html"
-
-    def get_queryset(self):
-        return Olympiad.objects.select_related("event")
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        linked_event = self.object.event
-        event_supports_teams = (
-            linked_event is not None
-            and linked_event.participation_type in TEAM_CAPABLE_PARTICIPATION_TYPES
-        )
-        teams = Team.objects.none()
-        if linked_event is not None:
-            teams = Team.objects.filter(event=linked_event)
-        if not teams.exists():
-            teams = Team.objects.filter(olympiad=self.object)
-
-        context["event_supports_teams"] = event_supports_teams
-        context["teams"] = teams.select_related("owner").order_by("name", "id")
-        return context
-
-
-class TeamCreateView(LoginRequiredMixin, FormView):
-    form_class = TeamCreateForm
-    template_name = "web/team_create.html"
-
-    def dispatch(self, request, *args, **kwargs):
-        self.olympiad = get_object_or_404(Olympiad, pk=self.kwargs["pk"])
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["olympiad"] = self.olympiad
-        return context
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["olympiad"] = self.olympiad
-        kwargs["owner"] = self.request.user
-        return kwargs
-
-    def form_valid(self, form):
-        team = form.save(commit=False)
-        team.olympiad = self.olympiad
-        team.owner = self.request.user
-
-        try:
-            with transaction.atomic():
-                team.full_clean()
-                team.save()
-                captain_membership = TeamMembership(
-                    team=team,
-                    user=self.request.user,
-                    role=TeamMembershipRole.CAPTAIN,
-                )
-                captain_membership.full_clean()
-                captain_membership.save()
-        except ValidationError as exc:
-            _add_validation_to_form(form, exc)
-            return self.form_invalid(form)
-
-        messages.success(self.request, "Team created successfully.")
-        return redirect("web:team-detail", pk=team.pk)
-
-
 class EventTeamCreateView(LoginRequiredMixin, FormView):
     form_class = TeamCreateForm
     template_name = "web/team_create.html"
@@ -271,29 +185,22 @@ class EventTeamCreateView(LoginRequiredMixin, FormView):
         self.event = get_object_or_404(Event, pk=self.kwargs["pk"])
         if self.event.participation_type not in TEAM_CAPABLE_PARTICIPATION_TYPES:
             raise Http404("Teams are not available for this event.")
-        try:
-            self.olympiad = self.event.legacy_olympiad
-        except Olympiad.DoesNotExist:
-            self.olympiad = None
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["event"] = self.event
-        context["olympiad"] = self.olympiad
         return context
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["event"] = self.event
-        kwargs["olympiad"] = self.olympiad
         kwargs["owner"] = self.request.user
         return kwargs
 
     def form_valid(self, form):
         team = form.save(commit=False)
         team.event = self.event
-        team.olympiad = self.olympiad
         team.owner = self.request.user
 
         try:
@@ -321,7 +228,7 @@ class TeamDetailView(DetailView):
     template_name = "web/team_detail.html"
 
     def get_queryset(self):
-        return Team.objects.select_related("event", "olympiad__event", "owner")
+        return Team.objects.select_related("event", "owner")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -384,7 +291,7 @@ class TeamDetailView(DetailView):
 @login_required
 @require_POST
 def join_team_view(request: HttpRequest, pk: int) -> HttpResponse:
-    team = get_object_or_404(Team.objects.select_related("olympiad", "event"), pk=pk)
+    team = get_object_or_404(Team.objects.select_related("event"), pk=pk)
     form = JoinRequestForm(request.POST)
     if not form.is_valid():
         messages.error(request, "Could not submit join request. Please check the form.")

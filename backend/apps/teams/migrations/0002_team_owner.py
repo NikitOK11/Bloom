@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name="owned_olympiad_teams",
+                related_name="owned_teams",
                 to=settings.AUTH_USER_MODEL,
             ),
         ),
@@ -33,7 +33,7 @@ class Migration(migrations.Migration):
             name="owner",
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name="owned_olympiad_teams",
+                related_name="owned_teams",
                 to=settings.AUTH_USER_MODEL,
             ),
         ),

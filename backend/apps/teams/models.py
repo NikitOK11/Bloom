@@ -19,35 +19,19 @@ class JoinRequestStatus(models.TextChoices):
 
 
 class Team(TimeStampedModel):
-    olympiad = models.ForeignKey(
-        "olympiads.Olympiad",
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-    )
     event = models.ForeignKey(
         "events.Event",
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
         related_name="teams",
     )
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="owned_olympiad_teams",
+        related_name="owned_teams",
     )
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     is_open = models.BooleanField(default=True)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["olympiad", "name"],
-                name="uniq_team_name_per_olympiad",
-            )
-        ]
 
     def save(self, *args, **kwargs):
         if not self.owner_id:
@@ -56,16 +40,8 @@ class Team(TimeStampedModel):
 
     def clean(self):
         super().clean()
-        if not self.olympiad_id and not self.event_id:
-            raise ValidationError({"olympiad": "Team must be linked to an olympiad or event."})
-
-    @property
-    def resolved_event(self):
-        if self.event_id:
-            return self.event
-        if self.olympiad_id:
-            return self.olympiad.event
-        return None
+        if not self.event_id:
+            raise ValidationError({"event": "Team must be linked to an event."})
 
     def __str__(self) -> str:
         return self.name
