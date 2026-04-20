@@ -41,7 +41,28 @@ class EventParticipationType(models.TextChoices):
     BOTH = "BOTH", "Both"
 
 
+class EventTypeCode(models.TextChoices):
+    OLYMPIAD = "olympiad", "Olympiad"
+    HACKATHON = "hackathon", "Hackathon"
+    CASE_CHAMPIONSHIP = "case_championship", "Case championship"
+
+
+class EventLevelCode(models.TextChoices):
+    INTERNATIONAL = "international", "International"
+    VSOSH = "vsosh", "VSOSH"
+    LEVEL_1 = "level_1", "Level 1"
+    LEVEL_2 = "level_2", "Level 2"
+    LEVEL_3 = "level_3", "Level 3"
+
+
+class EventParticipationMode(models.TextChoices):
+    INDIVIDUAL = "individual", "Individual"
+    TEAM = "team", "Team"
+    HYBRID = "hybrid", "Hybrid"
+
+
 class Event(TimeStampedModel):
+    name = models.CharField(max_length=255, null=True, blank=True)
     title = models.CharField(max_length=255)
     short_description = models.CharField(max_length=500, blank=True)
     description = models.TextField(blank=True)
@@ -49,6 +70,25 @@ class Event(TimeStampedModel):
     organizer = models.CharField(max_length=255, blank=True)
     is_active = models.BooleanField(default=True)
     registration_deadline = models.DateField(null=True, blank=True)
+    event_type_code = models.CharField(
+        max_length=32,
+        choices=EventTypeCode.choices,
+        null=True,
+        blank=True,
+    )
+    profile_code = models.CharField(max_length=128, null=True, blank=True)
+    level_code = models.CharField(
+        max_length=32,
+        choices=EventLevelCode.choices,
+        null=True,
+        blank=True,
+    )
+    participation_mode = models.CharField(
+        max_length=32,
+        choices=EventParticipationMode.choices,
+        null=True,
+        blank=True,
+    )
     event_type = models.ForeignKey(EventType, on_delete=models.PROTECT)
     level = models.ForeignKey(EventLevel, on_delete=models.SET_NULL, null=True, blank=True)
     participation_type = models.CharField(
@@ -57,6 +97,14 @@ class Event(TimeStampedModel):
     )
     preferences = models.TextField(blank=True)
     profiles = models.ManyToManyField(EventProfile, related_name="events", blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["name"], name="event_name_idx"),
+            models.Index(fields=["event_type_code", "profile_code"], name="event_type_profile_idx"),
+            models.Index(fields=["level_code"], name="event_level_code_idx"),
+            models.Index(fields=["participation_mode"], name="event_participation_mode_idx"),
+        ]
 
     def __str__(self) -> str:
         return self.title

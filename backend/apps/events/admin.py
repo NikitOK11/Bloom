@@ -31,15 +31,28 @@ class EventLevelAdmin(admin.ModelAdmin):
 class EventAdmin(admin.ModelAdmin):
     list_display = (
         "id",
+        "name",
         "title",
+        "event_type_code",
         "event_type",
+        "profile_code",
+        "level_code",
         "level",
+        "participation_mode",
         "participation_type",
         "is_active",
         "registration_deadline",
     )
-    list_filter = ("event_type", "level", "participation_type", "is_active")
-    search_fields = ("title", "organizer")
+    list_filter = (
+        "event_type_code",
+        "event_type",
+        "level_code",
+        "level",
+        "participation_mode",
+        "participation_type",
+        "is_active",
+    )
+    search_fields = ("name", "title", "organizer")
     filter_horizontal = ("profiles",)
 
 
