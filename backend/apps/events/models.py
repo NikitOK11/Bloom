@@ -1,4 +1,6 @@
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import F, Q
 
 from apps.common.models import TimeStampedModel
 
@@ -58,3 +60,100 @@ class Event(TimeStampedModel):
 
     def __str__(self) -> str:
         return self.title
+
+
+class EventEditionStatus(models.TextChoices):
+    DRAFT = "draft", "Draft"
+    PLANNED = "planned", "Planned"
+    REGISTRATION_OPEN = "registration_open", "Registration open"
+    ONGOING = "ongoing", "Ongoing"
+    FINISHED = "finished", "Finished"
+    CANCELLED = "cancelled", "Cancelled"
+    ARCHIVED = "archived", "Archived"
+
+
+class EventEditionStageStatus(models.TextChoices):
+    PLANNED = "planned", "Planned"
+    ONGOING = "ongoing", "Ongoing"
+    FINISHED = "finished", "Finished"
+    CANCELLED = "cancelled", "Cancelled"
+
+
+class EventEdition(TimeStampedModel):
+    event = models.ForeignKey(Event, on_delete=models.PROTECT, related_name="editions")
+    edition_label = models.CharField(max_length=64)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    total_stages = models.PositiveIntegerField()
+    current_stage = models.ForeignKey(
+        "events.EventEditionStage",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    status = models.CharField(
+        max_length=32,
+        choices=EventEditionStatus.choices,
+        default=EventEditionStatus.DRAFT,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["event", "edition_label"],
+                name="uniq_event_edition_label",
+            ),
+            models.CheckConstraint(
+                condition=Q(total_stages__gt=0),
+                name="event_edition_total_stages_gt_0",
+            ),
+            models.CheckConstraint(
+                condition=Q(start_date__lte=F("end_date")),
+                name="event_edition_start_lte_end",
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+        if self.current_stage_id and self.current_stage.edition_id != self.pk:
+            raise ValidationError(
+                {"current_stage": "Current stage must belong to this event edition."}
+            )
+
+    def __str__(self) -> str:
+        return f"{self.event} - {self.edition_label}"
+
+
+class EventEditionStage(TimeStampedModel):
+    edition = models.ForeignKey(EventEdition, on_delete=models.CASCADE, related_name="stages")
+    stage_number = models.PositiveIntegerField()
+    stage_name = models.CharField(max_length=128)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    status = models.CharField(
+        max_length=32,
+        choices=EventEditionStageStatus.choices,
+        default=EventEditionStageStatus.PLANNED,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["edition", "stage_number"],
+                name="uniq_event_edition_stage_number",
+            ),
+            models.CheckConstraint(
+                condition=Q(stage_number__gt=0),
+                name="event_edition_stage_number_gt_0",
+            ),
+            models.CheckConstraint(
+                condition=Q(start_date__isnull=True)
+                | Q(end_date__isnull=True)
+                | Q(start_date__lte=F("end_date")),
+                name="event_edition_stage_start_lte_end",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.edition} - stage {self.stage_number}: {self.stage_name}"
