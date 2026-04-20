@@ -1,11 +1,11 @@
 {% extends "web/base.html" %}
 
-{% block title %}{{ event.title }}{% endblock %}
+{% block title %}{% firstof event.name event.title %}{% endblock %}
 
 {% block content %}
 <p><a href="{% url 'web:event-list' %}">Back to events</a></p>
 
-<h1>{{ event.title }}</h1>
+<h1>{% firstof event.name event.title %}</h1>
 
 {% if not event.is_active %}
     <p>Status: inactive</p>
@@ -31,21 +31,25 @@
     </dd>
 
     <dt>Event type</dt>
-    <dd>{{ event.event_type.name }}</dd>
+    <dd>{{ event.get_event_type_code_display|default:event.event_type.name|default:"Not specified" }}</dd>
 
     <dt>Event level</dt>
-    <dd>{% if event.level %}{{ event.level.name }}{% else %}Not specified{% endif %}</dd>
+    <dd>{{ event.get_level_code_display|default:event.level.name|default:"Not specified" }}</dd>
 
     <dt>Participation type</dt>
-    <dd>{{ event.get_participation_type_display }}</dd>
+    <dd>{{ event.get_participation_mode_display|default:event.get_participation_type_display|default:"Not specified" }}</dd>
 
-    <dt>Profiles</dt>
+    <dt>Profile</dt>
     <dd>
-        {% for profile in event.profiles.all %}
-            {{ profile.name }}{% if not forloop.last %}, {% endif %}
-        {% empty %}
-            Not specified
-        {% endfor %}
+        {% if event.profile_code %}
+            {{ event.profile_code }}
+        {% else %}
+            {% for profile in event.profiles.all %}
+                {{ profile.name }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+                Not specified
+            {% endfor %}
+        {% endif %}
     </dd>
 
     <dt>Preferences</dt>
@@ -54,6 +58,39 @@
     <dt>Registration deadline</dt>
     <dd>{{ event.registration_deadline|date:"Y-m-d"|default:"Not specified" }}</dd>
 </dl>
+
+<section>
+    <h2>Editions</h2>
+    {% if event_editions %}
+        <ul>
+            {% for edition in event_editions %}
+                <li>
+                    <strong>{{ edition.edition_label }}</strong>
+                    - {{ edition.get_status_display }}
+                    ({{ edition.start_date|date:"Y-m-d" }} to {{ edition.end_date|date:"Y-m-d" }})
+                    {% if edition.current_stage %}
+                        <p>Current stage: {{ edition.current_stage.stage_name }}</p>
+                    {% endif %}
+                    <ul>
+                        {% for stage in edition.stages.all %}
+                            <li>
+                                Stage {{ stage.stage_number }}: {{ stage.stage_name }}
+                                - {{ stage.get_status_display }}
+                                {% if stage.start_date or stage.end_date %}
+                                    ({{ stage.start_date|date:"Y-m-d"|default:"date TBD" }} to {{ stage.end_date|date:"Y-m-d"|default:"date TBD" }})
+                                {% endif %}
+                            </li>
+                        {% empty %}
+                            <li>No stages added yet.</li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No editions added yet.</p>
+    {% endif %}
+</section>
 
 {% if show_teams_block %}
     <section>

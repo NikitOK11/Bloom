@@ -9,12 +9,9 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 
-from apps.events.models import Event, EventLevel, EventParticipationType, EventProfile, EventType
+from apps.events.models import Event, EventLevelCode, EventParticipationMode, EventTypeCode
 from apps.teams.models import JoinRequest, JoinRequestStatus, Team, TeamMembership, TeamMembershipRole
 from apps.web.forms import JoinRequestForm, TeamCreateForm
-
-
-REFERENCE_ORDERING = ("sort_order", "name", "id")
 
 
 def _user_display_name(user) -> str:
@@ -84,10 +81,14 @@ def _add_validation_to_form(form, exc: ValidationError) -> None:
         form.add_error(None, error)
 
 
-TEAM_CAPABLE_PARTICIPATION_TYPES = {
-    EventParticipationType.TEAM,
-    EventParticipationType.BOTH,
+TEAM_CAPABLE_PARTICIPATION_MODES = {
+    EventParticipationMode.TEAM,
+    EventParticipationMode.HYBRID,
 }
+
+
+def _code_label(value: str) -> str:
+    return value.replace("_", " ").title()
 
 
 class HomeView(TemplateView):
@@ -106,26 +107,26 @@ class EventListView(ListView):
             .prefetch_related("profiles")
         )
 
-        profile_slug = self.request.GET.get("profile", "").strip()
-        if profile_slug and EventProfile.objects.filter(slug=profile_slug, is_active=True).exists():
-            queryset = queryset.filter(profiles__slug=profile_slug).distinct()
+        profile_code = self.request.GET.get("profile_code", "").strip()
+        if profile_code:
+            queryset = queryset.filter(profile_code=profile_code)
 
-        event_type_slug = self.request.GET.get("event_type", "").strip()
-        if event_type_slug and EventType.objects.filter(slug=event_type_slug, is_active=True).exists():
-            queryset = queryset.filter(event_type__slug=event_type_slug)
+        event_type_code = self.request.GET.get("event_type_code", "").strip()
+        if event_type_code in EventTypeCode.values:
+            queryset = queryset.filter(event_type_code=event_type_code)
 
-        level_slug = self.request.GET.get("level", "").strip()
-        if level_slug and EventLevel.objects.filter(slug=level_slug, is_active=True).exists():
-            queryset = queryset.filter(level__slug=level_slug)
+        level_code = self.request.GET.get("level_code", "").strip()
+        if level_code in EventLevelCode.values:
+            queryset = queryset.filter(level_code=level_code)
 
-        participation_type = self.request.GET.get("participation_type", "").strip()
-        if participation_type in EventParticipationType.values:
-            queryset = queryset.filter(participation_type=participation_type)
+        participation_mode = self.request.GET.get("participation_mode", "").strip()
+        if participation_mode in EventParticipationMode.values:
+            queryset = queryset.filter(participation_mode=participation_mode)
 
         search_query = self.request.GET.get("q", "").strip()
         if search_query:
             queryset = queryset.filter(
-                Q(title__icontains=search_query) | Q(organizer__icontains=search_query)
+                Q(name__icontains=search_query) | Q(organizer__icontains=search_query)
             )
 
         return queryset.order_by(
@@ -136,17 +137,27 @@ class EventListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        profile_codes = (
+            Event.objects.filter(is_active=True)
+            .exclude(profile_code__isnull=True)
+            .exclude(profile_code="")
+            .order_by("profile_code")
+            .values_list("profile_code", flat=True)
+            .distinct()
+        )
         context.update(
             {
-                "profiles": EventProfile.objects.filter(is_active=True).order_by(*REFERENCE_ORDERING),
-                "event_types": EventType.objects.filter(is_active=True).order_by(*REFERENCE_ORDERING),
-                "levels": EventLevel.objects.filter(is_active=True).order_by(*REFERENCE_ORDERING),
-                "participation_types": EventParticipationType.choices,
+                "profile_code_choices": [
+                    (profile_code, _code_label(profile_code)) for profile_code in profile_codes
+                ],
+                "event_type_code_choices": EventTypeCode.choices,
+                "level_code_choices": EventLevelCode.choices,
+                "participation_mode_choices": EventParticipationMode.choices,
                 "selected_filters": {
-                    "profile": self.request.GET.get("profile", "").strip(),
-                    "event_type": self.request.GET.get("event_type", "").strip(),
-                    "level": self.request.GET.get("level", "").strip(),
-                    "participation_type": self.request.GET.get("participation_type", "").strip(),
+                    "profile_code": self.request.GET.get("profile_code", "").strip(),
+                    "event_type_code": self.request.GET.get("event_type_code", "").strip(),
+                    "level_code": self.request.GET.get("level_code", "").strip(),
+                    "participation_mode": self.request.GET.get("participation_mode", "").strip(),
                     "q": self.request.GET.get("q", "").strip(),
                 },
             }
@@ -162,17 +173,21 @@ class EventDetailView(DetailView):
     def get_queryset(self):
         return (
             Event.objects.select_related("event_type", "level")
-            .prefetch_related("profiles", "teams")
+            .prefetch_related("profiles", "teams", "editions__stages")
         )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        show_teams_block = self.object.participation_type in TEAM_CAPABLE_PARTICIPATION_TYPES
+        show_teams_block = self.object.participation_mode in TEAM_CAPABLE_PARTICIPATION_MODES
         context["show_teams_block"] = show_teams_block
         context["event_teams"] = (
             self.object.teams.select_related("owner").order_by("name", "id")
             if show_teams_block
             else []
+        )
+        context["event_editions"] = self.object.editions.prefetch_related("stages").order_by(
+            "-start_date",
+            "-id",
         )
         return context
 
@@ -183,7 +198,7 @@ class EventTeamCreateView(LoginRequiredMixin, FormView):
 
     def dispatch(self, request, *args, **kwargs):
         self.event = get_object_or_404(Event, pk=self.kwargs["pk"])
-        if self.event.participation_type not in TEAM_CAPABLE_PARTICIPATION_TYPES:
+        if self.event.participation_mode not in TEAM_CAPABLE_PARTICIPATION_MODES:
             raise Http404("Teams are not available for this event.")
         return super().dispatch(request, *args, **kwargs)
 

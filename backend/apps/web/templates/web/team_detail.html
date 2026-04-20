@@ -7,7 +7,7 @@
 {% if team.event %}
     <p>
         Event:
-        <a href="{% url 'web:event-detail' team.event.pk %}">{{ team.event.title }}</a>
+        <a href="{% url 'web:event-detail' team.event.pk %}">{% firstof team.event.name team.event.title %}</a>
     </p>
 {% endif %}
 <p>{{ team.description|default:"No description." }}</p>

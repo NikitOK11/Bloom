@@ -100,6 +100,7 @@ python manage.py test
 - Legacy olympiad model/app полностью удален из проекта; новые product-facing данные создавать только через `Event`/Событие.
 - `Event`/Событие — основная модель чтения для пользовательских страниц и редактирования в админке.
 - Event schema находится в переходной фазе: старые richer fields пока остаются, а новые canonical scalar fields добавляются как мост к финальной DB-схеме.
+- Product-facing код теперь считает canonical scalar fields (`name`, `event_type_code`, `profile_code`, `level_code`, `participation_mode`, `official_url`) основным источником; legacy Event fields остаются только для совместимости во время миграции.
 - `EventEdition` описывает конкретный сезон/цикл `Event`/События; `EventEditionStage` описывает этап внутри одного сезона/цикла.
 - Новое создание команд должно идти от `Event`; страницы событий — основной экран просмотра команд.
 - `Team.event` — единственная допустимая связь команды с `Event`/Событием.

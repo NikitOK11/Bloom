@@ -29,6 +29,25 @@ class EventLevelAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
+    fields = (
+        "name",
+        "event_type_code",
+        "profile_code",
+        "level_code",
+        "participation_mode",
+        "official_url",
+        "is_active",
+        "title",
+        "event_type",
+        "profiles",
+        "level",
+        "participation_type",
+        "short_description",
+        "description",
+        "organizer",
+        "preferences",
+        "registration_deadline",
+    )
     list_display = (
         "id",
         "name",
@@ -69,7 +88,7 @@ class EventEditionAdmin(admin.ModelAdmin):
         "end_date",
     )
     list_filter = ("status",)
-    search_fields = ("event__title", "edition_label")
+    search_fields = ("event__name", "event__title", "edition_label")
 
 
 @admin.register(EventEditionStage)

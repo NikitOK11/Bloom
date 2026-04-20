@@ -5,7 +5,7 @@
 {% block content %}
 <h1>Create Team</h1>
 {% if event %}
-    <p>Event: <a href="{% url 'web:event-detail' event.pk %}">{{ event.title }}</a></p>
+    <p>Event: <a href="{% url 'web:event-detail' event.pk %}">{% firstof event.name event.title %}</a></p>
 {% endif %}
 
 <form method="post">

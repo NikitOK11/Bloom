@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from apps.accounts.models import User
-from apps.events.models import Event, EventParticipationType, EventType
+from apps.events.models import Event, EventParticipationMode, EventParticipationType, EventType
 from apps.teams.models import JoinRequest, Team, TeamMembership, TeamMembershipRole
 
 
@@ -13,8 +13,11 @@ class WebScenario1Tests(TestCase):
     def create_event(self, title="Team Hackathon"):
         return Event.objects.create(
             title=title,
+            name=title,
             event_type=self.event_type,
+            event_type_code="hackathon",
             participation_type=EventParticipationType.TEAM,
+            participation_mode=EventParticipationMode.TEAM,
         )
 
     def test_web_team_create_creates_captain_membership(self):

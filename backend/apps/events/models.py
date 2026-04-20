@@ -107,7 +107,7 @@ class Event(TimeStampedModel):
         ]
 
     def __str__(self) -> str:
-        return self.title
+        return self.name or self.title
 
 
 class EventEditionStatus(models.TextChoices):
