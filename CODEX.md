@@ -14,6 +14,7 @@
 - Конфигурация окружения: `django-environ`.
 - Зависимости проекта: `backend/requirements.txt`.
 - Шаблон переменных окружения: `backend/.env.example`.
+- Локальный запуск поддерживается двумя путями: обычный Python/venv и Docker Compose для Django + PostgreSQL.
 
 ## 3) Навигация по структуре проекта
 
@@ -67,6 +68,13 @@ python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
 ```
+
+### Docker local development (из корня репозитория)
+```bash
+docker compose up --build
+```
+- Docker — поддерживаемый локальный путь запуска вместе с non-Docker flow.
+- PR-sized изменения по-прежнему сразу коммитить и пушить в `origin main`.
 
 ## 6) Команды проверок (минимум)
 ```bash

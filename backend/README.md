@@ -51,3 +51,28 @@ python manage.py runserver
 
 - `GET http://127.0.0.1:8000/api/health/`
 - Expected response: `{"status":"ok"}`
+
+## Docker local development
+
+From the repository root:
+
+```bash
+docker compose up --build
+```
+
+The app will be available at `http://127.0.0.1:8000/`.
+PostgreSQL is exposed on host port `5433` by default to avoid clashing with a local PostgreSQL install.
+Override it with `POSTGRES_HOST_PORT=5432 docker compose up --build` if needed.
+
+Stop containers:
+
+```bash
+docker compose down
+```
+
+Run management commands:
+
+```bash
+docker compose exec web python manage.py createsuperuser
+docker compose exec web python manage.py test
+```

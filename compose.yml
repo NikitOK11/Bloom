@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: bloom
+      POSTGRES_USER: bloom
+      POSTGRES_PASSWORD: bloom
+    ports:
+      - "${POSTGRES_HOST_PORT:-5433}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bloom -d bloom"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: ./backend
+    environment:
+      SECRET_KEY: django-insecure-docker-local
+      DEBUG: "True"
+      ALLOWED_HOSTS: 127.0.0.1,localhost
+      DATABASE_URL: postgres://bloom:bloom@db:5432/bloom
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
