@@ -1,0 +1,345 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Bloom\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-24 00:00+0300\n"
+"PO-Revision-Date: 2026-04-24 00:00+0300\n"
+"Last-Translator: Bloom\n"
+"Language-Team: Bloom\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Bloom"
+msgstr "Bloom"
+
+msgid "Bloom — каталог событий"
+msgstr "Bloom — event catalog"
+
+msgid "Основная навигация"
+msgstr "Primary navigation"
+
+msgid "Главная"
+msgstr "Home"
+
+msgid "События"
+msgstr "Events"
+
+msgid "Админка"
+msgstr "Admin"
+
+msgid "Переключение языка"
+msgstr "Language switcher"
+
+msgid "Войти"
+msgstr "Log in"
+
+msgid "Выйти"
+msgstr "Log out"
+
+msgid "Каталог событий для студентов и школьников"
+msgstr "Event catalog for students"
+
+msgid "Найдите олимпиаду, хакатон или кейс-чемпионат без лишнего шума"
+msgstr "Find an olympiad, hackathon, or case championship without the noise"
+
+msgid "Bloom помогает быстро сравнить события по профилю, уровню и формату участия, а для командных треков сразу перейти к поиску команды."
+msgstr "Bloom helps you compare events by profile, level, and participation format, then move toward team discovery for team-based tracks."
+
+msgid "Смотреть события"
+msgstr "Discover events"
+
+msgid "Основные возможности"
+msgstr "Core paths"
+
+msgid "Главный сценарий"
+msgstr "Primary path"
+
+msgid "Открывайте подходящие события"
+msgstr "Discover relevant events"
+
+msgid "Фильтры по профилю, типу события, уровню и формату участия помогают быстрее сузить выбор."
+msgstr "Filters by profile, event type, level, and participation format help narrow the choice faster."
+
+msgid "Командные треки"
+msgstr "Team tracks"
+
+msgid "Создавайте команды там, где это уместно"
+msgstr "Create teams where it makes sense"
+
+msgid "Командный сценарий остаётся вторичным и доступен только для событий с командным или смешанным участием."
+msgstr "Team flow remains secondary and is available only for team or hybrid events."
+
+msgid "Для редакторов"
+msgstr "For editors"
+
+msgid "Данные управляются через админку"
+msgstr "Data is managed through admin"
+
+msgid "Админка остаётся служебным инструментом, а пользовательский путь начинается с каталога событий."
+msgstr "Admin remains an editorial tool, while the user path starts with the event catalog."
+
+msgid "Открыть админку"
+msgstr "Open admin"
+
+msgid "Поиск событий"
+msgstr "Event discovery"
+
+msgid "Каталог олимпиад, хакатонов и кейс-чемпионатов"
+msgstr "Catalog of olympiads, hackathons, and case championships"
+
+msgid "Отберите события по профилю, уровню и формату участия. Командные возможности показываются только там, где они действительно подходят."
+msgstr "Filter events by profile, level, and participation format. Team options appear only where they fit."
+
+msgid "Поиск"
+msgstr "Search"
+
+msgid "Профиль"
+msgstr "Profile"
+
+msgid "Все профили"
+msgstr "All profiles"
+
+msgid "Тип события"
+msgstr "Event type"
+
+msgid "Все типы"
+msgstr "All types"
+
+msgid "Уровень"
+msgstr "Level"
+
+msgid "Все уровни"
+msgstr "All levels"
+
+msgid "Формат участия"
+msgstr "Participation format"
+
+msgid "Любой формат"
+msgstr "Any format"
+
+msgid "Применить фильтры"
+msgstr "Apply filters"
+
+msgid "Сбросить"
+msgstr "Reset"
+
+msgid "Список событий"
+msgstr "Event list"
+
+msgid "Официальный сайт"
+msgstr "Official website"
+
+msgid "Профиль не указан"
+msgstr "Profile not specified"
+
+msgid "Регистрация до"
+msgstr "Registration until"
+
+msgid "По выбранным фильтрам событий пока нет."
+msgstr "No events match the selected filters yet."
+
+msgid "Назад к событиям"
+msgstr "Back to events"
+
+msgid "Событие"
+msgstr "Event"
+
+msgid "Неактивно"
+msgstr "Inactive"
+
+msgid "Описание"
+msgstr "Description"
+
+msgid "Описание пока не добавлено."
+msgstr "No description yet."
+
+msgid "Ключевые детали"
+msgstr "Key details"
+
+msgid "Организатор"
+msgstr "Organizer"
+
+msgid "Не указано"
+msgstr "Not specified"
+
+msgid "Преференции"
+msgstr "Preferences"
+
+msgid "Регистрация"
+msgstr "Registration"
+
+msgid "Сезоны и этапы"
+msgstr "Editions and stages"
+
+msgid "Текущий этап:"
+msgstr "Current stage:"
+
+msgid "Этап"
+msgstr "Stage"
+
+msgid "дата уточняется"
+msgstr "date TBD"
+
+msgid "Этапы пока не добавлены."
+msgstr "No stages added yet."
+
+msgid "Сезоны пока не добавлены."
+msgstr "No editions added yet."
+
+msgid "Командное участие"
+msgstr "Team participation"
+
+msgid "Создать команду"
+msgstr "Create team"
+
+msgid "Командная поддержка для событий будет развиваться дальше."
+msgstr "Team support for events will continue to evolve."
+
+msgid "Войдите"
+msgstr "Log in"
+
+msgid "чтобы создать команду."
+msgstr "to create a team."
+
+msgid "Открыта"
+msgstr "Open"
+
+msgid "Закрыта"
+msgstr "Closed"
+
+msgid "К этому событию пока нет привязанных команд."
+msgstr "No teams linked to this event yet."
+
+msgid "Команда"
+msgstr "Team"
+
+msgid "Событие:"
+msgstr "Event:"
+
+msgid "Открыта для заявок"
+msgstr "Open for requests"
+
+msgid "Участники"
+msgstr "Members"
+
+msgid "Контакт:"
+msgstr "Contact:"
+
+msgid "В команде пока нет участников."
+msgstr "No members yet."
+
+msgid "Контакты участников доступны вам в этой команде."
+msgstr "Member contacts are visible to you in this team."
+
+msgid "Контакты скрыты для вашего текущего уровня доступа."
+msgstr "Contacts are hidden for your current access level."
+
+msgid "Заявка в команду"
+msgstr "Join team"
+
+msgid "Отправить заявку"
+msgstr "Submit join request"
+
+msgid "Вы уже отправили заявку в эту команду."
+msgstr "You already submitted a join request."
+
+msgid "Вы уже состоите в этой команде."
+msgstr "You are already in this team."
+
+msgid "чтобы подать заявку в команду."
+msgstr "to join this team."
+
+msgid "Заявки в ожидании"
+msgstr "Pending join requests"
+
+msgid "Одобрить"
+msgstr "Approve"
+
+msgid "Отклонить"
+msgstr "Reject"
+
+msgid "Новых заявок пока нет."
+msgstr "No pending requests."
+
+msgid "Вход"
+msgstr "Login"
+
+msgid "Войдите, чтобы создавать команды и управлять заявками."
+msgstr "Log in to create teams and manage requests."
+
+msgid "Название команды"
+msgstr "Team name"
+
+msgid "Команда открыта для заявок"
+msgstr "Team is open for requests"
+
+msgid "Коротко расскажите, кого ищете и как планируете участвовать."
+msgstr "Briefly describe who you are looking for and how you plan to participate."
+
+msgid "Сообщение капитану"
+msgstr "Message to captain"
+
+msgid "Можно коротко рассказать о себе и роли в команде."
+msgstr "You can briefly describe yourself and your role on the team."
+
+msgid "Олимпиада"
+msgstr "Olympiad"
+
+msgid "Хакатон"
+msgstr "Hackathon"
+
+msgid "Кейс-чемпионат"
+msgstr "Case championship"
+
+msgid "Международный"
+msgstr "International"
+
+msgid "ВсОШ"
+msgstr "VSOSH"
+
+msgid "Уровень 1"
+msgstr "Level 1"
+
+msgid "Уровень 2"
+msgstr "Level 2"
+
+msgid "Уровень 3"
+msgstr "Level 3"
+
+msgid "Индивидуально"
+msgstr "Individual"
+
+msgid "Командно"
+msgstr "Team"
+
+msgid "Индивидуально или командно"
+msgstr "Individual or team"
+
+msgid "Команды недоступны для этого события."
+msgstr "Teams are not available for this event."
+
+msgid "Команда создана."
+msgstr "Team created."
+
+msgid "Не удалось отправить заявку. Проверьте форму."
+msgstr "Could not submit join request. Please check the form."
+
+msgid "Заявка отправлена."
+msgstr "Join request submitted."
+
+msgid "Управлять заявками может только капитан."
+msgstr "Only the captain can manage requests."
+
+msgid "Одобрить можно только заявку в ожидании."
+msgstr "Only pending requests can be approved."
+
+msgid "Заявка одобрена."
+msgstr "Join request approved."
+
+msgid "Отклонить можно только заявку в ожидании."
+msgstr "Only pending requests can be rejected."
+
+msgid "Заявка отклонена."
+msgstr "Join request rejected."

@@ -1,32 +1,40 @@
 {% extends "web/base.html" %}
+{% load i18n web_labels %}
 
-{% block title %}Events{% endblock %}
+{% block title %}{% trans "События" %}{% endblock %}
 
 {% block content %}
-<h1>Events</h1>
+<section class="stack">
+    <p class="eyebrow">{% trans "Поиск событий" %}</p>
+    <h1 class="page-title">{% trans "Каталог олимпиад, хакатонов и кейс-чемпионатов" %}</h1>
+    <p class="page-copy">
+        {% trans "Отберите события по профилю, уровню и формату участия. Командные возможности показываются только там, где они действительно подходят." %}
+    </p>
+</section>
 
-<form method="get">
-    <p>
-        <label for="id_q">Search</label>
+<form class="filter-panel page-section" method="get">
+    <div class="filter-grid">
+    <p class="form-field">
+        <label for="id_q">{% trans "Поиск" %}</label>
         <input id="id_q" type="search" name="q" value="{{ selected_filters.q }}">
     </p>
 
-    <p>
-        <label for="id_profile">Profile</label>
+    <p class="form-field">
+        <label for="id_profile">{% trans "Профиль" %}</label>
         <select id="id_profile" name="profile_code">
-            <option value="">All profiles</option>
+            <option value="">{% trans "Все профили" %}</option>
             {% for value, label in profile_code_choices %}
                 <option value="{{ value }}"{% if selected_filters.profile_code == value %} selected{% endif %}>
-                    {{ label }}
+                    {{ label|profile_label }}
                 </option>
             {% endfor %}
         </select>
     </p>
 
-    <p>
-        <label for="id_event_type">Event type</label>
+    <p class="form-field">
+        <label for="id_event_type">{% trans "Тип события" %}</label>
         <select id="id_event_type" name="event_type_code">
-            <option value="">All event types</option>
+            <option value="">{% trans "Все типы" %}</option>
             {% for value, label in event_type_code_choices %}
                 <option value="{{ value }}"{% if selected_filters.event_type_code == value %} selected{% endif %}>
                     {{ label }}
@@ -35,10 +43,10 @@
         </select>
     </p>
 
-    <p>
-        <label for="id_level">Event level</label>
+    <p class="form-field">
+        <label for="id_level">{% trans "Уровень" %}</label>
         <select id="id_level" name="level_code">
-            <option value="">All levels</option>
+            <option value="">{% trans "Все уровни" %}</option>
             {% for value, label in level_code_choices %}
                 <option value="{{ value }}"{% if selected_filters.level_code == value %} selected{% endif %}>
                     {{ label }}
@@ -47,10 +55,10 @@
         </select>
     </p>
 
-    <p>
-        <label for="id_participation_mode">Participation type</label>
+    <p class="form-field">
+        <label for="id_participation_mode">{% trans "Формат участия" %}</label>
         <select id="id_participation_mode" name="participation_mode">
-            <option value="">All participation types</option>
+            <option value="">{% trans "Любой формат" %}</option>
             {% for value, label in participation_mode_choices %}
                 <option value="{{ value }}"{% if selected_filters.participation_mode == value %} selected{% endif %}>
                     {{ label }}
@@ -58,39 +66,48 @@
             {% endfor %}
         </select>
     </p>
+    </div>
 
-    <button type="submit">Apply filters</button>
-    <a href="{% url 'web:event-list' %}">Clear filters</a>
+    <div class="form-actions">
+        <button class="btn btn-primary" type="submit">{% trans "Применить фильтры" %}</button>
+        <a class="btn btn-secondary" href="{% url 'web:event-list' %}">{% trans "Сбросить" %}</a>
+    </div>
 </form>
 
 {% if events %}
-    <ul>
+    <section class="event-grid page-section" aria-label="{% trans 'Список событий' %}">
         {% for event in events %}
-            <li>
-                <h2><a href="{% url 'web:event-detail' event.pk %}">{% firstof event.name event.title %}</a></h2>
-                <p>Type: {{ event.get_event_type_code_display|default:event.event_type.name|default:"Not specified" }}</p>
-                <p>Level: {{ event.get_level_code_display|default:event.level.name|default:"Not specified" }}</p>
-                <p>Participation: {{ event.get_participation_mode_display|default:event.get_participation_type_display|default:"Not specified" }}</p>
-                <p>
-                    Profile:
+            <article class="card-elevated event-card">
+                <div class="event-card-header">
+                    <h2 class="event-title"><a href="{% url 'web:event-detail' event.pk %}">{% firstof event.name event.title %}</a></h2>
+                    {% if event.official_url %}
+                        <a class="btn btn-secondary" href="{{ event.official_url }}">{% trans "Официальный сайт" %}</a>
+                    {% endif %}
+                </div>
+                <div class="meta-row">
+                    <span class="badge badge-accent">{{ event.event_type_code|event_type_label }}</span>
+                    <span class="badge">{{ event.level_code|event_level_label }}</span>
+                    <span class="badge badge-gold">{{ event.participation_mode|participation_mode_label }}</span>
                     {% if event.profile_code %}
-                        {{ event.profile_code }}
+                        <span class="badge badge-muted">{{ event.profile_code|profile_label }}</span>
                     {% else %}
                         {% for profile in event.profiles.all %}
-                            {{ profile.name }}{% if not forloop.last %}, {% endif %}
+                            <span class="badge badge-muted">{{ profile.name }}</span>
                         {% empty %}
-                            Not specified
+                            <span class="badge badge-muted">{% trans "Профиль не указан" %}</span>
                         {% endfor %}
                     {% endif %}
-                </p>
-                <p>Registration deadline: {{ event.registration_deadline|date:"Y-m-d"|default:"Not specified" }}</p>
+                    {% if event.registration_deadline %}
+                        <span class="badge badge-muted">{% trans "Регистрация до" %} {{ event.registration_deadline|date:"Y-m-d" }}</span>
+                    {% endif %}
+                </div>
                 {% if event.short_description %}
-                    <p>{{ event.short_description }}</p>
+                    <p class="muted">{{ event.short_description }}</p>
                 {% endif %}
-            </li>
+            </article>
         {% endfor %}
-    </ul>
+    </section>
 {% else %}
-    <p>No events match the selected filters.</p>
+    <p class="empty-state page-section">{% trans "По выбранным фильтрам событий пока нет." %}</p>
 {% endif %}
 {% endblock %}

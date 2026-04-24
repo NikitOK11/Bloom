@@ -6,6 +6,7 @@ from django.db import transaction
 from django.db.models import F, Q
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 
@@ -91,6 +92,32 @@ def _code_label(value: str) -> str:
     return value.replace("_", " ").title()
 
 
+def _event_type_code_choices():
+    return [
+        (EventTypeCode.OLYMPIAD, _("Олимпиада")),
+        (EventTypeCode.HACKATHON, _("Хакатон")),
+        (EventTypeCode.CASE_CHAMPIONSHIP, _("Кейс-чемпионат")),
+    ]
+
+
+def _event_level_code_choices():
+    return [
+        (EventLevelCode.INTERNATIONAL, _("Международный")),
+        (EventLevelCode.VSOSH, _("ВсОШ")),
+        (EventLevelCode.LEVEL_1, _("Уровень 1")),
+        (EventLevelCode.LEVEL_2, _("Уровень 2")),
+        (EventLevelCode.LEVEL_3, _("Уровень 3")),
+    ]
+
+
+def _participation_mode_choices():
+    return [
+        (EventParticipationMode.INDIVIDUAL, _("Индивидуально")),
+        (EventParticipationMode.TEAM, _("Командно")),
+        (EventParticipationMode.HYBRID, _("Индивидуально или командно")),
+    ]
+
+
 class HomeView(TemplateView):
     template_name = "web/home.html"
 
@@ -150,9 +177,9 @@ class EventListView(ListView):
                 "profile_code_choices": [
                     (profile_code, _code_label(profile_code)) for profile_code in profile_codes
                 ],
-                "event_type_code_choices": EventTypeCode.choices,
-                "level_code_choices": EventLevelCode.choices,
-                "participation_mode_choices": EventParticipationMode.choices,
+                "event_type_code_choices": _event_type_code_choices(),
+                "level_code_choices": _event_level_code_choices(),
+                "participation_mode_choices": _participation_mode_choices(),
                 "selected_filters": {
                     "profile_code": self.request.GET.get("profile_code", "").strip(),
                     "event_type_code": self.request.GET.get("event_type_code", "").strip(),
@@ -199,7 +226,7 @@ class EventTeamCreateView(LoginRequiredMixin, FormView):
     def dispatch(self, request, *args, **kwargs):
         self.event = get_object_or_404(Event, pk=self.kwargs["pk"])
         if self.event.participation_mode not in TEAM_CAPABLE_PARTICIPATION_MODES:
-            raise Http404("Teams are not available for this event.")
+            raise Http404(_("Команды недоступны для этого события."))
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -233,7 +260,7 @@ class EventTeamCreateView(LoginRequiredMixin, FormView):
             _add_validation_to_form(form, exc)
             return self.form_invalid(form)
 
-        messages.success(self.request, "Team created successfully.")
+        messages.success(self.request, _("Команда создана."))
         return redirect("web:team-detail", pk=team.pk)
 
 
@@ -309,7 +336,7 @@ def join_team_view(request: HttpRequest, pk: int) -> HttpResponse:
     team = get_object_or_404(Team.objects.select_related("event"), pk=pk)
     form = JoinRequestForm(request.POST)
     if not form.is_valid():
-        messages.error(request, "Could not submit join request. Please check the form.")
+        messages.error(request, _("Не удалось отправить заявку. Проверьте форму."))
         return redirect("web:team-detail", pk=team.pk)
 
     join_request = JoinRequest(
@@ -326,7 +353,7 @@ def join_team_view(request: HttpRequest, pk: int) -> HttpResponse:
             messages.error(request, error)
         return redirect("web:team-detail", pk=team.pk)
 
-    messages.success(request, "Join request submitted.")
+    messages.success(request, _("Заявка отправлена."))
     return redirect("web:team-detail", pk=team.pk)
 
 
@@ -340,11 +367,11 @@ def approve_join_request_view(request: HttpRequest, pk: int) -> HttpResponse:
     team = join_request.team
 
     if not _is_team_captain(request.user, team):
-        messages.error(request, "Only the captain can manage requests.")
+        messages.error(request, _("Управлять заявками может только капитан."))
         return redirect("web:team-detail", pk=team.pk)
 
     if join_request.status != JoinRequestStatus.PENDING:
-        messages.warning(request, "Only pending requests can be approved.")
+        messages.warning(request, _("Одобрить можно только заявку в ожидании."))
         return redirect("web:team-detail", pk=team.pk)
 
     with transaction.atomic():
@@ -356,7 +383,7 @@ def approve_join_request_view(request: HttpRequest, pk: int) -> HttpResponse:
         join_request.approve()
         join_request.save(update_fields=["status"])
 
-    messages.success(request, "Join request approved.")
+    messages.success(request, _("Заявка одобрена."))
     return redirect("web:team-detail", pk=team.pk)
 
 
@@ -370,14 +397,14 @@ def reject_join_request_view(request: HttpRequest, pk: int) -> HttpResponse:
     team = join_request.team
 
     if not _is_team_captain(request.user, team):
-        messages.error(request, "Only the captain can manage requests.")
+        messages.error(request, _("Управлять заявками может только капитан."))
         return redirect("web:team-detail", pk=team.pk)
 
     if join_request.status != JoinRequestStatus.PENDING:
-        messages.warning(request, "Only pending requests can be rejected.")
+        messages.warning(request, _("Отклонить можно только заявку в ожидании."))
         return redirect("web:team-detail", pk=team.pk)
 
     join_request.reject()
     join_request.save(update_fields=["status"])
-    messages.success(request, "Join request rejected.")
+    messages.success(request, _("Заявка отклонена."))
     return redirect("web:team-detail", pk=team.pk)

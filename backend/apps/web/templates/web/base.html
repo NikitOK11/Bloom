@@ -1,33 +1,49 @@
 <!doctype html>
 {% load static %}
-<html lang="en">
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Bloom Web Demo{% endblock %}</title>
+    <title>{% block title %}{% trans "Bloom" %}{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'web/styles.css' %}">
 </head>
 <body>
     <header class="site-header">
-        <nav class="nav-shell" aria-label="Primary navigation">
+        <nav class="nav-shell" aria-label="{% trans 'Основная навигация' %}">
             <a class="brand" href="{% url 'web:home' %}">
                 <span class="brand-mark" aria-hidden="true"></span>
                 Bloom
             </a>
             <div class="nav-links">
-                <a class="nav-link" href="{% url 'web:home' %}">Home</a>
-                <a class="nav-link nav-link-primary" href="{% url 'web:event-list' %}">Events</a>
-                <a class="nav-link" href="/admin/">Admin</a>
+                <a class="nav-link" href="{% url 'web:home' %}">{% trans "Главная" %}</a>
+                <a class="nav-link nav-link-primary" href="{% url 'web:event-list' %}">{% trans "События" %}</a>
+                <a class="nav-link" href="/admin/">{% trans "Админка" %}</a>
             </div>
             <div class="nav-actions">
+                <div class="language-switcher" aria-label="{% trans 'Переключение языка' %}">
+                    <form class="inline-form" action="{% url 'set_language' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="language" value="ru">
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <button class="language-option{% if LANGUAGE_CODE == 'ru' %} is-active{% endif %}" type="submit">RU</button>
+                    </form>
+                    <form class="inline-form" action="{% url 'set_language' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="language" value="en">
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <button class="language-option{% if LANGUAGE_CODE == 'en' %} is-active{% endif %}" type="submit">EN</button>
+                    </form>
+                </div>
                 {% if request.user.is_authenticated %}
                     <span class="nav-user">{{ request.user.email }}</span>
                     <form class="inline-form" action="{% url 'web:logout' %}" method="post">
                         {% csrf_token %}
-                        <button class="btn btn-secondary" type="submit">Logout</button>
+                        <button class="btn btn-secondary" type="submit">{% trans "Выйти" %}</button>
                     </form>
                 {% else %}
-                    <a class="btn btn-secondary" href="{% url 'web:login' %}">Login</a>
+                    <a class="btn btn-secondary" href="{% url 'web:login' %}">{% trans "Войти" %}</a>
                 {% endif %}
             </div>
         </nav>

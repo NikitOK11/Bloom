@@ -83,7 +83,27 @@ class EventCatalogTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, reverse("web:event-list"))
+        self.assertContains(response, "Смотреть события")
+
+    def test_home_renders_russian_by_default(self):
+        response = self.client.get(reverse("web:home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Найдите олимпиаду")
+        self.assertContains(response, "Смотреть события")
+        self.assertContains(response, "RU")
+        self.assertContains(response, "EN")
+
+    def test_language_switch_to_english(self):
+        response = self.client.post(
+            reverse("set_language"),
+            {"language": "en", "next": reverse("web:home")},
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Discover events")
+        self.assertContains(response, "Find an olympiad")
 
     def test_event_catalog_filters_by_participation_mode(self):
         self.create_event("Individual Event", participation_mode=EventParticipationMode.INDIVIDUAL)
@@ -142,8 +162,8 @@ class EventCatalogTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Team Case Championship")
         self.assertContains(response, "Event Organizer")
-        self.assertContains(response, "math")
-        self.assertContains(response, "Team support for events will be connected in a later step.")
+        self.assertContains(response, "Math")
+        self.assertContains(response, "Командная поддержка для событий будет развиваться дальше.")
 
     def test_event_detail_uses_name_not_title_as_primary_display(self):
         event = self.create_event("Legacy Event Title", name="Canonical Event Name")
@@ -199,12 +219,12 @@ class EventCatalogTests(TestCase):
             reverse("web:event-detail", kwargs={"pk": individual_event.pk})
         )
 
-        self.assertContains(team_response, "Team participation")
+        self.assertContains(team_response, "Командное участие")
         self.assertContains(team_response, "Event Linked Team")
-        self.assertContains(team_response, "(open)")
-        self.assertNotContains(individual_response, "Team participation")
+        self.assertContains(team_response, "Открыта")
+        self.assertNotContains(individual_response, "Командное участие")
         self.assertNotContains(individual_response, "Event Linked Team")
-        self.assertNotContains(individual_response, "No teams linked to this event yet.")
+        self.assertNotContains(individual_response, "К этому событию пока нет привязанных команд.")
 
     def test_event_based_team_flow_still_works_after_olympiad_removal(self):
         event = self.create_event("Standalone Team Event", participation_mode=EventParticipationMode.TEAM)

@@ -1,16 +1,19 @@
 {% extends "web/base.html" %}
+{% load i18n %}
 
-{% block title %}Create Team{% endblock %}
+{% block title %}{% trans "Создать команду" %}{% endblock %}
 
 {% block content %}
-<h1>Create Team</h1>
+<section class="card-elevated auth-card">
+<h1>{% trans "Создать команду" %}</h1>
 {% if event %}
-    <p>Event: <a href="{% url 'web:event-detail' event.pk %}">{% firstof event.name event.title %}</a></p>
+    <p class="muted">{% trans "Событие:" %} <a href="{% url 'web:event-detail' event.pk %}">{% firstof event.name event.title %}</a></p>
 {% endif %}
 
-<form method="post">
+<form class="stack" method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Create team</button>
+    <button class="btn btn-primary" type="submit">{% trans "Создать команду" %}</button>
 </form>
+</section>
 {% endblock %}

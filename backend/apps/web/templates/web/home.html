@@ -1,22 +1,46 @@
 {% extends "web/base.html" %}
+{% load i18n %}
 
-{% block title %}Home{% endblock %}
+{% block title %}{% trans "Bloom — каталог событий" %}{% endblock %}
 
 {% block content %}
-<h1>Bloom Web Demo</h1>
-<p>Discover events and find the right place to participate.</p>
-<ul>
-    <li><a href="{% url 'web:event-list' %}">View Events</a></li>
-    <li><a href="/admin/">Admin</a></li>
-    {% if request.user.is_authenticated %}
-        <li>
-            <form action="{% url 'web:logout' %}" method="post">
+<section class="hero glow-accent">
+    <p class="hero-kicker">{% trans "Каталог событий для студентов и школьников" %}</p>
+    <h1 class="hero-title">{% trans "Найдите олимпиаду, хакатон или кейс-чемпионат без лишнего шума" %}</h1>
+    <p class="hero-copy">
+        {% blocktrans trimmed %}
+            Bloom помогает быстро сравнить события по профилю, уровню и формату участия, а для командных треков сразу перейти к поиску команды.
+        {% endblocktrans %}
+    </p>
+    <div class="inline-actions">
+        <a class="btn btn-primary" href="{% url 'web:event-list' %}">{% trans "Смотреть события" %}</a>
+        {% if request.user.is_authenticated %}
+            <form class="inline-form" action="{% url 'web:logout' %}" method="post">
                 {% csrf_token %}
-                <button type="submit">Logout</button>
+                <button class="btn btn-secondary" type="submit">{% trans "Выйти" %}</button>
             </form>
-        </li>
-    {% else %}
-        <li><a href="{% url 'web:login' %}">Login</a></li>
-    {% endif %}
-</ul>
+        {% else %}
+            <a class="btn btn-secondary" href="{% url 'web:login' %}">{% trans "Войти" %}</a>
+        {% endif %}
+    </div>
+</section>
+
+<section class="page-section feature-grid" aria-label="{% trans 'Основные возможности' %}">
+    <article class="card">
+        <p class="eyebrow">{% trans "Главный сценарий" %}</p>
+        <h2>{% trans "Открывайте подходящие события" %}</h2>
+        <p class="muted">{% trans "Фильтры по профилю, типу события, уровню и формату участия помогают быстрее сузить выбор." %}</p>
+    </article>
+    <article class="card">
+        <p class="eyebrow">{% trans "Командные треки" %}</p>
+        <h2>{% trans "Создавайте команды там, где это уместно" %}</h2>
+        <p class="muted">{% trans "Командный сценарий остаётся вторичным и доступен только для событий с командным или смешанным участием." %}</p>
+    </article>
+    <article class="card">
+        <p class="eyebrow">{% trans "Для редакторов" %}</p>
+        <h2>{% trans "Данные управляются через админку" %}</h2>
+        <p class="muted">{% trans "Админка остаётся служебным инструментом, а пользовательский путь начинается с каталога событий." %}</p>
+        <a class="btn btn-secondary" href="/admin/">{% trans "Открыть админку" %}</a>
+    </article>
+</section>
 {% endblock %}

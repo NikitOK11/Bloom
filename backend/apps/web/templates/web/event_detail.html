@@ -1,118 +1,144 @@
 {% extends "web/base.html" %}
+{% load i18n web_labels %}
 
 {% block title %}{% firstof event.name event.title %}{% endblock %}
 
 {% block content %}
-<p><a href="{% url 'web:event-list' %}">Back to events</a></p>
+<p><a class="btn btn-secondary" href="{% url 'web:event-list' %}">{% trans "Назад к событиям" %}</a></p>
 
-<h1>{% firstof event.name event.title %}</h1>
-
-{% if not event.is_active %}
-    <p>Status: inactive</p>
-{% endif %}
-
-{% if event.short_description %}
-    <p>{{ event.short_description }}</p>
-{% endif %}
-
-<p>{{ event.description|default:"No description."|linebreaksbr }}</p>
-
-<dl>
-    <dt>Organizer</dt>
-    <dd>{{ event.organizer|default:"Not specified" }}</dd>
-
-    <dt>Official URL</dt>
-    <dd>
+<section class="hero page-section">
+    <p class="hero-kicker">{% trans "Событие" %}</p>
+    <div class="detail-header">
+        <h1 class="page-title">{% firstof event.name event.title %}</h1>
         {% if event.official_url %}
-            <a href="{{ event.official_url }}">{{ event.official_url }}</a>
-        {% else %}
-            Not specified
+            <a class="btn btn-primary" href="{{ event.official_url }}">{% trans "Официальный сайт" %}</a>
         {% endif %}
-    </dd>
+    </div>
 
-    <dt>Event type</dt>
-    <dd>{{ event.get_event_type_code_display|default:event.event_type.name|default:"Not specified" }}</dd>
-
-    <dt>Event level</dt>
-    <dd>{{ event.get_level_code_display|default:event.level.name|default:"Not specified" }}</dd>
-
-    <dt>Participation type</dt>
-    <dd>{{ event.get_participation_mode_display|default:event.get_participation_type_display|default:"Not specified" }}</dd>
-
-    <dt>Profile</dt>
-    <dd>
+    <div class="meta-row">
+        <span class="badge badge-accent">{{ event.event_type_code|event_type_label }}</span>
+        <span class="badge">{{ event.level_code|event_level_label }}</span>
+        <span class="badge badge-gold">{{ event.participation_mode|participation_mode_label }}</span>
         {% if event.profile_code %}
-            {{ event.profile_code }}
-        {% else %}
-            {% for profile in event.profiles.all %}
-                {{ profile.name }}{% if not forloop.last %}, {% endif %}
-            {% empty %}
-                Not specified
-            {% endfor %}
+            <span class="badge badge-muted">{{ event.profile_code|profile_label }}</span>
         {% endif %}
-    </dd>
+        {% if not event.is_active %}
+            <span class="badge badge-danger">{% trans "Неактивно" %}</span>
+        {% endif %}
+    </div>
 
-    <dt>Preferences</dt>
-    <dd>{{ event.preferences|default:"Not specified"|linebreaksbr }}</dd>
+    {% if event.short_description %}
+        <p class="hero-copy">{{ event.short_description }}</p>
+    {% endif %}
+</section>
 
-    <dt>Registration deadline</dt>
-    <dd>{{ event.registration_deadline|date:"Y-m-d"|default:"Not specified" }}</dd>
-</dl>
+<section class="page-section grid two-column-grid">
+    <article class="card">
+        <h2>{% trans "Описание" %}</h2>
+        <p class="muted">
+            {% if event.description %}
+                {{ event.description|linebreaksbr }}
+            {% else %}
+                {% trans "Описание пока не добавлено." %}
+            {% endif %}
+        </p>
+    </article>
 
-<section>
-    <h2>Editions</h2>
+    <article class="card">
+        <h2>{% trans "Ключевые детали" %}</h2>
+        <dl class="definition-grid">
+            <dt>{% trans "Организатор" %}</dt>
+            <dd>{% if event.organizer %}{{ event.organizer }}{% else %}{% trans "Не указано" %}{% endif %}</dd>
+
+            <dt>{% trans "Профиль" %}</dt>
+            <dd>
+                {% if event.profile_code %}
+                    {{ event.profile_code|profile_label }}
+                {% else %}
+                    {% for profile in event.profiles.all %}
+                        {{ profile.name }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        {% trans "Не указано" %}
+                    {% endfor %}
+                {% endif %}
+            </dd>
+
+            <dt>{% trans "Преференции" %}</dt>
+            <dd>{% if event.preferences %}{{ event.preferences|linebreaksbr }}{% else %}{% trans "Не указано" %}{% endif %}</dd>
+
+            <dt>{% trans "Регистрация" %}</dt>
+            <dd>{% if event.registration_deadline %}{{ event.registration_deadline|date:"Y-m-d" }}{% else %}{% trans "Не указано" %}{% endif %}</dd>
+        </dl>
+    </article>
+</section>
+
+<section class="page-section card">
+    <h2>{% trans "Сезоны и этапы" %}</h2>
     {% if event_editions %}
-        <ul>
+        <ul class="timeline">
             {% for edition in event_editions %}
-                <li>
+                <li class="timeline-item">
                     <strong>{{ edition.edition_label }}</strong>
-                    - {{ edition.get_status_display }}
-                    ({{ edition.start_date|date:"Y-m-d" }} to {{ edition.end_date|date:"Y-m-d" }})
+                    <span class="badge badge-muted">{{ edition.get_status_display }}</span>
+                    <span class="muted">{{ edition.start_date|date:"Y-m-d" }} — {{ edition.end_date|date:"Y-m-d" }}</span>
                     {% if edition.current_stage %}
-                        <p>Current stage: {{ edition.current_stage.stage_name }}</p>
+                        <p class="muted">{% trans "Текущий этап:" %} {{ edition.current_stage.stage_name }}</p>
                     {% endif %}
-                    <ul>
+                    <ul class="unstyled-list stack">
                         {% for stage in edition.stages.all %}
                             <li>
-                                Stage {{ stage.stage_number }}: {{ stage.stage_name }}
-                                - {{ stage.get_status_display }}
+                                <span class="badge badge-accent">{% trans "Этап" %} {{ stage.stage_number }}</span>
+                                {{ stage.stage_name }}
+                                <span class="muted">{{ stage.get_status_display }}</span>
                                 {% if stage.start_date or stage.end_date %}
-                                    ({{ stage.start_date|date:"Y-m-d"|default:"date TBD" }} to {{ stage.end_date|date:"Y-m-d"|default:"date TBD" }})
+                                    <span class="muted">
+                                        ({% if stage.start_date %}{{ stage.start_date|date:"Y-m-d" }}{% else %}{% trans "дата уточняется" %}{% endif %}
+                                        —
+                                        {% if stage.end_date %}{{ stage.end_date|date:"Y-m-d" }}{% else %}{% trans "дата уточняется" %}{% endif %})
+                                    </span>
                                 {% endif %}
                             </li>
                         {% empty %}
-                            <li>No stages added yet.</li>
+                            <li class="muted">{% trans "Этапы пока не добавлены." %}</li>
                         {% endfor %}
                     </ul>
                 </li>
             {% endfor %}
         </ul>
     {% else %}
-        <p>No editions added yet.</p>
+        <p class="empty-state">{% trans "Сезоны пока не добавлены." %}</p>
     {% endif %}
 </section>
 
 {% if show_teams_block %}
-    <section>
-        <h2>Team participation</h2>
-        <p>Team support for events will be connected in a later step.</p>
+    <section class="page-section card">
+        <div class="detail-header">
+            <h2>{% trans "Командное участие" %}</h2>
+            {% if request.user.is_authenticated %}
+                <a class="btn btn-primary" href="{% url 'web:event-team-create' event.pk %}">{% trans "Создать команду" %}</a>
+            {% endif %}
+        </div>
+        <p class="muted">{% trans "Командная поддержка для событий будет развиваться дальше." %}</p>
         {% if request.user.is_authenticated %}
-            <p><a href="{% url 'web:event-team-create' event.pk %}">Create team</a></p>
+        {% else %}
+            <p><a href="{% url 'web:login' %}">{% trans "Войдите" %}</a> {% trans "чтобы создать команду." %}</p>
         {% endif %}
         {% if event_teams %}
-            <ul>
+            <div class="team-grid">
                 {% for team in event_teams %}
-                    <li>
-                        <a href="{% url 'web:team-detail' team.pk %}">{{ team.name }}</a>
-                        {% if team.is_open %}(open){% else %}(closed){% endif %}
+                    <article class="team-card">
+                        <h3><a href="{% url 'web:team-detail' team.pk %}">{{ team.name }}</a></h3>
+                        <span class="badge {% if team.is_open %}badge-accent{% else %}badge-muted{% endif %}">
+                            {% if team.is_open %}{% trans "Открыта" %}{% else %}{% trans "Закрыта" %}{% endif %}
+                        </span>
                         {% if team.description %}
-                            - {{ team.description }}
+                            <p class="muted">{{ team.description }}</p>
                         {% endif %}
-                    </li>
+                    </article>
                 {% endfor %}
-            </ul>
+            </div>
         {% else %}
-            <p>No teams linked to this event yet.</p>
+            <p class="empty-state">{% trans "К этому событию пока нет привязанных команд." %}</p>
         {% endif %}
     </section>
 {% endif %}

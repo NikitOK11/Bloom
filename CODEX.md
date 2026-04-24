@@ -108,6 +108,7 @@ python manage.py test
 - Legacy olympiad model/app полностью удален из проекта; новые product-facing данные создавать только через `Event`/Событие.
 - `Event`/Событие — основная модель чтения для пользовательских страниц и редактирования в админке.
 - Активное UI-направление: dark premium academic theme, event-first UX, indigo/mint/gold accent system; визуальные PR оставлять маленькими и пушить напрямую в `origin main`.
+- Product-facing UI — Russian-first; English поддерживается как вторичный язык, а переключение языка должно быть простым и быстрым.
 - Event schema находится в переходной фазе: старые richer fields пока остаются, а новые canonical scalar fields добавляются как мост к финальной DB-схеме.
 - Product-facing код теперь считает canonical scalar fields (`name`, `event_type_code`, `profile_code`, `level_code`, `participation_mode`, `official_url`) основным источником; legacy Event fields остаются только для совместимости во время миграции.
 - `EventEdition` описывает конкретный сезон/цикл `Event`/События; `EventEditionStage` описывает этап внутри одного сезона/цикла.

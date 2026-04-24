@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.translation import gettext_lazy as _
 
 from apps.teams.models import Team
 
@@ -14,11 +15,21 @@ class TeamCreateForm(forms.ModelForm):
     class Meta:
         model = Team
         fields = ("name", "description", "is_open")
+        labels = {
+            "name": _("Название команды"),
+            "description": _("Описание"),
+            "is_open": _("Команда открыта для заявок"),
+        }
+        help_texts = {
+            "description": _("Коротко расскажите, кого ищете и как планируете участвовать."),
+        }
 
 
 class JoinRequestForm(forms.Form):
     message = forms.CharField(
+        label=_("Сообщение капитану"),
         required=False,
+        help_text=_("Можно коротко рассказать о себе и роли в команде."),
         widget=forms.Textarea(
             attrs={
                 "rows": 3,
