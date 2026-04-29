@@ -409,3 +409,156 @@ msgstr "Only pending requests can be rejected."
 
 msgid "Заявка отклонена."
 msgstr "Join request rejected."
+
+msgid "События для школьников и студентов"
+msgstr "Events for school and university students"
+
+msgid "Найди олимпиаду, хакатон или кейс-чемпионат под свои цели"
+msgstr "Find an olympiad, hackathon, or case championship that fits your goals"
+
+msgid "Bloom помогает школьникам и студентам искать события, сравнивать уровни, следить за этапами и находить команду там, где это нужно."
+msgstr "Bloom helps school and university students discover events, compare levels, track stages, and find a team where needed."
+
+msgid "Найти событие"
+msgstr "Find an event"
+
+msgid "Найти команду"
+msgstr "Find a team"
+
+msgid "Коротко о Bloom"
+msgstr "Bloom at a glance"
+
+msgid "формата событий: олимпиады, хакатоны и кейсы"
+msgstr "event formats: olympiads, hackathons, and cases"
+
+msgid "Каталог помогает быстрее выбрать следующий академический шаг."
+msgstr "The catalog helps you choose your next academic step faster."
+
+msgid "Галерея олимпиадных и студенческих сценариев"
+msgstr "Gallery of olympiad and student scenarios"
+
+msgid "Фокус"
+msgstr "Focus"
+
+msgid "Подбор событий без лишнего шума"
+msgstr "Event discovery without the noise"
+
+msgid "Олимпиадная смена"
+msgstr "Olympiad camp"
+
+msgid "Профиль, уровень и формат участия собраны в одном месте."
+msgstr "Profile, level, and participation format are gathered in one place."
+
+msgid "Командный тур"
+msgstr "Team round"
+
+msgid "Для командных событий можно сразу перейти к поиску команды."
+msgstr "For team events, you can move straight to team discovery."
+
+msgid "Финальный этап"
+msgstr "Final stage"
+
+msgid "Следите за сезонами, этапами и официальной страницей события."
+msgstr "Track editions, stages, and the official event page."
+
+msgid "Возможности вместо шума"
+msgstr "Opportunities instead of noise"
+
+msgid "Правильное событие легче выбрать, когда структура понятна с первого экрана"
+msgstr "The right event is easier to choose when the structure is clear from the first screen"
+
+msgid "Bloom делает акцент на ясных параметрах: тип события, профиль, уровень, формат участия и официальный источник. Сначала выберите событие, затем смотрите детали и команды там, где это действительно нужно."
+msgstr "Bloom focuses on clear parameters: event type, profile, level, participation format, and the official source. Choose an event first, then review details and teams where they are actually useful."
+
+msgid "События собраны в едином каталоге."
+msgstr "Events are gathered in one catalog."
+
+msgid "Командный путь не мешает индивидуальному выбору."
+msgstr "The team path does not get in the way of individual discovery."
+
+msgid "Почему Bloom"
+msgstr "Why Bloom"
+
+msgid "Один из самых спокойных способов выбрать образовательное событие"
+msgstr "One of the calmest ways to choose an educational event"
+
+msgid "Минимум лишних переходов, максимум понятной информации перед решением."
+msgstr "Fewer extra steps, more useful context before a decision."
+
+msgid "Удобный каталог"
+msgstr "Convenient catalog"
+
+msgid "Смотрите олимпиады, хакатоны и кейс-чемпионаты в одной системе."
+msgstr "Browse olympiads, hackathons, and case championships in one system."
+
+msgid "Фильтры по профилю и уровню"
+msgstr "Filters by profile and level"
+
+msgid "Быстрее находите события, которые совпадают с вашими целями и подготовкой."
+msgstr "Find events that match your goals and preparation faster."
+
+msgid "Команды для командных событий"
+msgstr "Teams for team events"
+
+msgid "Переходите к командам только там, где формат события это поддерживает."
+msgstr "Move to teams only where the event format supports it."
+
+msgid "Актуально сейчас"
+msgstr "Relevant now"
+
+msgid "Ближайшие события"
+msgstr "Upcoming events"
+
+msgid "Все события"
+msgstr "All events"
+
+msgid "Пока нет активных событий. Скоро здесь появятся новые олимпиады, хакатоны и кейс-чемпионаты."
+msgstr "There are no active events yet. New olympiads, hackathons, and case championships will appear here soon."
+
+msgid "Частые вопросы"
+msgstr "FAQ"
+
+msgid "Коротко о том, как пользоваться Bloom на старте."
+msgstr "A quick guide to using Bloom at the start."
+
+msgid "Какие события есть на платформе?"
+msgstr "What events are available on the platform?"
+
+msgid "Олимпиады, хакатоны и кейс-чемпионаты для школьников и студентов."
+msgstr "Olympiads, hackathons, and case championships for school and university students."
+
+msgid "Можно ли искать команду?"
+msgstr "Can I look for a team?"
+
+msgid "Да, если событие поддерживает командный или смешанный формат участия."
+msgstr "Yes, if the event supports team or hybrid participation."
+
+msgid "Как понять, подходит ли мне событие?"
+msgstr "How do I know whether an event fits me?"
+
+msgid "Сравните тип, профиль, уровень, формат участия и официальную страницу."
+msgstr "Compare the type, profile, level, participation format, and official page."
+
+msgid "Будут ли добавляться новые олимпиады?"
+msgstr "Will new olympiads be added?"
+
+msgid "Да, каталог рассчитан на регулярное расширение и новые сезоны событий."
+msgstr "Yes, the catalog is designed for regular expansion and new event editions."
+
+msgid "Стартуйте спокойно"
+msgstr "Start calmly"
+
+msgid "Начните с выбора события"
+msgstr "Start by choosing an event"
+
+msgid "Откройте каталог и отберите варианты по профилю, уровню и формату участия."
+msgstr "Open the catalog and filter options by profile, level, and participation format."
+
+msgid "Каталог олимпиад, хакатонов и кейс-чемпионатов для осознанного выбора."
+msgstr "A catalog of olympiads, hackathons, and case championships for thoughtful discovery."
+
+msgid "Навигация в подвале"
+msgstr "Footer navigation"
+
+msgid "Команды"
+msgstr "Teams"

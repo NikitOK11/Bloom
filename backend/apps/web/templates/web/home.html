@@ -1,64 +1,174 @@
 {% extends "web/base.html" %}
-{% load i18n %}
+{% load i18n web_labels %}
 
 {% block title %}{% trans "Bloom — каталог событий" %}{% endblock %}
 
 {% block content %}
-<section class="image-hero">
+<section class="landing-hero">
     <div class="hero-content">
-        <p class="hero-kicker">{% trans "Каталог событий для студентов и школьников" %}</p>
-        <h1 class="hero-title">{% trans "Найдите олимпиаду, хакатон или кейс-чемпионат без лишнего шума" %}</h1>
+        <p class="hero-kicker">{% trans "События для школьников и студентов" %}</p>
+        <h1 class="hero-title">{% trans "Найди олимпиаду, хакатон или кейс-чемпионат под свои цели" %}</h1>
         <p class="hero-copy">
             {% blocktrans trimmed %}
-                Bloom собирает академические и карьерные события в одном месте: фильтруйте по профилю, уровню и формату участия, а для командных треков сразу переходите к командам.
+                Bloom помогает школьникам и студентам искать события, сравнивать уровни, следить за этапами и находить команду там, где это нужно.
             {% endblocktrans %}
         </p>
         <div class="inline-actions">
-            <a class="btn btn-primary" href="{% url 'web:event-list' %}">{% trans "Смотреть события" %}</a>
-            {% if request.user.is_authenticated %}
-                <form class="inline-form" action="{% url 'web:logout' %}" method="post">
-                    {% csrf_token %}
-                    <button class="btn btn-secondary" type="submit">{% trans "Выйти" %}</button>
-                </form>
-            {% else %}
-                <a class="btn btn-secondary" href="{% url 'web:login' %}">{% trans "Войти" %}</a>
-            {% endif %}
+            <a class="btn btn-primary" href="{% url 'web:event-list' %}">{% trans "Найти событие" %}</a>
+            <a class="btn btn-secondary" href="{% url 'web:event-list' %}?participation_mode=team">{% trans "Найти команду" %}</a>
+        </div>
+        <div class="hero-trust" aria-label="{% trans 'Коротко о Bloom' %}">
+            <div>
+                <strong>3</strong>
+                <span>{% trans "формата событий: олимпиады, хакатоны и кейсы" %}</span>
+            </div>
+            <div class="avatar-stack" aria-hidden="true">
+                <span class="avatar-dot"></span>
+                <span class="avatar-dot"></span>
+                <span class="avatar-dot"></span>
+            </div>
+            <span>{% trans "Каталог помогает быстрее выбрать следующий академический шаг." %}</span>
+        </div>
+    </div>
+
+    <div class="hero-gallery" aria-label="{% trans 'Галерея олимпиадных и студенческих сценариев' %}">
+        <div class="gallery-card-mini">
+            <strong>{% trans "Фокус" %}</strong>
+            <p class="muted">{% trans "Подбор событий без лишнего шума" %}</p>
+        </div>
+        <div class="gallery-slide gallery-slide-one" role="img" aria-label="{% trans 'Олимпиадная смена' %}">
+            <strong>{% trans "Олимпиадная смена" %}</strong>
+            <p>{% trans "Профиль, уровень и формат участия собраны в одном месте." %}</p>
+        </div>
+        <div class="gallery-slide gallery-slide-two" role="img" aria-label="{% trans 'Командный тур' %}">
+            <strong>{% trans "Командный тур" %}</strong>
+            <p>{% trans "Для командных событий можно сразу перейти к поиску команды." %}</p>
+        </div>
+        <div class="gallery-slide gallery-slide-three" role="img" aria-label="{% trans 'Финальный этап' %}">
+            <strong>{% trans "Финальный этап" %}</strong>
+            <p>{% trans "Следите за сезонами, этапами и официальной страницей события." %}</p>
+        </div>
+        <div class="gallery-dots" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
         </div>
     </div>
 </section>
 
-<section class="hero-stats" aria-label="{% trans 'Главные сценарии' %}">
-    <article class="stat-card">
-        <strong>{% trans "01" %}</strong>
-        <h2>{% trans "Выберите событие" %}</h2>
-        <p class="muted">{% trans "Олимпиады, хакатоны и кейс-чемпионаты в одном каталоге." %}</p>
-    </article>
-    <article class="stat-card">
-        <strong>{% trans "02" %}</strong>
-        <h2>{% trans "Сравните параметры" %}</h2>
-        <p class="muted">{% trans "Профиль, уровень, формат участия и официальный сайт на виду." %}</p>
-    </article>
-    <article class="stat-card">
-        <strong>{% trans "03" %}</strong>
-        <h2>{% trans "Соберите команду" %}</h2>
-        <p class="muted">{% trans "Командный путь открыт только для событий, где он уместен." %}</p>
-    </article>
-</section>
-
-<section class="page-section editorial-band">
-    <div class="media-card" aria-hidden="true"></div>
+<section class="page-section dark-band">
+    <div class="media-placeholder" aria-hidden="true"></div>
     <div class="stack">
-        <p class="eyebrow">{% trans "Серьёзный старт" %}</p>
-        <h2 class="page-title">{% trans "Отбор событий должен ощущаться как шаг к будущему, а не как поиск по таблице" %}</h2>
+        <p class="eyebrow">{% trans "Возможности вместо шума" %}</p>
+        <h2 class="page-title">{% trans "Правильное событие легче выбрать, когда структура понятна с первого экрана" %}</h2>
         <p class="page-copy">
             {% blocktrans trimmed %}
-                Мы делаем акцент на понятной структуре, спокойной визуальной среде и быстрых решениях: сначала событие, затем детали, затем команда, если формат это допускает.
+                Bloom делает акцент на ясных параметрах: тип события, профиль, уровень, формат участия и официальный источник. Сначала выберите событие, затем смотрите детали и команды там, где это действительно нужно.
             {% endblocktrans %}
         </p>
-        <div class="inline-actions">
-            <a class="btn btn-primary" href="{% url 'web:event-list' %}">{% trans "Перейти в каталог" %}</a>
-            <a class="btn btn-secondary" href="{% url 'web:event-list' %}?participation_mode=team">{% trans "Смотреть командные события" %}</a>
+        <div class="stat-grid">
+            <article class="stat-card">
+                <strong>01</strong>
+                <p>{% trans "События собраны в едином каталоге." %}</p>
+            </article>
+            <article class="stat-card">
+                <strong>02</strong>
+                <p>{% trans "Командный путь не мешает индивидуальному выбору." %}</p>
+            </article>
         </div>
     </div>
+</section>
+
+<section class="page-section value-section">
+    <p class="eyebrow">{% trans "Почему Bloom" %}</p>
+    <h2 class="page-title">{% trans "Один из самых спокойных способов выбрать образовательное событие" %}</h2>
+    <p class="page-copy">{% trans "Минимум лишних переходов, максимум понятной информации перед решением." %}</p>
+
+    <div class="feature-grid">
+        <article class="card value-card">
+            <span class="value-icon" aria-hidden="true">01</span>
+            <h3>{% trans "Удобный каталог" %}</h3>
+            <p class="muted">{% trans "Смотрите олимпиады, хакатоны и кейс-чемпионаты в одной системе." %}</p>
+        </article>
+        <article class="card value-card">
+            <span class="value-icon" aria-hidden="true">02</span>
+            <h3>{% trans "Фильтры по профилю и уровню" %}</h3>
+            <p class="muted">{% trans "Быстрее находите события, которые совпадают с вашими целями и подготовкой." %}</p>
+        </article>
+        <article class="card value-card">
+            <span class="value-icon" aria-hidden="true">03</span>
+            <h3>{% trans "Команды для командных событий" %}</h3>
+            <p class="muted">{% trans "Переходите к командам только там, где формат события это поддерживает." %}</p>
+        </article>
+    </div>
+</section>
+
+<section class="page-section featured-events">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">{% trans "Актуально сейчас" %}</p>
+            <h2 class="page-title">{% trans "Ближайшие события" %}</h2>
+        </div>
+        <a class="btn btn-secondary" href="{% url 'web:event-list' %}">{% trans "Все события" %}</a>
+    </div>
+
+    {% if featured_events %}
+        <div class="event-list-stack">
+            {% for event in featured_events %}
+                <article class="event-row">
+                    <div class="stack">
+                        <p class="eyebrow">{% trans "Событие" %}</p>
+                        <h3 class="event-title"><a href="{% url 'web:event-detail' event.pk %}">{% firstof event.name event.title %}</a></h3>
+                        <div class="meta-row">
+                            <span class="badge badge-accent">{{ event.event_type_code|event_type_label }}</span>
+                            {% if event.profile_code %}
+                                <span class="badge badge-muted">{{ event.profile_code|profile_label }}</span>
+                            {% endif %}
+                            <span class="badge badge-gold">{{ event.participation_mode|participation_mode_label }}</span>
+                            {% if event.registration_deadline %}
+                                <span class="badge badge-muted">{% trans "Регистрация до" %} {{ event.registration_deadline|date:"Y-m-d" }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <a class="btn btn-secondary" href="{% url 'web:event-detail' event.pk %}">{% trans "Подробнее" %}</a>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="empty-state">{% trans "Пока нет активных событий. Скоро здесь появятся новые олимпиады, хакатоны и кейс-чемпионаты." %}</p>
+    {% endif %}
+</section>
+
+<section class="page-section faq-grid">
+    <div class="stack">
+        <p class="eyebrow">{% trans "FAQ" %}</p>
+        <h2 class="page-title">{% trans "Частые вопросы" %}</h2>
+        <p class="page-copy">{% trans "Коротко о том, как пользоваться Bloom на старте." %}</p>
+    </div>
+    <div class="stack">
+        <article class="faq-item">
+            <h3>{% trans "Какие события есть на платформе?" %}</h3>
+            <p class="muted">{% trans "Олимпиады, хакатоны и кейс-чемпионаты для школьников и студентов." %}</p>
+        </article>
+        <article class="faq-item">
+            <h3>{% trans "Можно ли искать команду?" %}</h3>
+            <p class="muted">{% trans "Да, если событие поддерживает командный или смешанный формат участия." %}</p>
+        </article>
+        <article class="faq-item">
+            <h3>{% trans "Как понять, подходит ли мне событие?" %}</h3>
+            <p class="muted">{% trans "Сравните тип, профиль, уровень, формат участия и официальную страницу." %}</p>
+        </article>
+        <article class="faq-item">
+            <h3>{% trans "Будут ли добавляться новые олимпиады?" %}</h3>
+            <p class="muted">{% trans "Да, каталог рассчитан на регулярное расширение и новые сезоны событий." %}</p>
+        </article>
+    </div>
+</section>
+
+<section class="page-section final-cta">
+    <p class="eyebrow">{% trans "Стартуйте спокойно" %}</p>
+    <h2 class="page-title">{% trans "Начните с выбора события" %}</h2>
+    <p class="page-copy">{% trans "Откройте каталог и отберите варианты по профилю, уровню и формату участия." %}</p>
+    <a class="btn btn-primary" href="{% url 'web:event-list' %}">{% trans "Найти событие" %}</a>
 </section>
 {% endblock %}

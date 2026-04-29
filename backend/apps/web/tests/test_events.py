@@ -83,16 +83,32 @@ class EventCatalogTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, reverse("web:event-list"))
-        self.assertContains(response, "Смотреть события")
+        self.assertContains(response, "Найти событие")
 
     def test_home_renders_russian_by_default(self):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Найдите олимпиаду")
-        self.assertContains(response, "Смотреть события")
+        self.assertContains(response, "Найди олимпиаду, хакатон или кейс-чемпионат")
+        self.assertContains(response, "Найти событие")
         self.assertContains(response, "RU")
         self.assertContains(response, "EN")
+
+    def test_home_does_not_link_to_admin(self):
+        response = self.client.get(reverse("web:home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "/admin/")
+        self.assertNotContains(response, "Админка")
+
+    def test_home_shows_active_featured_event(self):
+        self.create_event("Featured Bloom Event")
+
+        response = self.client.get(reverse("web:home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Featured Bloom Event")
+        self.assertContains(response, "Ближайшие события")
 
     def test_language_switch_to_english(self):
         response = self.client.post(
@@ -102,8 +118,8 @@ class EventCatalogTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Discover events")
-        self.assertContains(response, "Find an olympiad")
+        self.assertContains(response, "Find an event")
+        self.assertContains(response, "Find an olympiad, hackathon, or case championship")
 
     def test_event_catalog_filters_by_participation_mode(self):
         self.create_event("Individual Event", participation_mode=EventParticipationMode.INDIVIDUAL)

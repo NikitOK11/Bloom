@@ -59,5 +59,22 @@
     <main class="page-shell">
         {% block content %}{% endblock %}
     </main>
+
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="stack">
+                <a class="brand footer-brand" href="{% url 'web:home' %}">
+                    <span class="brand-mark" aria-hidden="true"></span>
+                    Bloom
+                </a>
+                <p>{% trans "Каталог олимпиад, хакатонов и кейс-чемпионатов для осознанного выбора." %}</p>
+            </div>
+            <nav class="footer-links" aria-label="{% trans 'Навигация в подвале' %}">
+                <a href="{% url 'web:home' %}">{% trans "Главная" %}</a>
+                <a href="{% url 'web:event-list' %}">{% trans "События" %}</a>
+                <a href="{% url 'web:event-list' %}?participation_mode=team">{% trans "Команды" %}</a>
+            </nav>
+        </div>
+    </footer>
 </body>
 </html>
