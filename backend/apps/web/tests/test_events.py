@@ -105,7 +105,7 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'href="/static/web/styles.css?v=reference-landing-20260429"')
+        self.assertContains(response, 'href="/static/web/styles.css?v=reference-landing-wide-20260429"')
 
     def test_home_shows_active_featured_event(self):
         self.create_event("Featured Bloom Event")

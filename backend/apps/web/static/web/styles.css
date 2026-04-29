@@ -84,14 +84,14 @@ h3 {
     position: sticky;
     top: 0;
     z-index: 20;
-    padding: var(--space-3) 0;
+    padding: var(--space-4) 0;
     background: rgba(244, 247, 242, 0.86);
     backdrop-filter: blur(18px);
 }
 
 .nav-shell,
 .page-shell {
-    width: min(1180px, calc(100% - 2rem));
+    width: min(1440px, calc(100% - 1rem));
     margin: 0 auto;
 }
 
@@ -99,9 +99,9 @@ h3 {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-4);
-    min-height: 58px;
-    padding: 0.48rem 0.6rem;
+    gap: var(--space-5);
+    min-height: 76px;
+    padding: 0.75rem 0.9rem;
     border: 1px solid rgba(35, 79, 67, 0.12);
     border-radius: var(--radius-lg);
     background: rgba(255, 255, 255, 0.88);
@@ -113,12 +113,13 @@ h3 {
     align-items: center;
     gap: var(--space-3);
     color: var(--color-deep-dark);
+    font-size: 1.22rem;
     font-weight: 900;
 }
 
 .brand-mark {
-    width: 2.1rem;
-    height: 2.1rem;
+    width: 2.75rem;
+    height: 2.75rem;
     border-radius: var(--radius-md);
     background:
         linear-gradient(135deg, rgba(191, 234, 216, 0.86), rgba(35, 79, 67, 0.92)),
@@ -132,15 +133,15 @@ h3 {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: var(--space-2);
+    gap: var(--space-3);
 }
 
 .nav-link {
-    min-height: 2.2rem;
-    padding: 0.46rem 0.82rem;
+    min-height: 2.85rem;
+    padding: 0.68rem 1.08rem;
     border-radius: var(--radius-lg);
     color: var(--color-muted);
-    font-size: 0.92rem;
+    font-size: 1rem;
     font-weight: 800;
 }
 
@@ -151,28 +152,28 @@ h3 {
 
 .nav-user {
     color: var(--color-muted);
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 .language-switcher {
     display: inline-flex;
     align-items: center;
     gap: 2px;
-    padding: 3px;
+    padding: 4px;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface-tint);
 }
 
 .language-option {
-    min-height: 2rem;
-    padding: 0.32rem 0.58rem;
+    min-height: 2.55rem;
+    padding: 0.48rem 0.72rem;
     border: 1px solid transparent;
     border-radius: var(--radius-md);
     background: transparent;
     color: var(--color-muted);
     font: inherit;
-    font-size: 0.78rem;
+    font-size: 0.9rem;
     font-weight: 850;
     cursor: pointer;
 }
@@ -187,7 +188,7 @@ h3 {
 }
 
 .page-shell {
-    padding: var(--space-5) 0 var(--space-8);
+    padding: var(--space-6) 0 var(--space-8);
 }
 
 .page-section {
@@ -202,10 +203,10 @@ h3 {
 .landing-hero {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(320px, 0.92fr);
-    gap: var(--space-6);
+    gap: clamp(2.25rem, 5vw, 5rem);
     align-items: center;
-    min-height: 620px;
-    padding: clamp(1.5rem, 4vw, 3.5rem);
+    min-height: 700px;
+    padding: clamp(2.5rem, 5vw, 5.5rem);
     border: 1px solid rgba(35, 79, 67, 0.1);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
@@ -262,7 +263,7 @@ h3 {
 .hero-content {
     display: grid;
     gap: var(--space-5);
-    max-width: 720px;
+    max-width: 780px;
 }
 
 .hero-kicker,
@@ -339,7 +340,7 @@ h3 {
 
 .hero-gallery {
     position: relative;
-    min-height: 430px;
+    min-height: 520px;
     overflow: hidden;
     border-radius: var(--radius-lg);
     background: var(--color-bg-soft);
@@ -679,8 +680,8 @@ h3 {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 2.7rem;
-    padding: 0.72rem 1.12rem;
+    min-height: 2.95rem;
+    padding: 0.8rem 1.22rem;
     border: 1px solid transparent;
     border-radius: var(--radius-lg);
     font: inherit;
@@ -753,7 +754,7 @@ textarea {
 }
 
 .message-list {
-    width: min(1180px, calc(100% - 2rem));
+    width: min(1440px, calc(100% - 1rem));
     margin: var(--space-4) auto 0;
     padding: 0;
     list-style: none;
@@ -828,7 +829,7 @@ textarea {
 }
 
 .site-footer {
-    width: min(1180px, calc(100% - 2rem));
+    width: min(1440px, calc(100% - 1rem));
     margin: 0 auto var(--space-5);
     padding: var(--space-6);
     border-radius: var(--radius-lg);
