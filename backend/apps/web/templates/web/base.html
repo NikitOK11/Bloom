@@ -7,7 +7,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{% trans "Bloom" %}{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'web/styles.css' %}?v=reference-landing-wide-20260429">
+    <link rel="stylesheet" href="{% static 'web/styles.css' %}?v=reference-landing-tuned-20260429">
 </head>
 <body>
     <header class="site-header">
@@ -17,8 +17,8 @@
                 Bloom
             </a>
             <div class="nav-links">
-                <a class="nav-link" href="{% url 'web:home' %}">{% trans "Главная" %}</a>
-                <a class="nav-link nav-link-primary" href="{% url 'web:event-list' %}">{% trans "События" %}</a>
+                <a class="nav-link{% if request.resolver_match.url_name == 'home' %} nav-link-primary{% endif %}" href="{% url 'web:home' %}">{% trans "Главная" %}</a>
+                <a class="nav-link{% if request.resolver_match.url_name == 'event-list' or request.resolver_match.url_name == 'event-detail' or request.resolver_match.url_name == 'event-team-create' or request.resolver_match.url_name == 'team-detail' %} nav-link-primary{% endif %}" href="{% url 'web:event-list' %}">{% trans "События" %}</a>
             </div>
             <div class="nav-actions">
                 <div class="language-switcher" aria-label="{% trans 'Переключение языка' %}">

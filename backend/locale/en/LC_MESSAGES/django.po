@@ -416,6 +416,9 @@ msgstr "Events for school and university students"
 msgid "Найди олимпиаду, хакатон или кейс-чемпионат под свои цели"
 msgstr "Find an olympiad, hackathon, or case championship that fits your goals"
 
+msgid "Найди свои олимпиады"
+msgstr "Find your olympiads"
+
 msgid "Bloom помогает школьникам и студентам искать события, сравнивать уровни, следить за этапами и находить команду там, где это нужно."
 msgstr "Bloom helps school and university students discover events, compare levels, track stages, and find a team where needed."
 

@@ -89,10 +89,12 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Найди олимпиаду, хакатон или кейс-чемпионат")
+        self.assertContains(response, "Найди свои олимпиады")
         self.assertContains(response, "Найти событие")
         self.assertContains(response, "RU")
         self.assertContains(response, "EN")
+        self.assertContains(response, 'class="nav-link nav-link-primary" href="/"', html=False)
+        self.assertNotContains(response, 'class="nav-link nav-link-primary" href="/events/"', html=False)
 
     def test_home_does_not_link_to_admin(self):
         response = self.client.get(reverse("web:home"))
@@ -105,7 +107,7 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'href="/static/web/styles.css?v=reference-landing-wide-20260429"')
+        self.assertContains(response, 'href="/static/web/styles.css?v=reference-landing-tuned-20260429"')
 
     def test_home_shows_active_featured_event(self):
         self.create_event("Featured Bloom Event")
@@ -125,7 +127,14 @@ class EventCatalogTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Find an event")
-        self.assertContains(response, "Find an olympiad, hackathon, or case championship")
+        self.assertContains(response, "Find your olympiads")
+
+    def test_event_navigation_is_active_on_event_catalog(self):
+        response = self.client.get(reverse("web:event-list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="nav-link nav-link-primary" href="/events/"', html=False)
+        self.assertNotContains(response, 'class="nav-link nav-link-primary" href="/"', html=False)
 
     def test_event_catalog_filters_by_participation_mode(self):
         self.create_event("Individual Event", participation_mode=EventParticipationMode.INDIVIDUAL)
