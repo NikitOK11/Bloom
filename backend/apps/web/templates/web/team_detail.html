@@ -4,39 +4,46 @@
 {% block title %}{% trans "Команда" %}{% endblock %}
 
 {% block content %}
-<section class="hero">
-    <p class="hero-kicker">{% trans "Команда" %}</p>
-    <h1 class="page-title">{{ team.name }}</h1>
-    {% if team.event %}
-        <p class="hero-copy">
-            {% trans "Событие:" %}
-            <a href="{% url 'web:event-detail' team.event.pk %}">{% firstof team.event.name team.event.title %}</a>
-        </p>
-    {% endif %}
-    <div class="meta-row">
-        <span class="badge {% if team.is_open %}badge-accent{% else %}badge-muted{% endif %}">
-            {% if team.is_open %}{% trans "Открыта для заявок" %}{% else %}{% trans "Закрыта" %}{% endif %}
-        </span>
+<section class="detail-hero">
+    <div class="hero-content">
+        <p class="hero-kicker">{% trans "Команда" %}</p>
+        <h1 class="page-title">{{ team.name }}</h1>
+        {% if team.event %}
+            <p class="hero-copy">
+                {% trans "Событие:" %}
+                <a href="{% url 'web:event-detail' team.event.pk %}">{% firstof team.event.name team.event.title %}</a>
+            </p>
+        {% endif %}
+        <div class="meta-row">
+            <span class="badge {% if team.is_open %}badge-accent{% else %}badge-muted{% endif %}">
+                {% if team.is_open %}{% trans "Открыта для заявок" %}{% else %}{% trans "Закрыта" %}{% endif %}
+            </span>
+        </div>
+        <p class="hero-copy">{% if team.description %}{{ team.description }}{% else %}{% trans "Описание пока не добавлено." %}{% endif %}</p>
     </div>
-    <p class="muted">{% if team.description %}{{ team.description }}{% else %}{% trans "Описание пока не добавлено." %}{% endif %}</p>
 </section>
 
-<section class="page-section card">
-<h2>{% trans "Участники" %}</h2>
-{% if member_rows %}
-    <ul class="unstyled-list stack">
-        {% for member in member_rows %}
-            <li>
-                <strong>{{ member.display_name }}</strong> ({{ member.email }}) — {{ member.membership.role }}
-                {% if can_view_contacts and member.contact %}
-                    <span class="muted">| {% trans "Контакт:" %} {{ member.contact }}</span>
-                {% endif %}
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p class="empty-state">{% trans "В команде пока нет участников." %}</p>
-{% endif %}
+<section class="page-section content-panel">
+    <div class="detail-header">
+        <div>
+            <p class="eyebrow">{% trans "Состав" %}</p>
+            <h2>{% trans "Участники" %}</h2>
+        </div>
+    </div>
+    {% if member_rows %}
+        <ul class="unstyled-list stack">
+            {% for member in member_rows %}
+                <li>
+                    <strong>{{ member.display_name }}</strong> ({{ member.email }}) — {{ member.membership.role }}
+                    {% if can_view_contacts and member.contact %}
+                        <span class="muted">| {% trans "Контакт:" %} {{ member.contact }}</span>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="empty-state">{% trans "В команде пока нет участников." %}</p>
+    {% endif %}
 </section>
 
 {% if can_view_contacts %}
@@ -46,13 +53,14 @@
 {% endif %}
 
 {% if can_join %}
-    <section class="page-section card">
-    <h2>{% trans "Заявка в команду" %}</h2>
-    <form class="stack" method="post" action="{% url 'web:team-join' team.pk %}">
-        {% csrf_token %}
-        {{ join_form.as_p }}
-        <button class="btn btn-primary" type="submit">{% trans "Отправить заявку" %}</button>
-    </form>
+    <section class="page-section content-panel">
+        <p class="eyebrow">{% trans "Командный трек" %}</p>
+        <h2>{% trans "Заявка в команду" %}</h2>
+        <form class="stack" method="post" action="{% url 'web:team-join' team.pk %}">
+            {% csrf_token %}
+            {{ join_form.as_p }}
+            <button class="btn btn-primary" type="submit">{% trans "Отправить заявку" %}</button>
+        </form>
     </section>
 {% elif request.user.is_authenticated and has_join_request %}
     <p class="page-section empty-state">{% trans "Вы уже отправили заявку в эту команду." %}</p>
@@ -63,28 +71,29 @@
 {% endif %}
 
 {% if is_captain %}
-    <section class="page-section card">
-    <h2>{% trans "Заявки в ожидании" %}</h2>
-    {% if pending_join_requests %}
-        <ul class="unstyled-list stack">
-            {% for request_item in pending_join_requests %}
-                <li>
-                    {{ request_item.user.email }}
-                    {% if request_item.message %}— "{{ request_item.message }}"{% endif %}
-                    <form class="inline-form" method="post" action="{% url 'web:join-request-approve' request_item.pk %}">
-                        {% csrf_token %}
-                        <button class="btn btn-secondary" type="submit">{% trans "Одобрить" %}</button>
-                    </form>
-                    <form class="inline-form" method="post" action="{% url 'web:join-request-reject' request_item.pk %}">
-                        {% csrf_token %}
-                        <button class="btn btn-secondary" type="submit">{% trans "Отклонить" %}</button>
-                    </form>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p class="empty-state">{% trans "Новых заявок пока нет." %}</p>
-    {% endif %}
+    <section class="page-section content-panel">
+        <p class="eyebrow">{% trans "Управление" %}</p>
+        <h2>{% trans "Заявки в ожидании" %}</h2>
+        {% if pending_join_requests %}
+            <ul class="unstyled-list stack">
+                {% for request_item in pending_join_requests %}
+                    <li>
+                        {{ request_item.user.email }}
+                        {% if request_item.message %}— "{{ request_item.message }}"{% endif %}
+                        <form class="inline-form" method="post" action="{% url 'web:join-request-approve' request_item.pk %}">
+                            {% csrf_token %}
+                            <button class="btn btn-secondary" type="submit">{% trans "Одобрить" %}</button>
+                        </form>
+                        <form class="inline-form" method="post" action="{% url 'web:join-request-reject' request_item.pk %}">
+                            {% csrf_token %}
+                            <button class="btn btn-secondary" type="submit">{% trans "Отклонить" %}</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-state">{% trans "Новых заявок пока нет." %}</p>
+        {% endif %}
     </section>
 {% endif %}
 {% endblock %}

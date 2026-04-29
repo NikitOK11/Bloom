@@ -4,7 +4,7 @@
 {% block title %}{% trans "Создать команду" %}{% endblock %}
 
 {% block content %}
-<section class="card-elevated auth-card">
+<section class="content-panel auth-card">
 <h1>{% trans "Создать команду" %}</h1>
 {% if event %}
     <p class="muted">{% trans "Событие:" %} <a href="{% url 'web:event-detail' event.pk %}">{% firstof event.name event.title %}</a></p>

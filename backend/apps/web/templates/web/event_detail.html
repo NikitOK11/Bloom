@@ -6,36 +6,38 @@
 {% block content %}
 <p><a class="btn btn-secondary" href="{% url 'web:event-list' %}">{% trans "Назад к событиям" %}</a></p>
 
-<section class="hero page-section">
-    <p class="hero-kicker">{% trans "Событие" %}</p>
-    <div class="detail-header">
-        <h1 class="page-title">{% firstof event.name event.title %}</h1>
-        {% if event.official_url %}
-            <a class="btn btn-primary" href="{{ event.official_url }}">{% trans "Официальный сайт" %}</a>
+<section class="detail-hero page-section">
+    <div class="hero-content">
+        <p class="hero-kicker">{% trans "Событие" %}</p>
+        <div class="detail-header">
+            <h1 class="page-title">{% firstof event.name event.title %}</h1>
+            {% if event.official_url %}
+                <a class="btn btn-primary" href="{{ event.official_url }}">{% trans "Официальный сайт" %}</a>
+            {% endif %}
+        </div>
+
+        <div class="meta-row">
+            <span class="badge badge-accent">{{ event.event_type_code|event_type_label }}</span>
+            <span class="badge">{{ event.level_code|event_level_label }}</span>
+            <span class="badge badge-gold">{{ event.participation_mode|participation_mode_label }}</span>
+            {% if event.profile_code %}
+                <span class="badge badge-muted">{{ event.profile_code|profile_label }}</span>
+            {% endif %}
+            {% if not event.is_active %}
+                <span class="badge badge-danger">{% trans "Неактивно" %}</span>
+            {% endif %}
+        </div>
+
+        {% if event.short_description %}
+            <p class="hero-copy">{{ event.short_description }}</p>
         {% endif %}
     </div>
-
-    <div class="meta-row">
-        <span class="badge badge-accent">{{ event.event_type_code|event_type_label }}</span>
-        <span class="badge">{{ event.level_code|event_level_label }}</span>
-        <span class="badge badge-gold">{{ event.participation_mode|participation_mode_label }}</span>
-        {% if event.profile_code %}
-            <span class="badge badge-muted">{{ event.profile_code|profile_label }}</span>
-        {% endif %}
-        {% if not event.is_active %}
-            <span class="badge badge-danger">{% trans "Неактивно" %}</span>
-        {% endif %}
-    </div>
-
-    {% if event.short_description %}
-        <p class="hero-copy">{{ event.short_description }}</p>
-    {% endif %}
 </section>
 
-<section class="page-section grid two-column-grid">
-    <article class="card">
-        <h2>{% trans "Описание" %}</h2>
-        <p class="muted">
+<section class="page-section two-column-grid">
+    <article class="content-panel">
+        <p class="eyebrow">{% trans "Описание" %}</p>
+        <p class="page-copy">
             {% if event.description %}
                 {{ event.description|linebreaksbr }}
             {% else %}
@@ -44,8 +46,8 @@
         </p>
     </article>
 
-    <article class="card">
-        <h2>{% trans "Ключевые детали" %}</h2>
+    <article class="content-panel">
+        <p class="eyebrow">{% trans "Ключевые детали" %}</p>
         <dl class="definition-grid">
             <dt>{% trans "Организатор" %}</dt>
             <dd>{% if event.organizer %}{{ event.organizer }}{% else %}{% trans "Не указано" %}{% endif %}</dd>
@@ -72,8 +74,13 @@
     </article>
 </section>
 
-<section class="page-section card">
-    <h2>{% trans "Сезоны и этапы" %}</h2>
+<section class="page-section content-panel">
+    <div class="detail-header">
+        <div>
+            <p class="eyebrow">{% trans "Таймлайн" %}</p>
+            <h2>{% trans "Сезоны и этапы" %}</h2>
+        </div>
+    </div>
     {% if event_editions %}
         <ul class="timeline">
             {% for edition in event_editions %}
@@ -111,9 +118,12 @@
 </section>
 
 {% if show_teams_block %}
-    <section class="page-section card">
+    <section class="page-section content-panel">
         <div class="detail-header">
-            <h2>{% trans "Командное участие" %}</h2>
+            <div>
+                <p class="eyebrow">{% trans "Командный трек" %}</p>
+                <h2>{% trans "Командное участие" %}</h2>
+            </div>
             {% if request.user.is_authenticated %}
                 <a class="btn btn-primary" href="{% url 'web:event-team-create' event.pk %}">{% trans "Создать команду" %}</a>
             {% endif %}

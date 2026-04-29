@@ -4,68 +4,70 @@
 {% block title %}{% trans "События" %}{% endblock %}
 
 {% block content %}
-<section class="stack">
-    <p class="eyebrow">{% trans "Поиск событий" %}</p>
-    <h1 class="page-title">{% trans "Каталог олимпиад, хакатонов и кейс-чемпионатов" %}</h1>
-    <p class="page-copy">
-        {% trans "Отберите события по профилю, уровню и формату участия. Командные возможности показываются только там, где они действительно подходят." %}
-    </p>
+<section class="catalog-hero">
+    <div class="hero-content">
+        <p class="hero-kicker">{% trans "Поиск событий" %}</p>
+        <h1 class="page-title">{% trans "Каталог олимпиад, хакатонов и кейс-чемпионатов" %}</h1>
+        <p class="page-copy">
+            {% trans "Отберите события по профилю, уровню и формату участия. Командные возможности показываются только там, где они действительно подходят." %}
+        </p>
+    </div>
 </section>
 
-<form class="filter-panel page-section" method="get">
+<form class="filter-panel" method="get" role="search">
     <div class="filter-grid">
-    <p class="form-field">
-        <label for="id_q">{% trans "Поиск" %}</label>
-        <input id="id_q" type="search" name="q" value="{{ selected_filters.q }}">
-    </p>
+        <p class="form-field">
+            <label for="id_q">{% trans "Поиск" %}</label>
+            <input id="id_q" type="search" name="q" value="{{ selected_filters.q }}" placeholder="{% trans 'Название или организатор' %}">
+        </p>
 
-    <p class="form-field">
-        <label for="id_profile">{% trans "Профиль" %}</label>
-        <select id="id_profile" name="profile_code">
-            <option value="">{% trans "Все профили" %}</option>
-            {% for value, label in profile_code_choices %}
-                <option value="{{ value }}"{% if selected_filters.profile_code == value %} selected{% endif %}>
-                    {{ label|profile_label }}
-                </option>
-            {% endfor %}
-        </select>
-    </p>
+        <p class="form-field">
+            <label for="id_profile">{% trans "Профиль" %}</label>
+            <select id="id_profile" name="profile_code">
+                <option value="">{% trans "Все профили" %}</option>
+                {% for value, label in profile_code_choices %}
+                    <option value="{{ value }}"{% if selected_filters.profile_code == value %} selected{% endif %}>
+                        {{ label|profile_label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </p>
 
-    <p class="form-field">
-        <label for="id_event_type">{% trans "Тип события" %}</label>
-        <select id="id_event_type" name="event_type_code">
-            <option value="">{% trans "Все типы" %}</option>
-            {% for value, label in event_type_code_choices %}
-                <option value="{{ value }}"{% if selected_filters.event_type_code == value %} selected{% endif %}>
-                    {{ label }}
-                </option>
-            {% endfor %}
-        </select>
-    </p>
+        <p class="form-field">
+            <label for="id_event_type">{% trans "Тип события" %}</label>
+            <select id="id_event_type" name="event_type_code">
+                <option value="">{% trans "Все типы" %}</option>
+                {% for value, label in event_type_code_choices %}
+                    <option value="{{ value }}"{% if selected_filters.event_type_code == value %} selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </p>
 
-    <p class="form-field">
-        <label for="id_level">{% trans "Уровень" %}</label>
-        <select id="id_level" name="level_code">
-            <option value="">{% trans "Все уровни" %}</option>
-            {% for value, label in level_code_choices %}
-                <option value="{{ value }}"{% if selected_filters.level_code == value %} selected{% endif %}>
-                    {{ label }}
-                </option>
-            {% endfor %}
-        </select>
-    </p>
+        <p class="form-field">
+            <label for="id_level">{% trans "Уровень" %}</label>
+            <select id="id_level" name="level_code">
+                <option value="">{% trans "Все уровни" %}</option>
+                {% for value, label in level_code_choices %}
+                    <option value="{{ value }}"{% if selected_filters.level_code == value %} selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </p>
 
-    <p class="form-field">
-        <label for="id_participation_mode">{% trans "Формат участия" %}</label>
-        <select id="id_participation_mode" name="participation_mode">
-            <option value="">{% trans "Любой формат" %}</option>
-            {% for value, label in participation_mode_choices %}
-                <option value="{{ value }}"{% if selected_filters.participation_mode == value %} selected{% endif %}>
-                    {{ label }}
-                </option>
-            {% endfor %}
-        </select>
-    </p>
+        <p class="form-field">
+            <label for="id_participation_mode">{% trans "Формат участия" %}</label>
+            <select id="id_participation_mode" name="participation_mode">
+                <option value="">{% trans "Любой формат" %}</option>
+                {% for value, label in participation_mode_choices %}
+                    <option value="{{ value }}"{% if selected_filters.participation_mode == value %} selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </p>
     </div>
 
     <div class="form-actions">
@@ -79,10 +81,13 @@
         {% for event in events %}
             <article class="card-elevated event-card">
                 <div class="event-card-header">
-                    <h2 class="event-title"><a href="{% url 'web:event-detail' event.pk %}">{% firstof event.name event.title %}</a></h2>
-                    {% if event.official_url %}
-                        <a class="btn btn-secondary" href="{{ event.official_url }}">{% trans "Официальный сайт" %}</a>
-                    {% endif %}
+                    <div class="stack">
+                        <p class="eyebrow">{% trans "Событие" %}</p>
+                        <h2 class="event-title">
+                            <a href="{% url 'web:event-detail' event.pk %}">{% firstof event.name event.title %}</a>
+                        </h2>
+                    </div>
+                    <a class="btn btn-secondary" href="{% url 'web:event-detail' event.pk %}">{% trans "Подробнее" %}</a>
                 </div>
                 <div class="meta-row">
                     <span class="badge badge-accent">{{ event.event_type_code|event_type_label }}</span>
@@ -103,6 +108,9 @@
                 </div>
                 {% if event.short_description %}
                     <p class="muted">{{ event.short_description }}</p>
+                {% endif %}
+                {% if event.official_url %}
+                    <a class="btn btn-secondary" href="{{ event.official_url }}">{% trans "Официальный сайт" %}</a>
                 {% endif %}
             </article>
         {% endfor %}

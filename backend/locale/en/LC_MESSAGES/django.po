@@ -47,8 +47,56 @@ msgstr "Find an olympiad, hackathon, or case championship without the noise"
 msgid "Bloom помогает быстро сравнить события по профилю, уровню и формату участия, а для командных треков сразу перейти к поиску команды."
 msgstr "Bloom helps you compare events by profile, level, and participation format, then move toward team discovery for team-based tracks."
 
+msgid "Bloom собирает академические и карьерные события в одном месте: фильтруйте по профилю, уровню и формату участия, а для командных треков сразу переходите к командам."
+msgstr "Bloom brings academic and career events into one place: filter by profile, level, and participation format, then move straight to teams for team tracks."
+
 msgid "Смотреть события"
 msgstr "Discover events"
+
+msgid "Главные сценарии"
+msgstr "Main paths"
+
+msgid "01"
+msgstr "01"
+
+msgid "02"
+msgstr "02"
+
+msgid "03"
+msgstr "03"
+
+msgid "Выберите событие"
+msgstr "Choose an event"
+
+msgid "Олимпиады, хакатоны и кейс-чемпионаты в одном каталоге."
+msgstr "Olympiads, hackathons, and case championships in one catalog."
+
+msgid "Сравните параметры"
+msgstr "Compare key details"
+
+msgid "Профиль, уровень, формат участия и официальный сайт на виду."
+msgstr "Profile, level, participation format, and official website are easy to scan."
+
+msgid "Соберите команду"
+msgstr "Build a team"
+
+msgid "Командный путь открыт только для событий, где он уместен."
+msgstr "The team path opens only for events where it makes sense."
+
+msgid "Серьёзный старт"
+msgstr "A serious start"
+
+msgid "Отбор событий должен ощущаться как шаг к будущему, а не как поиск по таблице"
+msgstr "Choosing events should feel like a step toward the future, not a spreadsheet search"
+
+msgid "Мы делаем акцент на понятной структуре, спокойной визуальной среде и быстрых решениях: сначала событие, затем детали, затем команда, если формат это допускает."
+msgstr "We focus on clear structure, a calm visual environment, and fast decisions: first the event, then the details, then the team when the format allows it."
+
+msgid "Перейти в каталог"
+msgstr "Open catalog"
+
+msgid "Смотреть командные события"
+msgstr "View team events"
 
 msgid "Основные возможности"
 msgstr "Core paths"
@@ -95,6 +143,9 @@ msgstr "Filter events by profile, level, and participation format. Team options 
 msgid "Поиск"
 msgstr "Search"
 
+msgid "Название или организатор"
+msgstr "Title or organizer"
+
 msgid "Профиль"
 msgstr "Profile"
 
@@ -130,6 +181,9 @@ msgstr "Event list"
 
 msgid "Официальный сайт"
 msgstr "Official website"
+
+msgid "Подробнее"
+msgstr "Details"
 
 msgid "Профиль не указан"
 msgstr "Profile not specified"
@@ -173,6 +227,9 @@ msgstr "Registration"
 msgid "Сезоны и этапы"
 msgstr "Editions and stages"
 
+msgid "Таймлайн"
+msgstr "Timeline"
+
 msgid "Текущий этап:"
 msgstr "Current stage:"
 
@@ -190,6 +247,9 @@ msgstr "No editions added yet."
 
 msgid "Командное участие"
 msgstr "Team participation"
+
+msgid "Командный трек"
+msgstr "Team track"
 
 msgid "Создать команду"
 msgstr "Create team"
@@ -224,6 +284,9 @@ msgstr "Open for requests"
 msgid "Участники"
 msgstr "Members"
 
+msgid "Состав"
+msgstr "Roster"
+
 msgid "Контакт:"
 msgstr "Contact:"
 
@@ -253,6 +316,9 @@ msgstr "to join this team."
 
 msgid "Заявки в ожидании"
 msgstr "Pending join requests"
+
+msgid "Управление"
+msgstr "Management"
 
 msgid "Одобрить"
 msgstr "Approve"
