@@ -1,4 +1,4 @@
-{% extends "web/base.html" %}
+{% extends base_template|default:"web/base.html" %}
 {% load i18n web_labels %}
 
 {% block title %}{% trans "События" %}{% endblock %}
@@ -84,10 +84,10 @@
                     <div class="stack">
                         <p class="eyebrow">{% trans "Событие" %}</p>
                         <h2 class="event-title">
-                            <a href="{% url 'web:event-detail' event.pk %}">{% firstof event.name event.title %}</a>
+                            <a href="{% url 'web:event-detail' event.pk %}" data-spa-link>{% firstof event.name event.title %}</a>
                         </h2>
                     </div>
-                    <a class="btn btn-secondary" href="{% url 'web:event-detail' event.pk %}">{% trans "Подробнее" %}</a>
+                    <a class="btn btn-secondary" href="{% url 'web:event-detail' event.pk %}" data-spa-link>{% trans "Подробнее" %}</a>
                 </div>
                 <div class="meta-row">
                     <span class="badge badge-accent">{{ event.event_type_code|event_type_label }}</span>

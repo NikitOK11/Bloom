@@ -107,7 +107,23 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'href="/static/web/styles.css?v=reference-landing-tuned-20260429"')
+        self.assertContains(response, 'href="/static/web/styles.css?v=spa-compact-20260430"')
+
+    def test_home_partial_request_returns_content_without_base_layout(self):
+        response = self.client.get(reverse("web:home"), HTTP_X_PARTIAL_REQUEST="true")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Найди свои олимпиады")
+        self.assertNotContains(response, "<!doctype html>")
+        self.assertNotContains(response, "<header")
+
+    def test_event_catalog_partial_request_returns_content_without_base_layout(self):
+        response = self.client.get(reverse("web:event-list"), HTTP_X_PARTIAL_REQUEST="true")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Каталог олимпиад")
+        self.assertNotContains(response, "<!doctype html>")
+        self.assertNotContains(response, "<header")
 
     def test_home_shows_active_featured_event(self):
         self.create_event("Featured Bloom Event")
@@ -195,6 +211,19 @@ class EventCatalogTests(TestCase):
         self.assertContains(response, "Event Organizer")
         self.assertContains(response, "Math")
         self.assertContains(response, "Командная поддержка для событий будет развиваться дальше.")
+
+    def test_event_detail_partial_request_returns_content_without_base_layout(self):
+        event = self.create_event("Partial Event")
+
+        response = self.client.get(
+            reverse("web:event-detail", kwargs={"pk": event.pk}),
+            HTTP_X_PARTIAL_REQUEST="true",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Partial Event")
+        self.assertNotContains(response, "<!doctype html>")
+        self.assertNotContains(response, "<header")
 
     def test_event_detail_uses_name_not_title_as_primary_display(self):
         event = self.create_event("Legacy Event Title", name="Canonical Event Name")

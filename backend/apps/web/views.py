@@ -118,7 +118,25 @@ def _participation_mode_choices():
     ]
 
 
-class HomeView(TemplateView):
+class PartialTemplateMixin:
+    full_base_template = "web/base.html"
+    partial_base_template = "web/_partial_base.html"
+
+    def is_partial_request(self) -> bool:
+        return (
+            self.request.headers.get("X-Partial-Request") == "true"
+            or self.request.headers.get("X-Requested-With") == "fetch"
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["base_template"] = (
+            self.partial_base_template if self.is_partial_request() else self.full_base_template
+        )
+        return context
+
+
+class HomeView(PartialTemplateMixin, TemplateView):
     template_name = "web/home.html"
 
     def get_context_data(self, **kwargs):
@@ -136,7 +154,7 @@ class HomeView(TemplateView):
         return context
 
 
-class EventListView(ListView):
+class EventListView(PartialTemplateMixin, ListView):
     model = Event
     context_object_name = "events"
     template_name = "web/event_list.html"
@@ -206,7 +224,7 @@ class EventListView(ListView):
         return context
 
 
-class EventDetailView(DetailView):
+class EventDetailView(PartialTemplateMixin, DetailView):
     model = Event
     context_object_name = "event"
     template_name = "web/event_detail.html"
@@ -278,7 +296,7 @@ class EventTeamCreateView(LoginRequiredMixin, FormView):
         return redirect("web:team-detail", pk=team.pk)
 
 
-class TeamDetailView(DetailView):
+class TeamDetailView(PartialTemplateMixin, DetailView):
     model = Team
     context_object_name = "team"
     template_name = "web/team_detail.html"

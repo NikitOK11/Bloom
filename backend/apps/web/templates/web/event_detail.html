@@ -1,10 +1,10 @@
-{% extends "web/base.html" %}
+{% extends base_template|default:"web/base.html" %}
 {% load i18n web_labels %}
 
 {% block title %}{% firstof event.name event.title %}{% endblock %}
 
 {% block content %}
-<p><a class="btn btn-secondary" href="{% url 'web:event-list' %}">{% trans "Назад к событиям" %}</a></p>
+<p><a class="btn btn-secondary" href="{% url 'web:event-list' %}" data-spa-link>{% trans "Назад к событиям" %}</a></p>
 
 <section class="detail-hero page-section">
     <div class="hero-content">
@@ -137,7 +137,7 @@
             <div class="team-grid">
                 {% for team in event_teams %}
                     <article class="team-card">
-                        <h3><a href="{% url 'web:team-detail' team.pk %}">{{ team.name }}</a></h3>
+                        <h3><a href="{% url 'web:team-detail' team.pk %}" data-spa-link>{{ team.name }}</a></h3>
                         <span class="badge {% if team.is_open %}badge-accent{% else %}badge-muted{% endif %}">
                             {% if team.is_open %}{% trans "Открыта" %}{% else %}{% trans "Закрыта" %}{% endif %}
                         </span>

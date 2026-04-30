@@ -1,4 +1,4 @@
-{% extends "web/base.html" %}
+{% extends base_template|default:"web/base.html" %}
 {% load i18n %}
 
 {% block title %}{% trans "Команда" %}{% endblock %}
@@ -11,7 +11,7 @@
         {% if team.event %}
             <p class="hero-copy">
                 {% trans "Событие:" %}
-                <a href="{% url 'web:event-detail' team.event.pk %}">{% firstof team.event.name team.event.title %}</a>
+                <a href="{% url 'web:event-detail' team.event.pk %}" data-spa-link>{% firstof team.event.name team.event.title %}</a>
             </p>
         {% endif %}
         <div class="meta-row">

@@ -565,3 +565,9 @@ msgstr "Footer navigation"
 
 msgid "Команды"
 msgstr "Teams"
+
+msgid "Загрузка…"
+msgstr "Loading…"
+
+msgid "Не удалось загрузить страницу. Открываем обычным способом…"
+msgstr "Could not load the page. Opening it normally…"

@@ -1,4 +1,4 @@
-{% extends "web/base.html" %}
+{% extends base_template|default:"web/base.html" %}
 {% load i18n web_labels %}
 
 {% block title %}{% trans "Bloom — каталог событий" %}{% endblock %}
@@ -14,8 +14,8 @@
             {% endblocktrans %}
         </p>
         <div class="inline-actions">
-            <a class="btn btn-primary" href="{% url 'web:event-list' %}">{% trans "Найти событие" %}</a>
-            <a class="btn btn-secondary" href="{% url 'web:event-list' %}?participation_mode=team">{% trans "Найти команду" %}</a>
+            <a class="btn btn-primary" href="{% url 'web:event-list' %}" data-spa-link>{% trans "Найти событие" %}</a>
+            <a class="btn btn-secondary" href="{% url 'web:event-list' %}?participation_mode=team" data-spa-link>{% trans "Найти команду" %}</a>
         </div>
         <div class="hero-trust" aria-label="{% trans 'Коротко о Bloom' %}">
             <div>
@@ -109,7 +109,7 @@
             <p class="eyebrow">{% trans "Актуально сейчас" %}</p>
             <h2 class="page-title">{% trans "Ближайшие события" %}</h2>
         </div>
-        <a class="btn btn-secondary" href="{% url 'web:event-list' %}">{% trans "Все события" %}</a>
+        <a class="btn btn-secondary" href="{% url 'web:event-list' %}" data-spa-link>{% trans "Все события" %}</a>
     </div>
 
     {% if featured_events %}
@@ -118,7 +118,7 @@
                 <article class="event-row">
                     <div class="stack">
                         <p class="eyebrow">{% trans "Событие" %}</p>
-                        <h3 class="event-title"><a href="{% url 'web:event-detail' event.pk %}">{% firstof event.name event.title %}</a></h3>
+                        <h3 class="event-title"><a href="{% url 'web:event-detail' event.pk %}" data-spa-link>{% firstof event.name event.title %}</a></h3>
                         <div class="meta-row">
                             <span class="badge badge-accent">{{ event.event_type_code|event_type_label }}</span>
                             {% if event.profile_code %}
@@ -130,7 +130,7 @@
                             {% endif %}
                         </div>
                     </div>
-                    <a class="btn btn-secondary" href="{% url 'web:event-detail' event.pk %}">{% trans "Подробнее" %}</a>
+                    <a class="btn btn-secondary" href="{% url 'web:event-detail' event.pk %}" data-spa-link>{% trans "Подробнее" %}</a>
                 </article>
             {% endfor %}
         </div>
@@ -169,6 +169,6 @@
     <p class="eyebrow">{% trans "Стартуйте спокойно" %}</p>
     <h2 class="page-title">{% trans "Начните с выбора события" %}</h2>
     <p class="page-copy">{% trans "Откройте каталог и отберите варианты по профилю, уровню и формату участия." %}</p>
-    <a class="btn btn-primary" href="{% url 'web:event-list' %}">{% trans "Найти событие" %}</a>
+    <a class="btn btn-primary" href="{% url 'web:event-list' %}" data-spa-link>{% trans "Найти событие" %}</a>
 </section>
 {% endblock %}
