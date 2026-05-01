@@ -69,6 +69,32 @@
             </div>
         </form>
 
+        {% if applied_filter_chips %}
+            <section class="olympiad-applied-filters" aria-labelledby="olympiad-applied-filters-title" data-applied-filters>
+                <div class="olympiad-applied-filters-heading">
+                    <h2 id="olympiad-applied-filters-title">{% trans "Применённые фильтры" %}</h2>
+                    {% if applied_filter_chips|length > 1 %}
+                        <a class="olympiad-applied-clear" href="{{ clear_all_filters_url }}">{% trans "Сбросить всё" %}</a>
+                    {% endif %}
+                </div>
+                <ul class="olympiad-applied-filter-list">
+                    {% for chip in applied_filter_chips %}
+                        <li>
+                            <span class="olympiad-applied-chip" data-applied-filter-chip="{{ chip.name }}">
+                                <span class="olympiad-applied-chip-text">
+                                    <span class="olympiad-applied-chip-label">{{ chip.label }}:</span>
+                                    <span>{{ chip.value_label }}</span>
+                                </span>
+                                <a class="olympiad-applied-chip-remove" href="{{ chip.remove_url }}" aria-label="{{ chip.remove_label }}">
+                                    <span aria-hidden="true">×</span>
+                                </a>
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
+
         {% if olympiad_cards %}
             <div class="olympiad-card-grid">
                 {% for card in olympiad_cards %}

@@ -1507,7 +1507,7 @@ textarea {
     gap: 16px;
     align-items: end;
     width: calc(100% - 240px);
-    margin: 0 auto 64px;
+    margin: 0 auto 24px;
     padding: 24px;
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 16px;
@@ -1666,6 +1666,105 @@ textarea {
     color: rgba(0, 0, 0, 0.65);
 }
 
+.olympiad-filter-panel + .olympiad-card-grid {
+    margin-top: 40px;
+}
+
+.olympiad-applied-filters {
+    width: calc(100% - 240px);
+    margin: 0 auto 64px;
+    padding: 18px 20px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 16px;
+    background: rgba(0, 0, 0, 0.025);
+}
+
+.olympiad-applied-filters-heading {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.olympiad-applied-filters h2 {
+    color: rgba(0, 0, 0, 0.72);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.olympiad-applied-clear {
+    color: rgba(0, 0, 0, 0.58);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+}
+
+.olympiad-applied-clear:hover,
+.olympiad-applied-clear:focus-visible {
+    color: #000000;
+    outline: none;
+}
+
+.olympiad-applied-filter-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.olympiad-applied-chip {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    min-height: 38px;
+    padding: 5px 5px 5px 14px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 999px;
+    background: #FFFFFF;
+    color: #000000;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.olympiad-applied-chip-text {
+    display: inline-flex;
+    gap: 5px;
+    min-width: 0;
+}
+
+.olympiad-applied-chip-label {
+    color: rgba(0, 0, 0, 0.58);
+}
+
+.olympiad-applied-chip-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin-left: 8px;
+    border-radius: 50%;
+    color: rgba(0, 0, 0, 0.54);
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.olympiad-applied-chip-remove:hover,
+.olympiad-applied-chip-remove:focus-visible {
+    background: #000000;
+    color: #FFFFFF;
+    outline: none;
+}
+
 .olympiad-card-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 496px));
@@ -1788,11 +1887,20 @@ textarea {
     .olympiad-filter-panel {
         grid-template-columns: 1fr;
         width: calc(100% - 128px);
-        margin-bottom: 56px;
+        margin-bottom: 20px;
     }
 
     .olympiad-filter-actions {
         justify-content: flex-start;
+    }
+
+    .olympiad-filter-panel + .olympiad-card-grid {
+        margin-top: 36px;
+    }
+
+    .olympiad-applied-filters {
+        width: calc(100% - 128px);
+        margin-bottom: 56px;
     }
 
     .olympiad-card a {
@@ -1840,13 +1948,33 @@ textarea {
 
     .olympiad-filter-panel {
         width: calc(100% - 48px);
-        margin-bottom: 40px;
+        margin-bottom: 16px;
         padding: 16px;
     }
 
     .olympiad-filter-actions {
         display: grid;
         grid-template-columns: 1fr;
+    }
+
+    .olympiad-filter-panel + .olympiad-card-grid {
+        margin-top: 24px;
+    }
+
+    .olympiad-applied-filters {
+        width: calc(100% - 48px);
+        margin-bottom: 40px;
+        padding: 16px;
+    }
+
+    .olympiad-applied-filters-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .olympiad-applied-chip {
+        font-size: 13px;
     }
 
     .olympiad-card a {

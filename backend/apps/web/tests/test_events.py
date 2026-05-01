@@ -79,6 +79,16 @@ class EventCatalogTests(TestCase):
         end = min(end_candidates) if end_candidates else len(html)
         return html[start:end]
 
+    def applied_filters_markup(self, response) -> str:
+        html = response.content.decode(response.charset or "utf-8")
+        marker = "data-applied-filters"
+        start = html.index(marker)
+        card_grid = html.find('class="olympiad-card-grid"', start)
+        empty_state = html.find('class="olympiad-empty"', start)
+        end_candidates = [index for index in (card_grid, empty_state) if index != -1]
+        end = min(end_candidates) if end_candidates else len(html)
+        return html[start:end]
+
     def test_event_list_shows_only_active_events(self):
         self.create_event("Visible Event")
         self.create_event("Hidden Event", is_active=False)
@@ -117,7 +127,7 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'href="/static/web/styles.css?v=olympiad-filter-ui-20260501"')
+        self.assertContains(response, 'href="/static/web/styles.css?v=olympiad-applied-filters-20260501"')
 
     def test_home_partial_request_returns_content_without_base_layout(self):
         response = self.client.get(reverse("web:home"), HTTP_X_PARTIAL_REQUEST="true")
@@ -258,6 +268,98 @@ class EventCatalogTests(TestCase):
 
         self.assertContains(response, "Legacy Param Olympiad")
         self.assertNotContains(response, "Different Olympiad")
+
+    def test_olympiad_list_without_filters_hides_applied_filter_chips(self):
+        response = self.client.get(reverse("web:olympiad-list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Применённые фильтры")
+        self.assertNotContains(response, "data-applied-filter-chip", html=False)
+        self.assertNotContains(response, "Сбросить всё")
+
+    def test_olympiad_list_shows_readable_level_chip(self):
+        response = self.client.get(reverse("web:olympiad-list"), {"level": EventLevelCode.LEVEL_1})
+        applied_markup = self.applied_filters_markup(response)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Применённые фильтры", applied_markup)
+        self.assertIn("Уровень:", applied_markup)
+        self.assertIn("1 уровень", applied_markup)
+        self.assertNotIn("level_1", applied_markup)
+        self.assertNotContains(response, "Сбросить всё")
+
+    def test_olympiad_level_chip_remove_url_preserves_other_filters(self):
+        self.create_event(
+            "Filtered Olympiad",
+            profile_code="math",
+            level_code=EventLevelCode.LEVEL_1,
+            participation_mode=EventParticipationMode.TEAM,
+        )
+
+        response = self.client.get(
+            reverse("web:olympiad-list"),
+            {
+                "profile": "math",
+                "level": EventLevelCode.LEVEL_1,
+                "participation_mode": EventParticipationMode.TEAM,
+                "q": "draft",
+            },
+        )
+
+        self.assertContains(
+            response,
+            'data-applied-filter-chip="level"',
+            html=False,
+        )
+        self.assertContains(
+            response,
+            'href="/olympiads/?profile=math&amp;participation_mode=team&amp;q=draft"',
+            html=False,
+        )
+        self.assertNotContains(
+            response,
+            'href="/olympiads/?profile=math&amp;level=level_1&amp;participation_mode=team&amp;q=draft"',
+            html=False,
+        )
+
+    def test_olympiad_list_renders_each_active_filter_as_separate_chip(self):
+        self.create_event(
+            "Filtered Olympiad",
+            profile_code="math",
+            level_code=EventLevelCode.LEVEL_2,
+            participation_mode=EventParticipationMode.HYBRID,
+        )
+
+        response = self.client.get(
+            reverse("web:olympiad-list"),
+            {
+                "profile": "math",
+                "level": EventLevelCode.LEVEL_2,
+                "participation_mode": EventParticipationMode.HYBRID,
+            },
+        )
+
+        applied_markup = self.applied_filters_markup(response)
+        self.assertContains(response, 'data-applied-filter-chip="profile"', html=False)
+        self.assertContains(response, 'data-applied-filter-chip="level"', html=False)
+        self.assertContains(response, 'data-applied-filter-chip="participation_mode"', html=False)
+        self.assertIn("Профиль:", applied_markup)
+        self.assertIn("Уровень:", applied_markup)
+        self.assertIn("Формат:", applied_markup)
+        self.assertIn("2 уровень", applied_markup)
+        self.assertIn("Индивидуальный + командный", applied_markup)
+
+    def test_olympiad_list_clear_all_shows_for_multiple_filters(self):
+        response = self.client.get(
+            reverse("web:olympiad-list"),
+            {
+                "level": EventLevelCode.LEVEL_1,
+                "participation_mode": EventParticipationMode.TEAM,
+            },
+        )
+
+        self.assertContains(response, "Сбросить всё")
+        self.assertContains(response, 'class="olympiad-applied-clear" href="/olympiads/"', html=False)
 
     def test_event_catalog_navigation_links_to_olympiads(self):
         response = self.client.get(reverse("web:event-list"))

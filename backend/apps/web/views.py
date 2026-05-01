@@ -147,6 +147,40 @@ def _selected_choice_label(choices, selected_value: str, default_label: str) -> 
     return dict(choices).get(selected_value, default_label)
 
 
+def _query_without(request: HttpRequest, keys_to_remove: list[str]) -> str:
+    query = request.GET.copy()
+    for key in keys_to_remove:
+        if key in query:
+            del query[key]
+
+    query_string = query.urlencode()
+    if not query_string:
+        return request.path
+    return f"{request.path}?{query_string}"
+
+
+def _applied_filter_chip(
+    request: HttpRequest,
+    *,
+    name: str,
+    label: str,
+    value: str,
+    value_label: str,
+    remove_keys: list[str],
+):
+    if not value:
+        return None
+
+    return {
+        "name": name,
+        "label": label,
+        "value_label": value_label,
+        "remove_url": _query_without(request, remove_keys),
+        "remove_label": _("Убрать фильтр: %(label)s %(value)s")
+        % {"label": label, "value": value_label},
+    }
+
+
 class PartialTemplateMixin:
     full_base_template = "web/base.html"
     partial_base_template = "web/_partial_base.html"
@@ -337,6 +371,55 @@ class OlympiadListView(PartialTemplateMixin, ListView):
         selected_profile = _query_filter_value(self.request, "profile", "profile_code")
         selected_level = _query_filter_value(self.request, "level", "level_code")
         selected_participation_mode = self.request.GET.get("participation_mode", "").strip()
+        if selected_level not in EventLevelCode.values:
+            selected_level = ""
+        if selected_participation_mode not in EventParticipationMode.values:
+            selected_participation_mode = ""
+        selected_profile_label = _selected_choice_label(
+            profile_code_choices,
+            selected_profile,
+            _code_label(selected_profile) if selected_profile else _("Все профили"),
+        )
+        selected_level_label = _selected_choice_label(
+            level_code_choices,
+            selected_level,
+            selected_level,
+        )
+        selected_participation_mode_label = _selected_choice_label(
+            participation_mode_choices,
+            selected_participation_mode,
+            selected_participation_mode,
+        )
+        applied_filter_chips = [
+            chip
+            for chip in [
+                _applied_filter_chip(
+                    self.request,
+                    name="profile",
+                    label=_("Профиль"),
+                    value=selected_profile,
+                    value_label=selected_profile_label,
+                    remove_keys=["profile", "profile_code"],
+                ),
+                _applied_filter_chip(
+                    self.request,
+                    name="level",
+                    label=_("Уровень"),
+                    value=selected_level,
+                    value_label=selected_level_label,
+                    remove_keys=["level", "level_code"],
+                ),
+                _applied_filter_chip(
+                    self.request,
+                    name="participation_mode",
+                    label=_("Формат"),
+                    value=selected_participation_mode,
+                    value_label=selected_participation_mode_label,
+                    remove_keys=["participation_mode"],
+                ),
+            ]
+            if chip is not None
+        ]
         context.update(
             {
                 "profile_code_choices": profile_code_choices,
@@ -353,11 +436,7 @@ class OlympiadListView(PartialTemplateMixin, ListView):
                         "label": _("Профиль"),
                         "all_label": _("Все профили"),
                         "selected_value": selected_profile,
-                        "selected_label": _selected_choice_label(
-                            profile_code_choices,
-                            selected_profile,
-                            _("Все профили"),
-                        ),
+                        "selected_label": selected_profile_label,
                         "options": profile_code_choices,
                     },
                     {
@@ -385,6 +464,8 @@ class OlympiadListView(PartialTemplateMixin, ListView):
                         "options": participation_mode_choices,
                     },
                 ],
+                "applied_filter_chips": applied_filter_chips,
+                "clear_all_filters_url": self.request.path,
             }
         )
         return context
