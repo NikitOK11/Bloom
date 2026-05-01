@@ -1,174 +1,108 @@
 {% extends base_template|default:"web/base.html" %}
-{% load i18n web_labels %}
+{% load static i18n %}
 
-{% block title %}{% trans "Bloom — каталог событий" %}{% endblock %}
+{% block title %}{% trans "Bloom — от олимпиадника олимпиадникам" %}{% endblock %}
+{% block body_class %}home-body{% endblock %}
+{% block main_class %}figma-home-shell{% endblock %}
+{% block site_header %}{% endblock %}
+{% block site_footer %}{% endblock %}
 
 {% block content %}
-<section class="landing-hero">
-    <div class="hero-content">
-        <p class="hero-kicker">{% trans "События для школьников и студентов" %}</p>
-        <h1 class="hero-title">{% trans "Найди свои олимпиады" %}</h1>
-        <p class="hero-copy">
-            {% blocktrans trimmed %}
-                Bloom помогает школьникам и студентам искать события, сравнивать уровни, следить за этапами и находить команду там, где это нужно.
-            {% endblocktrans %}
-        </p>
-        <div class="inline-actions">
-            <a class="btn btn-primary" href="{% url 'web:event-list' %}" data-spa-link>{% trans "Найти событие" %}</a>
-            <a class="btn btn-secondary" href="{% url 'web:event-list' %}?participation_mode=team" data-spa-link>{% trans "Найти команду" %}</a>
+<div class="figma-home">
+    <header class="figma-home-header">
+        <a class="figma-brand" href="{% url 'web:home' %}" aria-label="{% trans 'Bloom, главная' %}">
+            <img src="{% static 'web/img/home/bloom-logomark.png' %}" alt="" width="32" height="32">
+            <span>Bloom</span>
+        </a>
+
+        <nav class="figma-home-nav" aria-label="{% trans 'Навигация по главной странице' %}">
+            <a href="#participate">{% trans "Участвовать в олимпиадах" %}</a>
+            <a href="{% url 'web:event-list' %}" data-spa-link>{% trans "Календарь событий" %}</a>
+            <a href="#about">{% trans "О Bloom" %}</a>
+        </nav>
+
+        <div class="figma-social-icons" aria-hidden="true">
+            <span><img src="{% static 'web/img/home/social-instagram.svg' %}" alt="" width="24" height="24"></span>
+            <span><img src="{% static 'web/img/home/social-linkedin.svg' %}" alt="" width="24" height="24"></span>
+            <span><img src="{% static 'web/img/home/social-x.svg' %}" alt="" width="24" height="24"></span>
         </div>
-        <div class="hero-trust" aria-label="{% trans 'Коротко о Bloom' %}">
-            <div>
-                <strong>3</strong>
-                <span>{% trans "формата событий: олимпиады, хакатоны и кейсы" %}</span>
+    </header>
+
+    <section class="figma-hero" aria-labelledby="home-title">
+        <picture class="figma-hero-bg" aria-hidden="true">
+            <source srcset="{% static 'web/img/home/hero-mobile.jpg' %}" media="(max-width: 700px)">
+            <img src="{% static 'web/img/home/hero-desktop.jpg' %}" alt="">
+        </picture>
+
+        <div class="figma-hero-content">
+            <h1 id="home-title">{% trans "От Олимпиадника Олимпиадникам" %}</h1>
+            <div class="figma-hero-actions">
+                <a class="figma-btn figma-btn-primary" href="{% url 'web:event-list' %}" data-spa-link>
+                    {% trans "Найти олимпиаду по душе" %}
+                </a>
+                <a class="figma-btn figma-btn-secondary" href="#about">
+                    {% trans "Узнать о проекте" %}
+                </a>
             </div>
-            <div class="avatar-stack" aria-hidden="true">
-                <span class="avatar-dot"></span>
-                <span class="avatar-dot"></span>
-                <span class="avatar-dot"></span>
+        </div>
+
+        <picture class="figma-device" aria-hidden="true">
+            <source srcset="{% static 'web/img/home/device-mobile.jpg' %}" media="(max-width: 700px)">
+            <img src="{% static 'web/img/home/device-desktop.jpg' %}" alt="">
+        </picture>
+    </section>
+
+    <section id="participate" class="figma-feature-section" aria-label="{% trans 'Как Bloom помогает с олимпиадами' %}">
+        <article class="figma-feature-row" id="about">
+            <picture class="figma-feature-media">
+                <source srcset="{% static 'web/img/home/feature-olympiad-mobile.jpg' %}" media="(max-width: 700px)">
+                <img src="{% static 'web/img/home/feature-olympiad-desktop.jpg' %}" alt="{% trans 'Экран олимпиадного события с таймером и визуальными материалами' %}">
+            </picture>
+
+            <div class="figma-feature-content">
+                <div class="figma-feature-text">
+                    <h2>{% trans "Каждый из нас хочет взять олимпиаду..." %}</h2>
+                    <p>
+                        {% blocktrans trimmed %}
+                            ...но не каждый может найти то, что ему нравится. Bloom - это точка старта для тех ребят, кто уже решился писать олимпиады, и хочет попробовать всё!
+                        {% endblocktrans %}
+                    </p>
+                </div>
+                <a class="figma-btn figma-btn-dark" href="{% url 'web:event-list' %}" data-spa-link>
+                    {% trans "Найти олимпиаду по душе" %}
+                </a>
             </div>
-            <span>{% trans "Каталог помогает быстрее выбрать следующий академический шаг." %}</span>
-        </div>
-    </div>
-
-    <div class="hero-gallery" aria-label="{% trans 'Галерея олимпиадных и студенческих сценариев' %}">
-        <div class="gallery-card-mini">
-            <strong>{% trans "Фокус" %}</strong>
-            <p class="muted">{% trans "Подбор событий без лишнего шума" %}</p>
-        </div>
-        <div class="gallery-slide gallery-slide-one" role="img" aria-label="{% trans 'Олимпиадная смена' %}">
-            <strong>{% trans "Олимпиадная смена" %}</strong>
-            <p>{% trans "Профиль, уровень и формат участия собраны в одном месте." %}</p>
-        </div>
-        <div class="gallery-slide gallery-slide-two" role="img" aria-label="{% trans 'Командный тур' %}">
-            <strong>{% trans "Командный тур" %}</strong>
-            <p>{% trans "Для командных событий можно сразу перейти к поиску команды." %}</p>
-        </div>
-        <div class="gallery-slide gallery-slide-three" role="img" aria-label="{% trans 'Финальный этап' %}">
-            <strong>{% trans "Финальный этап" %}</strong>
-            <p>{% trans "Следите за сезонами, этапами и официальной страницей события." %}</p>
-        </div>
-        <div class="gallery-dots" aria-hidden="true">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-    </div>
-</section>
-
-<section class="page-section dark-band">
-    <div class="media-placeholder" aria-hidden="true"></div>
-    <div class="stack">
-        <p class="eyebrow">{% trans "Возможности вместо шума" %}</p>
-        <h2 class="page-title">{% trans "Правильное событие легче выбрать, когда структура понятна с первого экрана" %}</h2>
-        <p class="page-copy">
-            {% blocktrans trimmed %}
-                Bloom делает акцент на ясных параметрах: тип события, профиль, уровень, формат участия и официальный источник. Сначала выберите событие, затем смотрите детали и команды там, где это действительно нужно.
-            {% endblocktrans %}
-        </p>
-        <div class="stat-grid">
-            <article class="stat-card">
-                <strong>01</strong>
-                <p>{% trans "События собраны в едином каталоге." %}</p>
-            </article>
-            <article class="stat-card">
-                <strong>02</strong>
-                <p>{% trans "Командный путь не мешает индивидуальному выбору." %}</p>
-            </article>
-        </div>
-    </div>
-</section>
-
-<section class="page-section value-section">
-    <p class="eyebrow">{% trans "Почему Bloom" %}</p>
-    <h2 class="page-title">{% trans "Один из самых спокойных способов выбрать образовательное событие" %}</h2>
-    <p class="page-copy">{% trans "Минимум лишних переходов, максимум понятной информации перед решением." %}</p>
-
-    <div class="feature-grid">
-        <article class="card value-card">
-            <span class="value-icon" aria-hidden="true">01</span>
-            <h3>{% trans "Удобный каталог" %}</h3>
-            <p class="muted">{% trans "Смотрите олимпиады, хакатоны и кейс-чемпионаты в одной системе." %}</p>
         </article>
-        <article class="card value-card">
-            <span class="value-icon" aria-hidden="true">02</span>
-            <h3>{% trans "Фильтры по профилю и уровню" %}</h3>
-            <p class="muted">{% trans "Быстрее находите события, которые совпадают с вашими целями и подготовкой." %}</p>
-        </article>
-        <article class="card value-card">
-            <span class="value-icon" aria-hidden="true">03</span>
-            <h3>{% trans "Команды для командных событий" %}</h3>
-            <p class="muted">{% trans "Переходите к командам только там, где формат события это поддерживает." %}</p>
-        </article>
-    </div>
-</section>
 
-<section class="page-section featured-events">
-    <div class="section-heading">
-        <div>
-            <p class="eyebrow">{% trans "Актуально сейчас" %}</p>
-            <h2 class="page-title">{% trans "Ближайшие события" %}</h2>
-        </div>
-        <a class="btn btn-secondary" href="{% url 'web:event-list' %}" data-spa-link>{% trans "Все события" %}</a>
-    </div>
+        <article class="figma-feature-row figma-feature-row-reverse">
+            <div class="figma-feature-content">
+                <div class="figma-feature-text">
+                    <h2>{% trans "И конечно все хотят себе БВИ..." %}</h2>
+                    <p>
+                        {% blocktrans trimmed %}
+                            ... поэтому здесь каждый сможет найти себе именно то, что ему нужно, чтобы поступить в вуз мечты!
+                        {% endblocktrans %}
+                    </p>
+                </div>
+                <a class="figma-btn figma-btn-dark figma-btn-wide" href="{% url 'web:event-list' %}" data-spa-link>
+                    {% trans "Изучить преференции олимпиад" %}
+                </a>
+            </div>
 
-    {% if featured_events %}
-        <div class="event-list-stack">
-            {% for event in featured_events %}
-                <article class="event-row">
-                    <div class="stack">
-                        <p class="eyebrow">{% trans "Событие" %}</p>
-                        <h3 class="event-title"><a href="{% url 'web:event-detail' event.pk %}" data-spa-link>{% firstof event.name event.title %}</a></h3>
-                        <div class="meta-row">
-                            <span class="badge badge-accent">{{ event.event_type_code|event_type_label }}</span>
-                            {% if event.profile_code %}
-                                <span class="badge badge-muted">{{ event.profile_code|profile_label }}</span>
-                            {% endif %}
-                            <span class="badge badge-gold">{{ event.participation_mode|participation_mode_label }}</span>
-                            {% if event.registration_deadline %}
-                                <span class="badge badge-muted">{% trans "Регистрация до" %} {{ event.registration_deadline|date:"Y-m-d" }}</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <a class="btn btn-secondary" href="{% url 'web:event-detail' event.pk %}" data-spa-link>{% trans "Подробнее" %}</a>
-                </article>
-            {% endfor %}
-        </div>
-    {% else %}
-        <p class="empty-state">{% trans "Пока нет активных событий. Скоро здесь появятся новые олимпиады, хакатоны и кейс-чемпионаты." %}</p>
-    {% endif %}
-</section>
+            <picture class="figma-feature-media">
+                <source srcset="{% static 'web/img/home/feature-preferences-mobile.jpg' %}" media="(max-width: 700px)">
+                <img src="{% static 'web/img/home/feature-preferences-desktop.jpg' %}" alt="{% trans 'Дипломы олимпиадников на столе' %}">
+            </picture>
+        </article>
 
-<section class="page-section faq-grid">
-    <div class="stack">
-        <p class="eyebrow">{% trans "FAQ" %}</p>
-        <h2 class="page-title">{% trans "Частые вопросы" %}</h2>
-        <p class="page-copy">{% trans "Коротко о том, как пользоваться Bloom на старте." %}</p>
-    </div>
-    <div class="stack">
-        <article class="faq-item">
-            <h3>{% trans "Какие события есть на платформе?" %}</h3>
-            <p class="muted">{% trans "Олимпиады, хакатоны и кейс-чемпионаты для школьников и студентов." %}</p>
-        </article>
-        <article class="faq-item">
-            <h3>{% trans "Можно ли искать команду?" %}</h3>
-            <p class="muted">{% trans "Да, если событие поддерживает командный или смешанный формат участия." %}</p>
-        </article>
-        <article class="faq-item">
-            <h3>{% trans "Как понять, подходит ли мне событие?" %}</h3>
-            <p class="muted">{% trans "Сравните тип, профиль, уровень, формат участия и официальную страницу." %}</p>
-        </article>
-        <article class="faq-item">
-            <h3>{% trans "Будут ли добавляться новые олимпиады?" %}</h3>
-            <p class="muted">{% trans "Да, каталог рассчитан на регулярное расширение и новые сезоны событий." %}</p>
-        </article>
-    </div>
-</section>
-
-<section class="page-section final-cta">
-    <p class="eyebrow">{% trans "Стартуйте спокойно" %}</p>
-    <h2 class="page-title">{% trans "Начните с выбора события" %}</h2>
-    <p class="page-copy">{% trans "Откройте каталог и отберите варианты по профилю, уровню и формату участия." %}</p>
-    <a class="btn btn-primary" href="{% url 'web:event-list' %}" data-spa-link>{% trans "Найти событие" %}</a>
-</section>
+        <section class="figma-contact" aria-labelledby="contacts-title">
+            <h2 id="contacts-title">{% trans "Наши контакты" %}</h2>
+            <ul>
+                <li>Email</li>
+                <li>Instagram</li>
+                <li>Linkedin</li>
+            </ul>
+        </section>
+    </section>
+</div>
 {% endblock %}

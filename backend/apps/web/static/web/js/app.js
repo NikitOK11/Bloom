@@ -48,6 +48,10 @@
             return false;
         }
 
+        if (document.body.classList.contains("home-body") || url.pathname === "/") {
+            return false;
+        }
+
         return !url.pathname.startsWith("/login/") && !url.pathname.startsWith("/admin/");
     }
 

@@ -7,10 +7,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{% trans "Bloom" %}{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'web/styles.css' %}?v=spa-compact-20260430">
-    <script src="{% static 'web/js/app.js' %}?v=spa-compact-20260430" defer></script>
+    <link rel="stylesheet" href="{% static 'web/styles.css' %}?v=figma-home-20260501">
+    <script src="{% static 'web/js/app.js' %}?v=figma-home-20260501" defer></script>
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
+    {% block site_header %}
     <header class="site-header">
         <nav class="nav-shell" aria-label="{% trans 'Основная навигация' %}">
             <a class="brand" href="{% url 'web:home' %}" data-spa-link>
@@ -47,6 +48,7 @@
             </div>
         </nav>
     </header>
+    {% endblock %}
 
     {% if messages %}
         <ul class="message-list">
@@ -60,10 +62,11 @@
         {% trans "Загрузка…" %}
     </div>
 
-    <main id="app-content" class="page-shell" tabindex="-1">
+    <main id="app-content" class="{% block main_class %}page-shell{% endblock %}" tabindex="-1">
         {% block content %}{% endblock %}
     </main>
 
+    {% block site_footer %}
     <footer class="site-footer">
         <div class="footer-grid">
             <div class="stack">
@@ -79,5 +82,6 @@
             </nav>
         </div>
     </footer>
+    {% endblock %}
 </body>
 </html>

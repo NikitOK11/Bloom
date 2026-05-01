@@ -83,18 +83,16 @@ class EventCatalogTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, reverse("web:event-list"))
-        self.assertContains(response, "Найти событие")
+        self.assertContains(response, "Найти олимпиаду по душе")
 
     def test_home_renders_russian_by_default(self):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Найди свои олимпиады")
-        self.assertContains(response, "Найти событие")
-        self.assertContains(response, "RU")
-        self.assertContains(response, "EN")
-        self.assertContains(response, 'class="nav-link nav-link-primary" href="/"', html=False)
-        self.assertNotContains(response, 'class="nav-link nav-link-primary" href="/events/"', html=False)
+        self.assertContains(response, "От Олимпиадника Олимпиадникам")
+        self.assertContains(response, "Найти олимпиаду по душе")
+        self.assertContains(response, "Участвовать в олимпиадах")
+        self.assertContains(response, "Изучить преференции олимпиад")
 
     def test_home_does_not_link_to_admin(self):
         response = self.client.get(reverse("web:home"))
@@ -107,15 +105,15 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'href="/static/web/styles.css?v=spa-compact-20260430"')
+        self.assertContains(response, 'href="/static/web/styles.css?v=figma-home-20260501"')
 
     def test_home_partial_request_returns_content_without_base_layout(self):
         response = self.client.get(reverse("web:home"), HTTP_X_PARTIAL_REQUEST="true")
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Найди свои олимпиады")
+        self.assertContains(response, "От Олимпиадника Олимпиадникам")
         self.assertNotContains(response, "<!doctype html>")
-        self.assertNotContains(response, "<header")
+        self.assertNotContains(response, 'class="site-header"', html=False)
 
     def test_event_catalog_partial_request_returns_content_without_base_layout(self):
         response = self.client.get(reverse("web:event-list"), HTTP_X_PARTIAL_REQUEST="true")
@@ -125,16 +123,7 @@ class EventCatalogTests(TestCase):
         self.assertNotContains(response, "<!doctype html>")
         self.assertNotContains(response, "<header")
 
-    def test_home_shows_active_featured_event(self):
-        self.create_event("Featured Bloom Event")
-
-        response = self.client.get(reverse("web:home"))
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Featured Bloom Event")
-        self.assertContains(response, "Ближайшие события")
-
-    def test_language_switch_to_english(self):
+    def test_language_switch_route_keeps_home_rendering(self):
         response = self.client.post(
             reverse("set_language"),
             {"language": "en", "next": reverse("web:home")},
@@ -142,8 +131,7 @@ class EventCatalogTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Find an event")
-        self.assertContains(response, "Find your olympiads")
+        self.assertContains(response, "От Олимпиадника Олимпиадникам")
 
     def test_event_navigation_is_active_on_event_catalog(self):
         response = self.client.get(reverse("web:event-list"))
