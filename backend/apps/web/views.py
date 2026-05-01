@@ -237,7 +237,7 @@ class OlympiadListView(PartialTemplateMixin, ListView):
     ]
 
     def get_queryset(self):
-        return (
+        queryset = (
             Event.objects.filter(is_active=True)
             .filter(Q(event_type_code=EventTypeCode.OLYMPIAD) | Q(event_type__slug="olympiad"))
             .select_related("event_type", "level")
@@ -254,6 +254,20 @@ class OlympiadListView(PartialTemplateMixin, ListView):
                 "-id",
             )
         )
+
+        profile_code = self.request.GET.get("profile_code", "").strip()
+        if profile_code:
+            queryset = queryset.filter(profile_code=profile_code)
+
+        level_code = self.request.GET.get("level_code", "").strip()
+        if level_code in EventLevelCode.values:
+            queryset = queryset.filter(level_code=level_code)
+
+        participation_mode = self.request.GET.get("participation_mode", "").strip()
+        if participation_mode in EventParticipationMode.values:
+            queryset = queryset.filter(participation_mode=participation_mode)
+
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -276,6 +290,30 @@ class OlympiadListView(PartialTemplateMixin, ListView):
             )
 
         context["olympiad_cards"] = cards
+        olympiad_queryset = Event.objects.filter(is_active=True).filter(
+            Q(event_type_code=EventTypeCode.OLYMPIAD) | Q(event_type__slug="olympiad")
+        )
+        profile_codes = (
+            olympiad_queryset.exclude(profile_code__isnull=True)
+            .exclude(profile_code="")
+            .order_by("profile_code")
+            .values_list("profile_code", flat=True)
+            .distinct()
+        )
+        context.update(
+            {
+                "profile_code_choices": [
+                    (profile_code, _code_label(profile_code)) for profile_code in profile_codes
+                ],
+                "level_code_choices": _event_level_code_choices(),
+                "participation_mode_choices": _participation_mode_choices(),
+                "selected_filters": {
+                    "profile_code": self.request.GET.get("profile_code", "").strip(),
+                    "level_code": self.request.GET.get("level_code", "").strip(),
+                    "participation_mode": self.request.GET.get("participation_mode", "").strip(),
+                },
+            }
+        )
         return context
 
 

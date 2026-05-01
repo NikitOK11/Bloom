@@ -9,10 +9,66 @@
 
 {% block content %}
 <section class="olympiad-page" aria-labelledby="olympiad-title">
+    <header class="figma-home-header olympiad-topbar">
+        <a class="figma-brand" href="{% url 'web:home' %}" aria-label="{% trans 'Bloom, главная' %}">
+            <img src="{% static 'web/img/home/bloom-logomark.png' %}" alt="" width="32" height="32">
+            <span>Bloom</span>
+        </a>
+
+        <nav class="figma-home-nav" aria-label="{% trans 'Навигация по странице олимпиад' %}">
+            <a href="{% url 'web:olympiad-list' %}" aria-current="page">{% trans "Участвовать в олимпиадах" %}</a>
+            <a href="{% url 'web:event-list' %}" data-spa-link>{% trans "Календарь событий" %}</a>
+            <a href="{% url 'web:home' %}#about">{% trans "О Bloom" %}</a>
+        </nav>
+
+        <div class="figma-social-icons" aria-hidden="true">
+            <span><img src="{% static 'web/img/home/social-instagram.svg' %}" alt="" width="24" height="24"></span>
+            <span><img src="{% static 'web/img/home/social-linkedin.svg' %}" alt="" width="24" height="24"></span>
+            <span><img src="{% static 'web/img/home/social-x.svg' %}" alt="" width="24" height="24"></span>
+        </div>
+    </header>
+
     <div class="olympiad-container">
         <header class="olympiad-hero">
             <h1 id="olympiad-title">{% trans "Олимпиады" %}</h1>
         </header>
+
+        <form class="olympiad-filter-panel" action="{% url 'web:olympiad-list' %}" method="get" aria-label="{% trans 'Фильтры олимпиад' %}">
+            <div class="olympiad-filter-field">
+                <label for="profile-code">{% trans "Профиль проведения" %}</label>
+                <select id="profile-code" name="profile_code">
+                    <option value="">{% trans "Все профили" %}</option>
+                    {% for value, label in profile_code_choices %}
+                        <option value="{{ value }}"{% if selected_filters.profile_code == value %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="olympiad-filter-field">
+                <label for="level-code">{% trans "Класс участия" %}</label>
+                <select id="level-code" name="level_code">
+                    <option value="">{% trans "Все классы" %}</option>
+                    {% for value, label in level_code_choices %}
+                        <option value="{{ value }}"{% if selected_filters.level_code == value %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="olympiad-filter-field">
+                <label for="participation-mode">{% trans "Тип участия" %}</label>
+                <select id="participation-mode" name="participation_mode">
+                    <option value="">{% trans "Любой тип" %}</option>
+                    {% for value, label in participation_mode_choices %}
+                        <option value="{{ value }}"{% if selected_filters.participation_mode == value %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="olympiad-filter-actions">
+                <button class="olympiad-filter-submit" type="submit">{% trans "Показать" %}</button>
+                <a class="olympiad-filter-reset" href="{% url 'web:olympiad-list' %}">{% trans "Сбросить" %}</a>
+            </div>
+        </form>
 
         {% if olympiad_cards %}
             <div class="olympiad-card-grid">

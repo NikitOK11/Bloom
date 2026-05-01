@@ -106,7 +106,7 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'href="/static/web/styles.css?v=figma-olympiads-20260501"')
+        self.assertContains(response, 'href="/static/web/styles.css?v=olympiad-filters-20260501"')
 
     def test_home_partial_request_returns_content_without_base_layout(self):
         response = self.client.get(reverse("web:home"), HTTP_X_PARTIAL_REQUEST="true")
@@ -129,6 +129,10 @@ class EventCatalogTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Олимпиады")
+        self.assertContains(response, "Участвовать в олимпиадах")
+        self.assertContains(response, "Профиль проведения")
+        self.assertContains(response, "Класс участия")
+        self.assertContains(response, "Тип участия")
         self.assertContains(response, "Наши контакты")
 
     def test_olympiad_list_shows_active_olympiad_events(self):
@@ -153,6 +157,32 @@ class EventCatalogTests(TestCase):
 
         self.assertContains(response, "Высшая Проба")
         self.assertNotContains(response, "Hackathon Event")
+
+    def test_olympiad_list_filters_by_profile_level_and_participation(self):
+        self.create_event(
+            "Target Olympiad",
+            profile_code="physics",
+            level_code="level_1",
+            participation_mode=EventParticipationMode.TEAM,
+        )
+        self.create_event(
+            "Other Olympiad",
+            profile_code="math",
+            level_code="level_2",
+            participation_mode=EventParticipationMode.INDIVIDUAL,
+        )
+
+        response = self.client.get(
+            reverse("web:olympiad-list"),
+            {
+                "profile_code": "physics",
+                "level_code": "level_1",
+                "participation_mode": EventParticipationMode.TEAM,
+            },
+        )
+
+        self.assertContains(response, "Target Olympiad")
+        self.assertNotContains(response, "Other Olympiad")
 
     def test_event_catalog_navigation_links_to_olympiads(self):
         response = self.client.get(reverse("web:event-list"))
