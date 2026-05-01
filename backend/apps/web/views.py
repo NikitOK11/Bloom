@@ -10,7 +10,14 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 
-from apps.events.models import Event, EventEdition, EventLevelCode, EventParticipationMode, EventTypeCode
+from apps.events.models import (
+    EligibleGroup,
+    Event,
+    EventEdition,
+    EventLevelCode,
+    EventParticipationMode,
+    EventTypeCode,
+)
 from apps.teams.models import JoinRequest, JoinRequestStatus, Team, TeamMembership, TeamMembershipRole
 from apps.web.forms import JoinRequestForm, TeamCreateForm
 
@@ -136,6 +143,20 @@ def _olympiad_participation_mode_choices():
     ]
 
 
+def _eligible_group_choices():
+    return [
+        (EligibleGroup.GRADES_1_4, _("1–4 классы")),
+        (EligibleGroup.GRADE_5, _("5 класс")),
+        (EligibleGroup.GRADE_6, _("6 класс")),
+        (EligibleGroup.GRADE_7, _("7 класс")),
+        (EligibleGroup.GRADE_8, _("8 класс")),
+        (EligibleGroup.GRADE_9, _("9 класс")),
+        (EligibleGroup.GRADE_10, _("10 класс")),
+        (EligibleGroup.GRADE_11, _("11 класс")),
+        (EligibleGroup.STUDENT, _("Студент")),
+    ]
+
+
 def _query_filter_value(request: HttpRequest, primary_name: str, legacy_name: str | None = None) -> str:
     value = request.GET.get(primary_name, "").strip()
     if value or legacy_name is None:
@@ -145,6 +166,32 @@ def _query_filter_value(request: HttpRequest, primary_name: str, legacy_name: st
 
 def _selected_choice_label(choices, selected_value: str, default_label: str) -> str:
     return dict(choices).get(selected_value, default_label)
+
+
+def _selected_choice_labels(choices, selected_values: list[str]) -> list[str]:
+    labels_by_value = dict(choices)
+    return [labels_by_value[value] for value in selected_values if value in labels_by_value]
+
+
+def _valid_query_values(request: HttpRequest, name: str, valid_values) -> list[str]:
+    selected_values = []
+    for value in request.GET.getlist(name):
+        value = value.strip()
+        if value in valid_values and value not in selected_values:
+            selected_values.append(value)
+    return selected_values
+
+
+def _filter_options(choices, selected_values: list[str]) -> list[dict[str, object]]:
+    selected_set = set(selected_values)
+    return [
+        {
+            "value": value,
+            "label": label,
+            "selected": value in selected_set,
+        }
+        for value, label in choices
+    ]
 
 
 def _query_without(request: HttpRequest, keys_to_remove: list[str]) -> str:
@@ -159,6 +206,20 @@ def _query_without(request: HttpRequest, keys_to_remove: list[str]) -> str:
     return f"{request.path}?{query_string}"
 
 
+def _query_without_value(request: HttpRequest, key: str, value_to_remove: str) -> str:
+    query = request.GET.copy()
+    values_to_keep = [value for value in query.getlist(key) if value != value_to_remove]
+    if key in query:
+        del query[key]
+    for value in values_to_keep:
+        query.appendlist(key, value)
+
+    query_string = query.urlencode()
+    if not query_string:
+        return request.path
+    return f"{request.path}?{query_string}"
+
+
 def _applied_filter_chip(
     request: HttpRequest,
     *,
@@ -166,7 +227,8 @@ def _applied_filter_chip(
     label: str,
     value: str,
     value_label: str,
-    remove_keys: list[str],
+    remove_keys: list[str] | None = None,
+    remove_url: str | None = None,
 ):
     if not value:
         return None
@@ -175,7 +237,7 @@ def _applied_filter_chip(
         "name": name,
         "label": label,
         "value_label": value_label,
-        "remove_url": _query_without(request, remove_keys),
+        "remove_url": remove_url or _query_without(request, remove_keys or []),
         "remove_label": _("Убрать фильтр: %(label)s %(value)s")
         % {"label": label, "value": value_label},
     }
@@ -330,6 +392,14 @@ class OlympiadListView(PartialTemplateMixin, ListView):
         if participation_mode in EventParticipationMode.values:
             queryset = queryset.filter(participation_mode=participation_mode)
 
+        selected_eligible_groups = _valid_query_values(
+            self.request,
+            "eligible_group",
+            EligibleGroup.values,
+        )
+        if selected_eligible_groups:
+            queryset = queryset.filter(eligible_groups__overlap=selected_eligible_groups)
+
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -368,9 +438,15 @@ class OlympiadListView(PartialTemplateMixin, ListView):
         ]
         level_code_choices = _olympiad_level_code_choices()
         participation_mode_choices = _olympiad_participation_mode_choices()
+        eligible_group_choices = _eligible_group_choices()
         selected_profile = _query_filter_value(self.request, "profile", "profile_code")
         selected_level = _query_filter_value(self.request, "level", "level_code")
         selected_participation_mode = self.request.GET.get("participation_mode", "").strip()
+        selected_eligible_groups = _valid_query_values(
+            self.request,
+            "eligible_group",
+            EligibleGroup.values,
+        )
         if selected_level not in EventLevelCode.values:
             selected_level = ""
         if selected_participation_mode not in EventParticipationMode.values:
@@ -390,6 +466,18 @@ class OlympiadListView(PartialTemplateMixin, ListView):
             selected_participation_mode,
             selected_participation_mode,
         )
+        selected_eligible_group_labels = _selected_choice_labels(
+            eligible_group_choices,
+            selected_eligible_groups,
+        )
+        if not selected_eligible_groups:
+            selected_eligible_group_label = _("Все классы")
+        elif len(selected_eligible_groups) == 1:
+            selected_eligible_group_label = selected_eligible_group_labels[0]
+        else:
+            selected_eligible_group_label = _("%(count)s выбрано") % {
+                "count": len(selected_eligible_groups)
+            }
         applied_filter_chips = [
             chip
             for chip in [
@@ -417,6 +505,21 @@ class OlympiadListView(PartialTemplateMixin, ListView):
                     value_label=selected_participation_mode_label,
                     remove_keys=["participation_mode"],
                 ),
+                *[
+                    _applied_filter_chip(
+                        self.request,
+                        name="eligible_group",
+                        label=_("Класс"),
+                        value=value,
+                        value_label=label,
+                        remove_url=_query_without_value(
+                            self.request,
+                            "eligible_group",
+                            value,
+                        ),
+                    )
+                    for value, label in zip(selected_eligible_groups, selected_eligible_group_labels)
+                ],
             ]
             if chip is not None
         ]
@@ -429,39 +532,70 @@ class OlympiadListView(PartialTemplateMixin, ListView):
                     "profile": selected_profile,
                     "level": selected_level,
                     "participation_mode": selected_participation_mode,
+                    "eligible_group": selected_eligible_groups,
                 },
                 "olympiad_filter_configs": [
                     {
                         "name": "profile",
                         "label": _("Профиль"),
                         "all_label": _("Все профили"),
+                        "multiple": False,
                         "selected_value": selected_profile,
+                        "selected_values": [selected_profile] if selected_profile else [],
                         "selected_label": selected_profile_label,
-                        "options": profile_code_choices,
+                        "options": _filter_options(
+                            profile_code_choices,
+                            [selected_profile] if selected_profile else [],
+                        ),
                     },
                     {
                         "name": "level",
                         "label": _("Уровень олимпиады"),
                         "all_label": _("Любой уровень"),
+                        "multiple": False,
                         "selected_value": selected_level,
+                        "selected_values": [selected_level] if selected_level else [],
                         "selected_label": _selected_choice_label(
                             level_code_choices,
                             selected_level,
                             _("Любой уровень"),
                         ),
-                        "options": level_code_choices,
+                        "options": _filter_options(
+                            level_code_choices,
+                            [selected_level] if selected_level else [],
+                        ),
                     },
                     {
                         "name": "participation_mode",
                         "label": _("Формат участия"),
                         "all_label": _("Любой формат"),
+                        "multiple": False,
                         "selected_value": selected_participation_mode,
+                        "selected_values": (
+                            [selected_participation_mode] if selected_participation_mode else []
+                        ),
                         "selected_label": _selected_choice_label(
                             participation_mode_choices,
                             selected_participation_mode,
                             _("Любой формат"),
                         ),
-                        "options": participation_mode_choices,
+                        "options": _filter_options(
+                            participation_mode_choices,
+                            [selected_participation_mode] if selected_participation_mode else [],
+                        ),
+                    },
+                    {
+                        "name": "eligible_group",
+                        "label": _("Класс / аудитория"),
+                        "all_label": _("Все классы"),
+                        "multiple": True,
+                        "selected_value": "",
+                        "selected_values": selected_eligible_groups,
+                        "selected_label": selected_eligible_group_label,
+                        "options": _filter_options(
+                            eligible_group_choices,
+                            selected_eligible_groups,
+                        ),
                     },
                 ],
                 "applied_filter_chips": applied_filter_chips,

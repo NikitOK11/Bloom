@@ -7,6 +7,7 @@ from django.urls import reverse
 from apps.accounts.models import User
 from apps.events.admin import EventAdmin
 from apps.events.models import (
+    EligibleGroup,
     Event,
     EventEdition,
     EventEditionStage,
@@ -127,7 +128,7 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'href="/static/web/styles.css?v=olympiad-applied-filters-20260501"')
+        self.assertContains(response, 'href="/static/web/styles.css?v=olympiad-class-filter-20260501"')
 
     def test_home_partial_request_returns_content_without_base_layout(self):
         response = self.client.get(reverse("web:home"), HTTP_X_PARTIAL_REQUEST="true")
@@ -154,6 +155,7 @@ class EventCatalogTests(TestCase):
         self.assertContains(response, "Профиль")
         self.assertContains(response, "Уровень олимпиады")
         self.assertContains(response, "Формат участия")
+        self.assertContains(response, "Класс / аудитория")
         self.assertContains(response, "Наши контакты")
 
     def test_olympiad_list_shows_active_olympiad_events(self):
@@ -228,6 +230,62 @@ class EventCatalogTests(TestCase):
 
         self.assertContains(response, "Team Olympiad")
         self.assertNotContains(response, "Individual Olympiad")
+
+    def test_event_model_accepts_multiple_eligible_groups(self):
+        event = self.create_event(
+            "Audience Event",
+            eligible_groups=[EligibleGroup.GRADE_5, EligibleGroup.STUDENT],
+        )
+
+        event.refresh_from_db()
+
+        self.assertEqual(event.eligible_groups, [EligibleGroup.GRADE_5, EligibleGroup.STUDENT])
+
+    def test_olympiad_list_filters_by_single_eligible_group(self):
+        self.create_event(
+            "Grade Five Olympiad",
+            eligible_groups=[EligibleGroup.GRADE_5],
+        )
+        self.create_event(
+            "Student Olympiad",
+            eligible_groups=[EligibleGroup.STUDENT],
+        )
+
+        response = self.client.get(
+            reverse("web:olympiad-list"),
+            {"eligible_group": EligibleGroup.GRADE_5},
+        )
+
+        self.assertContains(response, "Grade Five Olympiad")
+        self.assertNotContains(response, "Student Olympiad")
+
+    def test_olympiad_list_filters_by_multiple_eligible_groups(self):
+        self.create_event(
+            "Grade Six Olympiad",
+            eligible_groups=[EligibleGroup.GRADE_6],
+        )
+        self.create_event(
+            "Student Olympiad",
+            eligible_groups=[EligibleGroup.STUDENT],
+        )
+        self.create_event(
+            "Grade Eleven Olympiad",
+            eligible_groups=[EligibleGroup.GRADE_11],
+        )
+
+        response = self.client.get(
+            reverse("web:olympiad-list"),
+            {
+                "eligible_group": [
+                    EligibleGroup.GRADE_6,
+                    EligibleGroup.STUDENT,
+                ],
+            },
+        )
+
+        self.assertContains(response, "Grade Six Olympiad")
+        self.assertContains(response, "Student Olympiad")
+        self.assertNotContains(response, "Grade Eleven Olympiad")
 
     def test_olympiad_list_filter_groups_do_not_mix_level_and_participation_values(self):
         response = self.client.get(reverse("web:olympiad-list"))
@@ -360,6 +418,63 @@ class EventCatalogTests(TestCase):
 
         self.assertContains(response, "Сбросить всё")
         self.assertContains(response, 'class="olympiad-applied-clear" href="/olympiads/"', html=False)
+
+    def test_olympiad_list_shows_each_eligible_group_as_separate_chip(self):
+        response = self.client.get(
+            reverse("web:olympiad-list"),
+            {
+                "eligible_group": [
+                    EligibleGroup.GRADE_5,
+                    EligibleGroup.STUDENT,
+                ],
+            },
+        )
+        applied_markup = self.applied_filters_markup(response)
+
+        self.assertContains(response, 'data-applied-filter-chip="eligible_group"', count=2, html=False)
+        self.assertIn("Класс:", applied_markup)
+        self.assertIn("5 класс", applied_markup)
+        self.assertIn("Студент", applied_markup)
+        self.assertNotIn(">grade_5<", applied_markup)
+        self.assertNotIn(">student<", applied_markup)
+
+    def test_olympiad_eligible_group_chip_remove_url_preserves_other_values(self):
+        response = self.client.get(
+            reverse("web:olympiad-list"),
+            {
+                "eligible_group": [
+                    EligibleGroup.GRADE_5,
+                    EligibleGroup.STUDENT,
+                ],
+                "level": EventLevelCode.LEVEL_1,
+            },
+        )
+
+        self.assertContains(
+            response,
+            'href="/olympiads/?level=level_1&amp;eligible_group=student"',
+            html=False,
+        )
+        self.assertNotContains(
+            response,
+            'href="/olympiads/?eligible_group=grade_5&amp;eligible_group=student&amp;level=level_1"',
+            html=False,
+        )
+
+    def test_olympiad_list_ignores_invalid_eligible_groups(self):
+        self.create_event(
+            "Valid Audience Olympiad",
+            eligible_groups=[EligibleGroup.GRADE_7],
+        )
+
+        response = self.client.get(
+            reverse("web:olympiad-list"),
+            {"eligible_group": "not_a_group"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Valid Audience Olympiad")
+        self.assertNotContains(response, "data-applied-filter-chip=\"eligible_group\"", html=False)
 
     def test_event_catalog_navigation_links_to_olympiads(self):
         response = self.client.get(reverse("web:event-list"))

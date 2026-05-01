@@ -1,6 +1,9 @@
+from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.indexes import GinIndex
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import F, Q
+from django.utils.translation import gettext_lazy as _
 
 from apps.common.models import TimeStampedModel
 
@@ -61,6 +64,18 @@ class EventParticipationMode(models.TextChoices):
     HYBRID = "hybrid", "Hybrid"
 
 
+class EligibleGroup(models.TextChoices):
+    GRADES_1_4 = "grades_1_4", _("1–4 классы")
+    GRADE_5 = "grade_5", _("5 класс")
+    GRADE_6 = "grade_6", _("6 класс")
+    GRADE_7 = "grade_7", _("7 класс")
+    GRADE_8 = "grade_8", _("8 класс")
+    GRADE_9 = "grade_9", _("9 класс")
+    GRADE_10 = "grade_10", _("10 класс")
+    GRADE_11 = "grade_11", _("11 класс")
+    STUDENT = "student", _("Студент")
+
+
 class Event(TimeStampedModel):
     name = models.CharField(max_length=255, null=True, blank=True)
     title = models.CharField(max_length=255)
@@ -89,6 +104,11 @@ class Event(TimeStampedModel):
         null=True,
         blank=True,
     )
+    eligible_groups = ArrayField(
+        models.CharField(max_length=32, choices=EligibleGroup.choices),
+        default=list,
+        blank=True,
+    )
     event_type = models.ForeignKey(EventType, on_delete=models.PROTECT)
     level = models.ForeignKey(EventLevel, on_delete=models.SET_NULL, null=True, blank=True)
     participation_type = models.CharField(
@@ -104,6 +124,7 @@ class Event(TimeStampedModel):
             models.Index(fields=["event_type_code", "profile_code"], name="event_type_profile_idx"),
             models.Index(fields=["level_code"], name="event_level_code_idx"),
             models.Index(fields=["participation_mode"], name="event_participation_mode_idx"),
+            GinIndex(fields=["eligible_groups"], name="event_eligible_groups_gin"),
         ]
 
     def __str__(self) -> str:

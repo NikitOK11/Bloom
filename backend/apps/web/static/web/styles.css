@@ -1503,7 +1503,7 @@ textarea {
     position: relative;
     z-index: 2;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
     gap: 16px;
     align-items: end;
     width: calc(100% - 240px);
@@ -1630,6 +1630,29 @@ textarea {
 .olympiad-filter-option[aria-selected="true"] {
     background: #000000;
     color: #FFFFFF;
+}
+
+.olympiad-filter-option-check {
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+}
+
+.olympiad-filter-check {
+    width: 18px;
+    height: 18px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    background: #FFFFFF;
+}
+
+.olympiad-filter-option-check[aria-selected="true"] .olympiad-filter-check {
+    border-color: #FFFFFF;
+    background:
+        linear-gradient(135deg, transparent 45%, #000000 45% 55%, transparent 55%),
+        linear-gradient(45deg, transparent 48%, #000000 48% 58%, transparent 58%),
+        #FFFFFF;
 }
 
 .olympiad-filter-actions {

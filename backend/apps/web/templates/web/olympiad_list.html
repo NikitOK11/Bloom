@@ -35,9 +35,17 @@
 
         <form class="olympiad-filter-panel" action="{% url 'web:olympiad-list' %}" method="get" aria-label="{% trans 'Фильтры олимпиад' %}" data-olympiad-filters>
             {% for filter in olympiad_filter_configs %}
-                <div class="olympiad-filter-field" data-filter-field data-filter-name="{{ filter.name }}">
+                <div class="olympiad-filter-field" data-filter-field data-filter-name="{{ filter.name }}" data-filter-empty-label="{{ filter.all_label }}"{% if filter.multiple %} data-filter-multiple="true"{% endif %}>
                     <span class="olympiad-filter-label" id="olympiad-filter-{{ filter.name }}-label">{{ filter.label }}</span>
-                    <input type="hidden" name="{{ filter.name }}" value="{{ filter.selected_value }}" data-filter-input>
+                    <span data-filter-inputs>
+                        {% if filter.multiple %}
+                            {% for selected_value in filter.selected_values %}
+                                <input type="hidden" name="{{ filter.name }}" value="{{ selected_value }}" data-filter-input>
+                            {% endfor %}
+                        {% else %}
+                            <input type="hidden" name="{{ filter.name }}" value="{{ filter.selected_value }}" data-filter-input>
+                        {% endif %}
+                    </span>
                     <button
                         class="olympiad-filter-trigger"
                         type="button"
@@ -51,12 +59,17 @@
                         <span class="olympiad-filter-chevron" aria-hidden="true"></span>
                     </button>
                     <div class="olympiad-filter-menu" id="olympiad-filter-{{ filter.name }}-menu" role="listbox" aria-labelledby="olympiad-filter-{{ filter.name }}-label" data-filter-menu>
-                        <button class="olympiad-filter-option" type="button" role="option" data-filter-option data-value="" aria-selected="{% if not filter.selected_value %}true{% else %}false{% endif %}">
-                            {{ filter.all_label }}
-                        </button>
-                        {% for value, label in filter.options %}
-                            <button class="olympiad-filter-option" type="button" role="option" data-filter-option data-value="{{ value }}" aria-selected="{% if filter.selected_value == value %}true{% else %}false{% endif %}">
-                                {{ label }}
+                        {% if not filter.multiple %}
+                            <button class="olympiad-filter-option" type="button" role="option" data-filter-option data-value="" aria-selected="{% if not filter.selected_value %}true{% else %}false{% endif %}">
+                                {{ filter.all_label }}
+                            </button>
+                        {% endif %}
+                        {% for option in filter.options %}
+                            <button class="olympiad-filter-option{% if filter.multiple %} olympiad-filter-option-check{% endif %}" type="button" role="option" data-filter-option data-value="{{ option.value }}" aria-selected="{% if option.selected %}true{% else %}false{% endif %}">
+                                {% if filter.multiple %}
+                                    <span class="olympiad-filter-check" aria-hidden="true"></span>
+                                {% endif %}
+                                <span>{{ option.label }}</span>
                             </button>
                         {% endfor %}
                     </div>

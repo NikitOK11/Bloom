@@ -111,12 +111,47 @@
             return;
         }
 
+        const isMultiple = field.dataset.filterMultiple === "true";
         const input = field.querySelector("[data-filter-input]");
+        const inputs = field.querySelector("[data-filter-inputs]");
         const valueLabel = field.querySelector("[data-filter-value]");
         const trigger = field.querySelector("[data-filter-trigger]");
+        const selectedValue = option.dataset.value || "";
+
+        if (isMultiple) {
+            const isSelected = option.getAttribute("aria-selected") === "true";
+            option.setAttribute("aria-selected", isSelected ? "false" : "true");
+
+            const selectedOptions = Array.from(field.querySelectorAll("[data-filter-option]")).filter(
+                (item) => item.getAttribute("aria-selected") === "true"
+            );
+
+            if (inputs) {
+                inputs.innerHTML = "";
+                selectedOptions.forEach((item) => {
+                    const hiddenInput = document.createElement("input");
+                    hiddenInput.type = "hidden";
+                    hiddenInput.name = field.dataset.filterName || "";
+                    hiddenInput.value = item.dataset.value || "";
+                    hiddenInput.setAttribute("data-filter-input", "");
+                    inputs.appendChild(hiddenInput);
+                });
+            }
+
+            if (valueLabel) {
+                if (selectedOptions.length === 0) {
+                    valueLabel.textContent = field.dataset.filterEmptyLabel || "Все";
+                } else if (selectedOptions.length === 1) {
+                    valueLabel.textContent = selectedOptions[0].textContent.trim();
+                } else {
+                    valueLabel.textContent = `${selectedOptions.length} выбрано`;
+                }
+            }
+            return;
+        }
 
         if (input) {
-            input.value = option.dataset.value || "";
+            input.value = selectedValue;
         }
         if (valueLabel) {
             valueLabel.textContent = option.textContent.trim();
