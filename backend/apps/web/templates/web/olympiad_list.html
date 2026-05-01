@@ -1,0 +1,47 @@
+{% extends base_template|default:"web/base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Олимпиады — Bloom" %}{% endblock %}
+{% block body_class %}olympiad-body{% endblock %}
+{% block main_class %}olympiad-shell{% endblock %}
+{% block site_header %}{% endblock %}
+{% block site_footer %}{% endblock %}
+
+{% block content %}
+<section class="olympiad-page" aria-labelledby="olympiad-title">
+    <div class="olympiad-container">
+        <header class="olympiad-hero">
+            <h1 id="olympiad-title">{% trans "Олимпиады" %}</h1>
+        </header>
+
+        {% if olympiad_cards %}
+            <div class="olympiad-card-grid">
+                {% for card in olympiad_cards %}
+                    <article class="olympiad-card">
+                        <a href="{% url 'web:event-detail' card.event.pk %}" data-spa-link>
+                            <img src="{% static card.image_path %}" alt="{% trans 'Абстрактная обложка олимпиады' %} {{ card.display_name }}">
+                            <span class="olympiad-card-meta">
+                                <span class="olympiad-card-title">{{ card.display_name }}</span>
+                                {% if card.display_year %}
+                                    <span class="olympiad-card-year">{{ card.display_year }}</span>
+                                {% endif %}
+                            </span>
+                        </a>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="olympiad-empty">{% trans "Пока нет активных олимпиад." %}</p>
+        {% endif %}
+
+        <footer class="olympiad-contact" aria-labelledby="olympiad-contact-title">
+            <h2 id="olympiad-contact-title">{% trans "Наши контакты" %}</h2>
+            <ul>
+                <li>Email</li>
+                <li>Instagram</li>
+                <li>Linkedin</li>
+            </ul>
+        </footer>
+    </div>
+</section>
+{% endblock %}

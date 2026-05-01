@@ -1431,3 +1431,236 @@ textarea {
         font-size: 16px;
     }
 }
+
+.olympiad-body {
+    background: #FFFFFF;
+    color: #000000;
+}
+
+.olympiad-shell {
+    width: 100%;
+    min-height: 100vh;
+    background: #FFFFFF;
+    color: #000000;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.olympiad-shell.is-loading {
+    opacity: 0.54;
+    transform: translateY(4px);
+}
+
+.olympiad-page {
+    width: 100%;
+    overflow-x: hidden;
+    background: #FFFFFF;
+}
+
+.olympiad-container {
+    width: min(1280px, 100%);
+    margin: 0 auto;
+    background: #FFFFFF;
+}
+
+.olympiad-hero {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+    min-height: 270px;
+    padding: 120px 120px 80px;
+}
+
+.olympiad-hero h1 {
+    color: #000000;
+    font-size: 64px;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.olympiad-card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 496px));
+    gap: 80px 48px;
+    justify-content: center;
+    padding: 0 120px;
+}
+
+.olympiad-card {
+    width: 100%;
+}
+
+.olympiad-card a {
+    display: grid;
+    gap: 32px;
+    color: #000000;
+}
+
+.olympiad-card a:hover .olympiad-card-title {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 5px;
+}
+
+.olympiad-card img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 496 / 372;
+    border-radius: 16px;
+    object-fit: cover;
+}
+
+.olympiad-card-meta {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: start;
+    color: #000000;
+}
+
+.olympiad-card-title {
+    min-width: 0;
+    color: #000000;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.olympiad-card-year {
+    color: rgba(0, 0, 0, 0.55);
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.45;
+}
+
+.olympiad-empty {
+    width: calc(100% - 240px);
+    margin: 0 auto;
+    padding: 0 0 80px;
+    color: rgba(0, 0, 0, 0.55);
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.olympiad-contact {
+    width: calc(100% - 240px);
+    margin: 80px auto 0;
+    padding: 80px 0 120px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.olympiad-contact h2 {
+    color: #000000;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.olympiad-contact ul {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 24px;
+    padding: 0;
+    color: rgba(0, 0, 0, 0.55);
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.45;
+    list-style: none;
+}
+
+@media (max-width: 900px) {
+    .olympiad-container {
+        width: min(800px, 100%);
+    }
+
+    .olympiad-hero {
+        min-height: 222px;
+        padding: 96px 64px 64px;
+    }
+
+    .olympiad-hero h1 {
+        font-size: 56px;
+    }
+
+    .olympiad-card-grid {
+        grid-template-columns: minmax(0, 672px);
+        gap: 64px;
+        padding: 0 64px;
+    }
+
+    .olympiad-card a {
+        gap: 24px;
+    }
+
+    .olympiad-card img {
+        aspect-ratio: 672 / 504;
+    }
+
+    .olympiad-card-title {
+        font-size: 20px;
+    }
+
+    .olympiad-contact {
+        width: calc(100% - 128px);
+        margin-top: 64px;
+        padding: 64px 0;
+    }
+
+    .olympiad-empty {
+        width: calc(100% - 128px);
+    }
+}
+
+@media (max-width: 520px) {
+    .olympiad-hero {
+        min-height: 184px;
+        padding: 80px 24px 56px;
+    }
+
+    .olympiad-hero h1 {
+        font-size: 40px;
+    }
+
+    .olympiad-card-grid {
+        grid-template-columns: minmax(0, 327px);
+        gap: 32px;
+        padding: 0 24px;
+    }
+
+    .olympiad-card a {
+        gap: 16px;
+    }
+
+    .olympiad-card img {
+        aspect-ratio: 327 / 245.25;
+    }
+
+    .olympiad-card-title {
+        font-size: 18px;
+    }
+
+    .olympiad-card-year {
+        font-size: 16px;
+    }
+
+    .olympiad-contact {
+        width: calc(100% - 48px);
+        margin-top: 40px;
+        padding: 40px 0;
+    }
+
+    .olympiad-contact h2 {
+        font-size: 18px;
+    }
+
+    .olympiad-contact ul {
+        margin-top: 16px;
+        font-size: 16px;
+    }
+
+    .olympiad-empty {
+        width: calc(100% - 48px);
+        font-size: 16px;
+    }
+}

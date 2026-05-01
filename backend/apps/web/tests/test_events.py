@@ -82,8 +82,9 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, reverse("web:event-list"))
+        self.assertContains(response, reverse("web:olympiad-list"))
         self.assertContains(response, "Найти олимпиаду по душе")
+        self.assertContains(response, "Участвовать в олимпиадах")
 
     def test_home_renders_russian_by_default(self):
         response = self.client.get(reverse("web:home"))
@@ -105,7 +106,7 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'href="/static/web/styles.css?v=figma-home-20260501"')
+        self.assertContains(response, 'href="/static/web/styles.css?v=figma-olympiads-20260501"')
 
     def test_home_partial_request_returns_content_without_base_layout(self):
         response = self.client.get(reverse("web:home"), HTTP_X_PARTIAL_REQUEST="true")
@@ -122,6 +123,43 @@ class EventCatalogTests(TestCase):
         self.assertContains(response, "Каталог олимпиад")
         self.assertNotContains(response, "<!doctype html>")
         self.assertNotContains(response, "<header")
+
+    def test_olympiad_list_renders_successfully(self):
+        response = self.client.get(reverse("web:olympiad-list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Олимпиады")
+        self.assertContains(response, "Наши контакты")
+
+    def test_olympiad_list_shows_active_olympiad_events(self):
+        self.create_event("Высшая Проба")
+
+        response = self.client.get(reverse("web:olympiad-list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Высшая Проба")
+        self.assertContains(response, "2026")
+
+    def test_olympiad_list_hides_non_olympiad_events(self):
+        hackathon_type = EventType.objects.create(name="Hackathon", slug="hackathon")
+        self.create_event("Высшая Проба")
+        self.create_event(
+            "Hackathon Event",
+            event_type=hackathon_type,
+            event_type_code="hackathon",
+        )
+
+        response = self.client.get(reverse("web:olympiad-list"))
+
+        self.assertContains(response, "Высшая Проба")
+        self.assertNotContains(response, "Hackathon Event")
+
+    def test_event_catalog_navigation_links_to_olympiads(self):
+        response = self.client.get(reverse("web:event-list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, reverse("web:olympiad-list"))
+        self.assertContains(response, "Участвовать в олимпиадах")
 
     def test_language_switch_route_keeps_home_rendering(self):
         response = self.client.post(

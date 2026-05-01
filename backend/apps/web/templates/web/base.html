@@ -7,8 +7,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{% trans "Bloom" %}{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'web/styles.css' %}?v=figma-home-20260501">
-    <script src="{% static 'web/js/app.js' %}?v=figma-home-20260501" defer></script>
+    <link rel="stylesheet" href="{% static 'web/styles.css' %}?v=figma-olympiads-20260501">
+    <script src="{% static 'web/js/app.js' %}?v=figma-olympiads-20260501" defer></script>
 </head>
 <body class="{% block body_class %}{% endblock %}">
     {% block site_header %}
@@ -19,6 +19,7 @@
             </a>
             <div class="nav-links">
                 <a class="nav-link{% if request.resolver_match.url_name == 'home' %} nav-link-primary{% endif %}" href="{% url 'web:home' %}" data-nav-key="home" data-spa-link>{% trans "Главная" %}</a>
+                <a class="nav-link{% if request.resolver_match.url_name == 'olympiad-list' %} nav-link-primary{% endif %}" href="{% url 'web:olympiad-list' %}" data-nav-key="olympiads">{% trans "Участвовать в олимпиадах" %}</a>
                 <a class="nav-link{% if request.resolver_match.url_name == 'event-list' or request.resolver_match.url_name == 'event-detail' or request.resolver_match.url_name == 'event-team-create' or request.resolver_match.url_name == 'team-detail' %} nav-link-primary{% endif %}" href="{% url 'web:event-list' %}" data-nav-key="events" data-spa-link>{% trans "События" %}</a>
             </div>
             <div class="nav-actions">
@@ -77,6 +78,7 @@
             </div>
             <nav class="footer-links" aria-label="{% trans 'Навигация в подвале' %}">
                 <a href="{% url 'web:home' %}" data-spa-link>{% trans "Главная" %}</a>
+                <a href="{% url 'web:olympiad-list' %}">{% trans "Олимпиады" %}</a>
                 <a href="{% url 'web:event-list' %}" data-spa-link>{% trans "События" %}</a>
                 <a href="{% url 'web:event-list' %}?participation_mode=team" data-spa-link>{% trans "Команды" %}</a>
             </nav>

@@ -48,7 +48,12 @@
             return false;
         }
 
-        if (document.body.classList.contains("home-body") || url.pathname === "/") {
+        if (
+            document.body.classList.contains("home-body") ||
+            document.body.classList.contains("olympiad-body") ||
+            url.pathname === "/" ||
+            url.pathname === "/olympiads/"
+        ) {
             return false;
         }
 
@@ -60,6 +65,7 @@
             const key = link.dataset.navKey;
             const active =
                 (key === "home" && url.pathname === "/") ||
+                (key === "olympiads" && url.pathname === "/olympiads/") ||
                 (key === "events" &&
                     (url.pathname.startsWith("/events/") || url.pathname.startsWith("/teams/")));
             link.classList.toggle("nav-link-primary", active);

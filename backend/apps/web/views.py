@@ -3,14 +3,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import transaction
-from django.db.models import F, Q
+from django.db.models import F, Prefetch, Q
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 
-from apps.events.models import Event, EventLevelCode, EventParticipationMode, EventTypeCode
+from apps.events.models import Event, EventEdition, EventLevelCode, EventParticipationMode, EventTypeCode
 from apps.teams.models import JoinRequest, JoinRequestStatus, Team, TeamMembership, TeamMembershipRole
 from apps.web.forms import JoinRequestForm, TeamCreateForm
 
@@ -221,6 +221,61 @@ class EventListView(PartialTemplateMixin, ListView):
                 },
             }
         )
+        return context
+
+
+class OlympiadListView(PartialTemplateMixin, ListView):
+    model = Event
+    context_object_name = "olympiad_cards"
+    template_name = "web/olympiad_list.html"
+
+    card_images = [
+        "web/img/olympiads/card-1.jpg",
+        "web/img/olympiads/card-2.jpg",
+        "web/img/olympiads/card-3.jpg",
+        "web/img/olympiads/card-4.jpg",
+    ]
+
+    def get_queryset(self):
+        return (
+            Event.objects.filter(is_active=True)
+            .filter(Q(event_type_code=EventTypeCode.OLYMPIAD) | Q(event_type__slug="olympiad"))
+            .select_related("event_type", "level")
+            .prefetch_related(
+                "profiles",
+                Prefetch(
+                    "editions",
+                    queryset=EventEdition.objects.order_by("-start_date", "-id"),
+                ),
+            )
+            .order_by(
+                F("registration_deadline").asc(nulls_last=True),
+                "-created_at",
+                "-id",
+            )
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        cards = []
+        for index, event in enumerate(context["olympiad_cards"]):
+            latest_edition = next(iter(event.editions.all()), None)
+            display_year = ""
+            if latest_edition and latest_edition.start_date:
+                display_year = latest_edition.start_date.year
+            elif event.registration_deadline:
+                display_year = event.registration_deadline.year
+
+            cards.append(
+                {
+                    "event": event,
+                    "display_name": event.name or event.title,
+                    "display_year": display_year,
+                    "image_path": self.card_images[index % len(self.card_images)],
+                }
+            )
+
+        context["olympiad_cards"] = cards
         return context
 
 

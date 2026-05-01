@@ -16,7 +16,7 @@
         </a>
 
         <nav class="figma-home-nav" aria-label="{% trans 'Навигация по главной странице' %}">
-            <a href="#participate">{% trans "Участвовать в олимпиадах" %}</a>
+            <a href="{% url 'web:olympiad-list' %}">{% trans "Участвовать в олимпиадах" %}</a>
             <a href="{% url 'web:event-list' %}" data-spa-link>{% trans "Календарь событий" %}</a>
             <a href="#about">{% trans "О Bloom" %}</a>
         </nav>
@@ -37,7 +37,7 @@
         <div class="figma-hero-content">
             <h1 id="home-title">{% trans "От Олимпиадника Олимпиадникам" %}</h1>
             <div class="figma-hero-actions">
-                <a class="figma-btn figma-btn-primary" href="{% url 'web:event-list' %}" data-spa-link>
+                <a class="figma-btn figma-btn-primary" href="{% url 'web:olympiad-list' %}">
                     {% trans "Найти олимпиаду по душе" %}
                 </a>
                 <a class="figma-btn figma-btn-secondary" href="#about">
@@ -68,7 +68,7 @@
                         {% endblocktrans %}
                     </p>
                 </div>
-                <a class="figma-btn figma-btn-dark" href="{% url 'web:event-list' %}" data-spa-link>
+                <a class="figma-btn figma-btn-dark" href="{% url 'web:olympiad-list' %}">
                     {% trans "Найти олимпиаду по душе" %}
                 </a>
             </div>
@@ -84,7 +84,7 @@
                         {% endblocktrans %}
                     </p>
                 </div>
-                <a class="figma-btn figma-btn-dark figma-btn-wide" href="{% url 'web:event-list' %}" data-spa-link>
+                <a class="figma-btn figma-btn-dark figma-btn-wide" href="{% url 'web:olympiad-list' %}">
                     {% trans "Изучить преференции олимпиад" %}
                 </a>
             </div>
