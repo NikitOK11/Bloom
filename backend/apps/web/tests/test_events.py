@@ -11,6 +11,7 @@ from apps.events.models import (
     EventEdition,
     EventEditionStage,
     EventLevel,
+    EventLevelCode,
     EventParticipationMode,
     EventParticipationType,
     EventProfile,
@@ -68,6 +69,16 @@ class EventCatalogTests(TestCase):
         event.profiles.add(self.profile)
         return event
 
+    def filter_markup(self, response, filter_name: str) -> str:
+        html = response.content.decode(response.charset or "utf-8")
+        marker = f'data-filter-name="{filter_name}"'
+        start = html.index(marker)
+        next_field = html.find('data-filter-name="', start + len(marker))
+        actions = html.find('class="olympiad-filter-actions"', start)
+        end_candidates = [index for index in (next_field, actions) if index != -1]
+        end = min(end_candidates) if end_candidates else len(html)
+        return html[start:end]
+
     def test_event_list_shows_only_active_events(self):
         self.create_event("Visible Event")
         self.create_event("Hidden Event", is_active=False)
@@ -106,7 +117,7 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'href="/static/web/styles.css?v=olympiad-filters-20260501"')
+        self.assertContains(response, 'href="/static/web/styles.css?v=olympiad-filter-ui-20260501"')
 
     def test_home_partial_request_returns_content_without_base_layout(self):
         response = self.client.get(reverse("web:home"), HTTP_X_PARTIAL_REQUEST="true")
@@ -130,9 +141,9 @@ class EventCatalogTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Олимпиады")
         self.assertContains(response, "Участвовать в олимпиадах")
-        self.assertContains(response, "Профиль проведения")
-        self.assertContains(response, "Класс участия")
-        self.assertContains(response, "Тип участия")
+        self.assertContains(response, "Профиль")
+        self.assertContains(response, "Уровень олимпиады")
+        self.assertContains(response, "Формат участия")
         self.assertContains(response, "Наши контакты")
 
     def test_olympiad_list_shows_active_olympiad_events(self):
@@ -162,27 +173,91 @@ class EventCatalogTests(TestCase):
         self.create_event(
             "Target Olympiad",
             profile_code="physics",
-            level_code="level_1",
+            level_code=EventLevelCode.LEVEL_1,
             participation_mode=EventParticipationMode.TEAM,
         )
         self.create_event(
             "Other Olympiad",
             profile_code="math",
-            level_code="level_2",
+            level_code=EventLevelCode.LEVEL_2,
             participation_mode=EventParticipationMode.INDIVIDUAL,
         )
 
         response = self.client.get(
             reverse("web:olympiad-list"),
             {
-                "profile_code": "physics",
-                "level_code": "level_1",
+                "profile": "physics",
+                "level": EventLevelCode.LEVEL_1,
                 "participation_mode": EventParticipationMode.TEAM,
             },
         )
 
         self.assertContains(response, "Target Olympiad")
         self.assertNotContains(response, "Other Olympiad")
+
+    def test_olympiad_list_filters_by_level(self):
+        self.create_event("Level One Olympiad", level_code=EventLevelCode.LEVEL_1)
+        self.create_event("Level Two Olympiad", level_code=EventLevelCode.LEVEL_2)
+
+        response = self.client.get(reverse("web:olympiad-list"), {"level": EventLevelCode.LEVEL_2})
+
+        self.assertContains(response, "Level Two Olympiad")
+        self.assertNotContains(response, "Level One Olympiad")
+
+    def test_olympiad_list_filters_by_participation_mode(self):
+        self.create_event("Team Olympiad", participation_mode=EventParticipationMode.TEAM)
+        self.create_event(
+            "Individual Olympiad",
+            participation_mode=EventParticipationMode.INDIVIDUAL,
+        )
+
+        response = self.client.get(
+            reverse("web:olympiad-list"),
+            {"participation_mode": EventParticipationMode.TEAM},
+        )
+
+        self.assertContains(response, "Team Olympiad")
+        self.assertNotContains(response, "Individual Olympiad")
+
+    def test_olympiad_list_filter_groups_do_not_mix_level_and_participation_values(self):
+        response = self.client.get(reverse("web:olympiad-list"))
+
+        level_markup = self.filter_markup(response, "level")
+        participation_markup = self.filter_markup(response, "participation_mode")
+
+        self.assertIn("Международная", level_markup)
+        self.assertIn("ВсОШ", level_markup)
+        self.assertIn("1 уровень", level_markup)
+        self.assertNotIn("Индивидуальный", level_markup)
+        self.assertNotIn("Командный", level_markup)
+        self.assertNotIn("Индивидуальный + командный", level_markup)
+
+        self.assertIn("Индивидуальный", participation_markup)
+        self.assertIn("Командный", participation_markup)
+        self.assertIn("Индивидуальный + командный", participation_markup)
+        self.assertNotIn("Международная", participation_markup)
+        self.assertNotIn("ВсОШ", participation_markup)
+        self.assertNotIn("1 уровень", participation_markup)
+
+    def test_olympiad_list_supports_legacy_filter_params(self):
+        self.create_event(
+            "Legacy Param Olympiad",
+            profile_code="biology",
+            level_code=EventLevelCode.LEVEL_3,
+        )
+        self.create_event(
+            "Different Olympiad",
+            profile_code="math",
+            level_code=EventLevelCode.LEVEL_1,
+        )
+
+        response = self.client.get(
+            reverse("web:olympiad-list"),
+            {"profile_code": "biology", "level_code": EventLevelCode.LEVEL_3},
+        )
+
+        self.assertContains(response, "Legacy Param Olympiad")
+        self.assertNotContains(response, "Different Olympiad")
 
     def test_event_catalog_navigation_links_to_olympiads(self):
         response = self.client.get(reverse("web:event-list"))

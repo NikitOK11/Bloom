@@ -79,6 +79,57 @@
         }
     }
 
+    function closeOlympiadFilters(exceptField) {
+        document.querySelectorAll("[data-filter-field].is-active").forEach((field) => {
+            if (field === exceptField) {
+                return;
+            }
+            field.classList.remove("is-active");
+            field.querySelector("[data-filter-trigger]")?.setAttribute("aria-expanded", "false");
+        });
+
+        document.querySelectorAll(".olympiad-page.filter-focus-active").forEach((page) => {
+            if (!exceptField || !page.contains(exceptField)) {
+                page.classList.remove("filter-focus-active");
+            }
+        });
+    }
+
+    function setOlympiadFilterActive(field, isActive) {
+        const page = field.closest(".olympiad-page");
+        const trigger = field.querySelector("[data-filter-trigger]");
+
+        closeOlympiadFilters(isActive ? field : null);
+        field.classList.toggle("is-active", isActive);
+        trigger?.setAttribute("aria-expanded", isActive ? "true" : "false");
+        page?.classList.toggle("filter-focus-active", isActive);
+    }
+
+    function selectOlympiadFilterOption(option) {
+        const field = option.closest("[data-filter-field]");
+        if (!field) {
+            return;
+        }
+
+        const input = field.querySelector("[data-filter-input]");
+        const valueLabel = field.querySelector("[data-filter-value]");
+        const trigger = field.querySelector("[data-filter-trigger]");
+
+        if (input) {
+            input.value = option.dataset.value || "";
+        }
+        if (valueLabel) {
+            valueLabel.textContent = option.textContent.trim();
+        }
+
+        field.querySelectorAll("[data-filter-option]").forEach((item) => {
+            item.setAttribute("aria-selected", item === option ? "true" : "false");
+        });
+
+        setOlympiadFilterActive(field, false);
+        trigger?.focus({ preventScroll: true });
+    }
+
     async function loadPage(url, options) {
         const shouldPush = options?.push !== false;
         setLoading(true);
@@ -116,6 +167,27 @@
     }
 
     document.addEventListener("click", (event) => {
+        const filterTrigger = event.target.closest("[data-filter-trigger]");
+        if (filterTrigger) {
+            event.preventDefault();
+            const field = filterTrigger.closest("[data-filter-field]");
+            if (field) {
+                setOlympiadFilterActive(field, !field.classList.contains("is-active"));
+            }
+            return;
+        }
+
+        const filterOption = event.target.closest("[data-filter-option]");
+        if (filterOption) {
+            event.preventDefault();
+            selectOlympiadFilterOption(filterOption);
+            return;
+        }
+
+        if (!event.target.closest("[data-filter-field]")) {
+            closeOlympiadFilters();
+        }
+
         const link = event.target.closest("a");
         if (!link || !shouldHandleLink(link, event)) {
             return;
@@ -126,6 +198,21 @@
         if (url) {
             loadPage(url);
         }
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") {
+            return;
+        }
+
+        const activeField = document.querySelector("[data-filter-field].is-active");
+        if (!activeField) {
+            return;
+        }
+
+        event.preventDefault();
+        setOlympiadFilterActive(activeField, false);
+        activeField.querySelector("[data-filter-trigger]")?.focus({ preventScroll: true });
     });
 
     window.addEventListener("popstate", () => {

@@ -110,12 +110,41 @@ def _event_level_code_choices():
     ]
 
 
+def _olympiad_level_code_choices():
+    return [
+        (EventLevelCode.INTERNATIONAL, _("Международная")),
+        (EventLevelCode.VSOSH, _("ВсОШ")),
+        (EventLevelCode.LEVEL_1, _("1 уровень")),
+        (EventLevelCode.LEVEL_2, _("2 уровень")),
+        (EventLevelCode.LEVEL_3, _("3 уровень")),
+    ]
+
+
 def _participation_mode_choices():
     return [
         (EventParticipationMode.INDIVIDUAL, _("Индивидуально")),
         (EventParticipationMode.TEAM, _("Командно")),
         (EventParticipationMode.HYBRID, _("Индивидуально или командно")),
     ]
+
+
+def _olympiad_participation_mode_choices():
+    return [
+        (EventParticipationMode.INDIVIDUAL, _("Индивидуальный")),
+        (EventParticipationMode.TEAM, _("Командный")),
+        (EventParticipationMode.HYBRID, _("Индивидуальный + командный")),
+    ]
+
+
+def _query_filter_value(request: HttpRequest, primary_name: str, legacy_name: str | None = None) -> str:
+    value = request.GET.get(primary_name, "").strip()
+    if value or legacy_name is None:
+        return value
+    return request.GET.get(legacy_name, "").strip()
+
+
+def _selected_choice_label(choices, selected_value: str, default_label: str) -> str:
+    return dict(choices).get(selected_value, default_label)
 
 
 class PartialTemplateMixin:
@@ -255,11 +284,11 @@ class OlympiadListView(PartialTemplateMixin, ListView):
             )
         )
 
-        profile_code = self.request.GET.get("profile_code", "").strip()
+        profile_code = _query_filter_value(self.request, "profile", "profile_code")
         if profile_code:
             queryset = queryset.filter(profile_code=profile_code)
 
-        level_code = self.request.GET.get("level_code", "").strip()
+        level_code = _query_filter_value(self.request, "level", "level_code")
         if level_code in EventLevelCode.values:
             queryset = queryset.filter(level_code=level_code)
 
@@ -300,18 +329,62 @@ class OlympiadListView(PartialTemplateMixin, ListView):
             .values_list("profile_code", flat=True)
             .distinct()
         )
+        profile_code_choices = [
+            (profile_code, _code_label(profile_code)) for profile_code in profile_codes
+        ]
+        level_code_choices = _olympiad_level_code_choices()
+        participation_mode_choices = _olympiad_participation_mode_choices()
+        selected_profile = _query_filter_value(self.request, "profile", "profile_code")
+        selected_level = _query_filter_value(self.request, "level", "level_code")
+        selected_participation_mode = self.request.GET.get("participation_mode", "").strip()
         context.update(
             {
-                "profile_code_choices": [
-                    (profile_code, _code_label(profile_code)) for profile_code in profile_codes
-                ],
-                "level_code_choices": _event_level_code_choices(),
-                "participation_mode_choices": _participation_mode_choices(),
+                "profile_code_choices": profile_code_choices,
+                "level_code_choices": level_code_choices,
+                "participation_mode_choices": participation_mode_choices,
                 "selected_filters": {
-                    "profile_code": self.request.GET.get("profile_code", "").strip(),
-                    "level_code": self.request.GET.get("level_code", "").strip(),
-                    "participation_mode": self.request.GET.get("participation_mode", "").strip(),
+                    "profile": selected_profile,
+                    "level": selected_level,
+                    "participation_mode": selected_participation_mode,
                 },
+                "olympiad_filter_configs": [
+                    {
+                        "name": "profile",
+                        "label": _("Профиль"),
+                        "all_label": _("Все профили"),
+                        "selected_value": selected_profile,
+                        "selected_label": _selected_choice_label(
+                            profile_code_choices,
+                            selected_profile,
+                            _("Все профили"),
+                        ),
+                        "options": profile_code_choices,
+                    },
+                    {
+                        "name": "level",
+                        "label": _("Уровень олимпиады"),
+                        "all_label": _("Любой уровень"),
+                        "selected_value": selected_level,
+                        "selected_label": _selected_choice_label(
+                            level_code_choices,
+                            selected_level,
+                            _("Любой уровень"),
+                        ),
+                        "options": level_code_choices,
+                    },
+                    {
+                        "name": "participation_mode",
+                        "label": _("Формат участия"),
+                        "all_label": _("Любой формат"),
+                        "selected_value": selected_participation_mode,
+                        "selected_label": _selected_choice_label(
+                            participation_mode_choices,
+                            selected_participation_mode,
+                            _("Любой формат"),
+                        ),
+                        "options": participation_mode_choices,
+                    },
+                ],
             }
         )
         return context

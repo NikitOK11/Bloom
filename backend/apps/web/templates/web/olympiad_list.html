@@ -33,36 +33,35 @@
             <h1 id="olympiad-title">{% trans "Олимпиады" %}</h1>
         </header>
 
-        <form class="olympiad-filter-panel" action="{% url 'web:olympiad-list' %}" method="get" aria-label="{% trans 'Фильтры олимпиад' %}">
-            <div class="olympiad-filter-field">
-                <label for="profile-code">{% trans "Профиль проведения" %}</label>
-                <select id="profile-code" name="profile_code">
-                    <option value="">{% trans "Все профили" %}</option>
-                    {% for value, label in profile_code_choices %}
-                        <option value="{{ value }}"{% if selected_filters.profile_code == value %} selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="olympiad-filter-field">
-                <label for="level-code">{% trans "Класс участия" %}</label>
-                <select id="level-code" name="level_code">
-                    <option value="">{% trans "Все классы" %}</option>
-                    {% for value, label in level_code_choices %}
-                        <option value="{{ value }}"{% if selected_filters.level_code == value %} selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="olympiad-filter-field">
-                <label for="participation-mode">{% trans "Тип участия" %}</label>
-                <select id="participation-mode" name="participation_mode">
-                    <option value="">{% trans "Любой тип" %}</option>
-                    {% for value, label in participation_mode_choices %}
-                        <option value="{{ value }}"{% if selected_filters.participation_mode == value %} selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+        <form class="olympiad-filter-panel" action="{% url 'web:olympiad-list' %}" method="get" aria-label="{% trans 'Фильтры олимпиад' %}" data-olympiad-filters>
+            {% for filter in olympiad_filter_configs %}
+                <div class="olympiad-filter-field" data-filter-field data-filter-name="{{ filter.name }}">
+                    <span class="olympiad-filter-label" id="olympiad-filter-{{ filter.name }}-label">{{ filter.label }}</span>
+                    <input type="hidden" name="{{ filter.name }}" value="{{ filter.selected_value }}" data-filter-input>
+                    <button
+                        class="olympiad-filter-trigger"
+                        type="button"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-labelledby="olympiad-filter-{{ filter.name }}-label olympiad-filter-{{ filter.name }}-value"
+                        aria-controls="olympiad-filter-{{ filter.name }}-menu"
+                        data-filter-trigger
+                    >
+                        <span id="olympiad-filter-{{ filter.name }}-value" data-filter-value>{{ filter.selected_label }}</span>
+                        <span class="olympiad-filter-chevron" aria-hidden="true"></span>
+                    </button>
+                    <div class="olympiad-filter-menu" id="olympiad-filter-{{ filter.name }}-menu" role="listbox" aria-labelledby="olympiad-filter-{{ filter.name }}-label" data-filter-menu>
+                        <button class="olympiad-filter-option" type="button" role="option" data-filter-option data-value="" aria-selected="{% if not filter.selected_value %}true{% else %}false{% endif %}">
+                            {{ filter.all_label }}
+                        </button>
+                        {% for value, label in filter.options %}
+                            <button class="olympiad-filter-option" type="button" role="option" data-filter-option data-value="{{ value }}" aria-selected="{% if filter.selected_value == value %}true{% else %}false{% endif %}">
+                                {{ label }}
+                            </button>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
 
             <div class="olympiad-filter-actions">
                 <button class="olympiad-filter-submit" type="submit">{% trans "Показать" %}</button>
