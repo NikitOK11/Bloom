@@ -169,17 +169,20 @@
         const searchToggle = panel.querySelector("[data-search-toggle]");
         const searchInput = panel.querySelector("[data-search-input]");
         const compactToggle = panel.querySelector("[data-filter-compact-toggle]");
+        const firstFilterTrigger = panel.querySelector("[data-filter-trigger]");
 
         panel.classList.toggle("is-search-active", isActive);
         searchToggle?.setAttribute("aria-expanded", isActive ? "true" : "false");
-
-        if (!isActive) {
-            panel.classList.remove("is-filter-compact-open");
-            compactToggle?.setAttribute("aria-expanded", "false");
-        }
+        compactToggle?.setAttribute("aria-expanded", "false");
+        closeOlympiadFilters();
 
         if (isActive && shouldFocus && searchInput) {
             window.setTimeout(() => searchInput.focus({ preventScroll: true }), 180);
+            return;
+        }
+
+        if (!isActive && shouldFocus && firstFilterTrigger) {
+            window.setTimeout(() => firstFilterTrigger.focus({ preventScroll: true }), 180);
         }
     }
 
@@ -188,10 +191,7 @@
         if (!panel) {
             return;
         }
-
-        const isOpen = !panel.classList.contains("is-filter-compact-open");
-        panel.classList.toggle("is-filter-compact-open", isOpen);
-        button.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        setOlympiadSearchMode(panel, false, true);
     }
 
     async function loadPage(url, options) {
@@ -294,13 +294,10 @@
             return;
         }
 
-        const openCompactPanel = document.querySelector("[data-olympiad-controls].is-filter-compact-open");
-        if (openCompactPanel) {
+        const searchActivePanel = document.querySelector("[data-olympiad-controls].is-search-active");
+        if (searchActivePanel) {
             event.preventDefault();
-            openCompactPanel.classList.remove("is-filter-compact-open");
-            openCompactPanel
-                .querySelector("[data-filter-compact-toggle]")
-                ?.setAttribute("aria-expanded", "false");
+            setOlympiadSearchMode(searchActivePanel, false, true);
         }
     });
 

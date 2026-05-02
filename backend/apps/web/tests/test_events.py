@@ -128,7 +128,7 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'href="/static/web/styles.css?v=olympiad-search-controls-20260502"')
+        self.assertContains(response, 'href="/static/web/styles.css?v=olympiad-search-toggle-sync-20260502"')
 
     def test_home_partial_request_returns_content_without_base_layout(self):
         response = self.client.get(reverse("web:home"), HTTP_X_PARTIAL_REQUEST="true")
@@ -156,7 +156,9 @@ class EventCatalogTests(TestCase):
         self.assertContains(response, "Уровень олимпиады")
         self.assertContains(response, "Формат участия")
         self.assertContains(response, "Класс / аудитория")
+        self.assertContains(response, "Фильтры")
         self.assertContains(response, 'aria-label="Поиск"', html=False)
+        self.assertContains(response, "data-filter-compact-toggle", html=False)
         self.assertContains(response, 'id="olympiad-search-input"', html=False)
         self.assertNotContains(response, ">Сбросить<", html=False)
         self.assertContains(response, "Наши контакты")
@@ -244,6 +246,12 @@ class EventCatalogTests(TestCase):
         self.assertNotContains(response, "Турнир Ломоносова")
         self.assertContains(response, "Поиск:")
         self.assertContains(response, "проба")
+
+    def test_olympiad_list_renders_search_mode_when_query_present(self):
+        response = self.client.get(reverse("web:olympiad-list"), {"q": "мат"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="olympiad-filter-panel is-search-active"', html=False)
 
     def test_olympiad_list_filters_by_search_with_existing_filters(self):
         self.create_event(
