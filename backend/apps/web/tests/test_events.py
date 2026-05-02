@@ -128,7 +128,7 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'href="/static/web/styles.css?v=olympiad-search-toggle-sync-20260502"')
+        self.assertContains(response, 'href="/static/web/styles.css?v=olympiad-search-polish-20260502"')
 
     def test_home_partial_request_returns_content_without_base_layout(self):
         response = self.client.get(reverse("web:home"), HTTP_X_PARTIAL_REQUEST="true")
@@ -244,14 +244,16 @@ class EventCatalogTests(TestCase):
 
         self.assertContains(response, "Высшая Проба")
         self.assertNotContains(response, "Турнир Ломоносова")
-        self.assertContains(response, "Поиск:")
-        self.assertContains(response, "проба")
+        self.assertContains(response, 'value="проба"', html=False)
+        self.assertNotContains(response, "Поиск:")
+        self.assertNotContains(response, "Применённые фильтры")
 
     def test_olympiad_list_renders_search_mode_when_query_present(self):
         response = self.client.get(reverse("web:olympiad-list"), {"q": "мат"})
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'class="olympiad-filter-panel is-search-active"', html=False)
+        self.assertContains(response, 'value="мат"', html=False)
 
     def test_olympiad_list_filters_by_search_with_existing_filters(self):
         self.create_event(
@@ -377,6 +379,13 @@ class EventCatalogTests(TestCase):
         self.assertNotContains(response, "Применённые фильтры")
         self.assertNotContains(response, "data-applied-filter-chip", html=False)
         self.assertNotContains(response, "Сбросить всё")
+
+    def test_olympiad_list_search_query_does_not_render_applied_filter_chip(self):
+        response = self.client.get(reverse("web:olympiad-list"), {"q": "изумруда"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Применённые фильтры")
+        self.assertNotContains(response, 'data-applied-filter-chip="q"', html=False)
 
     def test_olympiad_list_shows_readable_level_chip(self):
         response = self.client.get(reverse("web:olympiad-list"), {"level": EventLevelCode.LEVEL_1})

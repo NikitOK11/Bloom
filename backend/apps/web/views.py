@@ -529,14 +529,6 @@ class OlympiadListView(PartialTemplateMixin, ListView):
                     )
                     for value, label in zip(selected_eligible_groups, selected_eligible_group_labels)
                 ],
-                _applied_filter_chip(
-                    self.request,
-                    name="q",
-                    label=_("Поиск"),
-                    value=selected_search_query,
-                    value_label=selected_search_query,
-                    remove_keys=["q"],
-                ),
             ]
             if chip is not None
         ]
