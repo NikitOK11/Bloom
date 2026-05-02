@@ -165,6 +165,35 @@
         trigger?.focus({ preventScroll: true });
     }
 
+    function setOlympiadSearchMode(panel, isActive, shouldFocus) {
+        const searchToggle = panel.querySelector("[data-search-toggle]");
+        const searchInput = panel.querySelector("[data-search-input]");
+        const compactToggle = panel.querySelector("[data-filter-compact-toggle]");
+
+        panel.classList.toggle("is-search-active", isActive);
+        searchToggle?.setAttribute("aria-expanded", isActive ? "true" : "false");
+
+        if (!isActive) {
+            panel.classList.remove("is-filter-compact-open");
+            compactToggle?.setAttribute("aria-expanded", "false");
+        }
+
+        if (isActive && shouldFocus && searchInput) {
+            window.setTimeout(() => searchInput.focus({ preventScroll: true }), 180);
+        }
+    }
+
+    function toggleCompactFilters(button) {
+        const panel = button.closest("[data-olympiad-controls]");
+        if (!panel) {
+            return;
+        }
+
+        const isOpen = !panel.classList.contains("is-filter-compact-open");
+        panel.classList.toggle("is-filter-compact-open", isOpen);
+        button.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    }
+
     async function loadPage(url, options) {
         const shouldPush = options?.push !== false;
         setLoading(true);
@@ -202,6 +231,23 @@
     }
 
     document.addEventListener("click", (event) => {
+        const searchToggle = event.target.closest("[data-search-toggle]");
+        if (searchToggle) {
+            event.preventDefault();
+            const panel = searchToggle.closest("[data-olympiad-controls]");
+            if (panel) {
+                setOlympiadSearchMode(panel, true, true);
+            }
+            return;
+        }
+
+        const compactToggle = event.target.closest("[data-filter-compact-toggle]");
+        if (compactToggle) {
+            event.preventDefault();
+            toggleCompactFilters(compactToggle);
+            return;
+        }
+
         const filterTrigger = event.target.closest("[data-filter-trigger]");
         if (filterTrigger) {
             event.preventDefault();
@@ -241,13 +287,21 @@
         }
 
         const activeField = document.querySelector("[data-filter-field].is-active");
-        if (!activeField) {
+        if (activeField) {
+            event.preventDefault();
+            setOlympiadFilterActive(activeField, false);
+            activeField.querySelector("[data-filter-trigger]")?.focus({ preventScroll: true });
             return;
         }
 
-        event.preventDefault();
-        setOlympiadFilterActive(activeField, false);
-        activeField.querySelector("[data-filter-trigger]")?.focus({ preventScroll: true });
+        const openCompactPanel = document.querySelector("[data-olympiad-controls].is-filter-compact-open");
+        if (openCompactPanel) {
+            event.preventDefault();
+            openCompactPanel.classList.remove("is-filter-compact-open");
+            openCompactPanel
+                .querySelector("[data-filter-compact-toggle]")
+                ?.setAttribute("aria-expanded", "false");
+        }
     });
 
     window.addEventListener("popstate", () => {

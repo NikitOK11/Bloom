@@ -128,7 +128,7 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'href="/static/web/styles.css?v=olympiad-class-filter-20260501"')
+        self.assertContains(response, 'href="/static/web/styles.css?v=olympiad-search-controls-20260502"')
 
     def test_home_partial_request_returns_content_without_base_layout(self):
         response = self.client.get(reverse("web:home"), HTTP_X_PARTIAL_REQUEST="true")
@@ -156,6 +156,9 @@ class EventCatalogTests(TestCase):
         self.assertContains(response, "Уровень олимпиады")
         self.assertContains(response, "Формат участия")
         self.assertContains(response, "Класс / аудитория")
+        self.assertContains(response, 'aria-label="Поиск"', html=False)
+        self.assertContains(response, 'id="olympiad-search-input"', html=False)
+        self.assertNotContains(response, ">Сбросить<", html=False)
         self.assertContains(response, "Наши контакты")
 
     def test_olympiad_list_shows_active_olympiad_events(self):
@@ -230,6 +233,38 @@ class EventCatalogTests(TestCase):
 
         self.assertContains(response, "Team Olympiad")
         self.assertNotContains(response, "Individual Olympiad")
+
+    def test_olympiad_list_filters_by_search_query(self):
+        self.create_event("Высшая Проба")
+        self.create_event("Турнир Ломоносова")
+
+        response = self.client.get(reverse("web:olympiad-list"), {"q": "проба"})
+
+        self.assertContains(response, "Высшая Проба")
+        self.assertNotContains(response, "Турнир Ломоносова")
+        self.assertContains(response, "Поиск:")
+        self.assertContains(response, "проба")
+
+    def test_olympiad_list_filters_by_search_with_existing_filters(self):
+        self.create_event(
+            "Командная Проба",
+            participation_mode=EventParticipationMode.TEAM,
+        )
+        self.create_event(
+            "Индивидуальная Проба",
+            participation_mode=EventParticipationMode.INDIVIDUAL,
+        )
+
+        response = self.client.get(
+            reverse("web:olympiad-list"),
+            {
+                "q": "проба",
+                "participation_mode": EventParticipationMode.TEAM,
+            },
+        )
+
+        self.assertContains(response, "Командная Проба")
+        self.assertNotContains(response, "Индивидуальная Проба")
 
     def test_event_model_accepts_multiple_eligible_groups(self):
         event = self.create_event(

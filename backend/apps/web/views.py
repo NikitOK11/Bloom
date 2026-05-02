@@ -400,6 +400,14 @@ class OlympiadListView(PartialTemplateMixin, ListView):
         if selected_eligible_groups:
             queryset = queryset.filter(eligible_groups__overlap=selected_eligible_groups)
 
+        search_query = self.request.GET.get("q", "").strip()
+        if search_query:
+            queryset = queryset.filter(
+                Q(name__icontains=search_query)
+                | Q(title__icontains=search_query)
+                | Q(organizer__icontains=search_query)
+            )
+
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -447,6 +455,7 @@ class OlympiadListView(PartialTemplateMixin, ListView):
             "eligible_group",
             EligibleGroup.values,
         )
+        selected_search_query = self.request.GET.get("q", "").strip()
         if selected_level not in EventLevelCode.values:
             selected_level = ""
         if selected_participation_mode not in EventParticipationMode.values:
@@ -520,6 +529,14 @@ class OlympiadListView(PartialTemplateMixin, ListView):
                     )
                     for value, label in zip(selected_eligible_groups, selected_eligible_group_labels)
                 ],
+                _applied_filter_chip(
+                    self.request,
+                    name="q",
+                    label=_("Поиск"),
+                    value=selected_search_query,
+                    value_label=selected_search_query,
+                    remove_keys=["q"],
+                ),
             ]
             if chip is not None
         ]
@@ -533,6 +550,7 @@ class OlympiadListView(PartialTemplateMixin, ListView):
                     "level": selected_level,
                     "participation_mode": selected_participation_mode,
                     "eligible_group": selected_eligible_groups,
+                    "q": selected_search_query,
                 },
                 "olympiad_filter_configs": [
                     {
