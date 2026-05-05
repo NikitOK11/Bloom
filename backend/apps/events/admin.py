@@ -1,6 +1,16 @@
 from django.contrib import admin
 
-from apps.events.models import Event, EventEdition, EventEditionStage, EventLevel, EventProfile, EventType
+from apps.events.models import (
+    Event,
+    EventEdition,
+    EventEditionAdmissionBenefit,
+    EventEditionStage,
+    EventLevel,
+    EventProfile,
+    EventType,
+    University,
+    UniversityProgram,
+)
 
 
 @admin.register(EventProfile)
@@ -101,8 +111,44 @@ class EventEditionStageAdmin(admin.ModelAdmin):
         "stage_number",
         "stage_name",
         "status",
+        "format",
         "start_date",
         "end_date",
     )
-    list_filter = ("status",)
-    search_fields = ("stage_name", "edition__edition_label")
+    list_filter = ("status", "format")
+    search_fields = ("edition__event__name", "stage_name")
+
+
+@admin.register(University)
+class UniversityAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "short_name", "city", "website_url")
+    search_fields = ("name", "short_name", "city")
+    list_filter = ("city",)
+
+
+@admin.register(UniversityProgram)
+class UniversityProgramAdmin(admin.ModelAdmin):
+    list_display = ("id", "university", "name", "level", "code")
+    list_filter = ("level",)
+    search_fields = ("name", "code", "university__name", "university__short_name")
+    autocomplete_fields = ("university",)
+
+
+@admin.register(EventEditionAdmissionBenefit)
+class EventEditionAdmissionBenefitAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "event_edition",
+        "university",
+        "benefit_type",
+        "winner_benefit",
+        "prizewinner_benefit",
+    )
+    list_filter = ("benefit_type",)
+    search_fields = (
+        "event_edition__event__name",
+        "university__name",
+        "university__short_name",
+    )
+    autocomplete_fields = ("event_edition", "university")
+    filter_horizontal = ("programs",)

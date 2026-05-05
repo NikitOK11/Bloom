@@ -124,6 +124,7 @@ class Event(TimeStampedModel):
             models.Index(fields=["event_type_code", "profile_code"], name="event_type_profile_idx"),
             models.Index(fields=["level_code"], name="event_level_code_idx"),
             models.Index(fields=["participation_mode"], name="event_participation_mode_idx"),
+            models.Index(fields=["is_active"], name="event_is_active_idx"),
             GinIndex(fields=["eligible_groups"], name="event_eligible_groups_gin"),
         ]
 
@@ -148,6 +149,13 @@ class EventEditionStageStatus(models.TextChoices):
     CANCELLED = "cancelled", "Cancelled"
 
 
+class EventEditionStageFormat(models.TextChoices):
+    ONLINE = "online", "Online"
+    OFFLINE = "offline", "Offline"
+    MIXED = "mixed", "Mixed"
+    UNKNOWN = "unknown", "Unknown"
+
+
 class EventEdition(TimeStampedModel):
     event = models.ForeignKey(Event, on_delete=models.PROTECT, related_name="editions")
     edition_label = models.CharField(max_length=64)
@@ -166,8 +174,13 @@ class EventEdition(TimeStampedModel):
         choices=EventEditionStatus.choices,
         default=EventEditionStatus.DRAFT,
     )
+    registration_start_date = models.DateField(null=True, blank=True)
+    registration_end_date = models.DateField(null=True, blank=True)
 
     class Meta:
+        indexes = [
+            models.Index(fields=["event", "status"], name="event_edition_event_status_idx"),
+        ]
         constraints = [
             models.UniqueConstraint(
                 fields=["event", "edition_label"],
@@ -180,6 +193,12 @@ class EventEdition(TimeStampedModel):
             models.CheckConstraint(
                 condition=Q(start_date__lte=F("end_date")),
                 name="event_edition_start_lte_end",
+            ),
+            models.CheckConstraint(
+                condition=Q(registration_start_date__isnull=True)
+                | Q(registration_end_date__isnull=True)
+                | Q(registration_start_date__lte=F("registration_end_date")),
+                name="event_edition_reg_start_lte_end",
             ),
         ]
 
@@ -205,8 +224,17 @@ class EventEditionStage(TimeStampedModel):
         choices=EventEditionStageStatus.choices,
         default=EventEditionStageStatus.PLANNED,
     )
+    format = models.CharField(
+        max_length=32,
+        choices=EventEditionStageFormat.choices,
+        default=EventEditionStageFormat.UNKNOWN,
+    )
+    description = models.TextField(blank=True)
 
     class Meta:
+        indexes = [
+            models.Index(fields=["edition", "status"], name="stage_edition_status_idx"),
+        ]
         constraints = [
             models.UniqueConstraint(
                 fields=["edition", "stage_number"],
@@ -226,3 +254,88 @@ class EventEditionStage(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"{self.edition} - stage {self.stage_number}: {self.stage_name}"
+
+
+class University(TimeStampedModel):
+    name = models.CharField(max_length=512, unique=True)
+    short_name = models.CharField(max_length=256, blank=True)
+    city = models.CharField(max_length=256, blank=True)
+    website_url = models.URLField(blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["name"], name="university_name_idx"),
+        ]
+
+    def __str__(self) -> str:
+        return self.short_name or self.name
+
+
+class UniversityProgramLevel(models.TextChoices):
+    BACHELOR = "bachelor", "Bachelor"
+    SPECIALIST = "specialist", "Specialist"
+    MASTER = "master", "Master"
+    UNKNOWN = "unknown", "Unknown"
+
+
+class UniversityProgram(TimeStampedModel):
+    university = models.ForeignKey(University, on_delete=models.CASCADE, related_name="programs")
+    name = models.CharField(max_length=512)
+    level = models.CharField(
+        max_length=32,
+        choices=UniversityProgramLevel.choices,
+        default=UniversityProgramLevel.UNKNOWN,
+    )
+    code = models.CharField(max_length=128, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["university", "name"], name="univ_program_univ_name_idx"),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["university", "name", "level"],
+                name="uniq_univ_program",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.university.short_name or self.university.name} - {self.name} ({self.get_level_display()})"
+
+
+class AdmissionBenefitType(models.TextChoices):
+    BVI = "bvi", "BVI"
+    EGE_100 = "ege_100", "EGE 100"
+    EXTRA_POINTS = "extra_points", "Extra points"
+    DISCOUNT = "discount", "Discount"
+    OTHER = "other", "Other"
+    UNKNOWN = "unknown", "Unknown"
+
+
+class EventEditionAdmissionBenefit(TimeStampedModel):
+    event_edition = models.ForeignKey(EventEdition, on_delete=models.CASCADE, related_name="admission_benefits")
+    university = models.ForeignKey(University, on_delete=models.CASCADE, related_name="event_benefits")
+    benefit_type = models.CharField(
+        max_length=32,
+        choices=AdmissionBenefitType.choices,
+        default=AdmissionBenefitType.UNKNOWN,
+    )
+    winner_benefit = models.CharField(max_length=512, blank=True)
+    prizewinner_benefit = models.CharField(max_length=512, blank=True)
+    source_url = models.URLField(blank=True)
+    note = models.TextField(blank=True)
+    programs = models.ManyToManyField(UniversityProgram, related_name="benefits", blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["event_edition", "university"], name="event_edition_benefit_univ_idx"),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["event_edition", "university", "benefit_type"],
+                name="uniq_event_edition_benefit",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.event_edition} - {self.university.short_name or self.university.name} ({self.get_benefit_type_display()})"
