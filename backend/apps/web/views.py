@@ -246,6 +246,7 @@ def _applied_filter_chip(
 class PartialTemplateMixin:
     full_base_template = "web/base.html"
     partial_base_template = "web/_partial_base.html"
+    current_nav = ""
 
     def is_partial_request(self) -> bool:
         return (
@@ -258,6 +259,7 @@ class PartialTemplateMixin:
         context["base_template"] = (
             self.partial_base_template if self.is_partial_request() else self.full_base_template
         )
+        context["current_nav"] = self.current_nav
         return context
 
 
@@ -283,6 +285,7 @@ class EventListView(PartialTemplateMixin, ListView):
     model = Event
     context_object_name = "events"
     template_name = "web/event_list.html"
+    current_nav = "events"
 
     def get_queryset(self):
         queryset = (
@@ -353,6 +356,7 @@ class OlympiadListView(PartialTemplateMixin, ListView):
     model = Event
     context_object_name = "olympiad_cards"
     template_name = "web/olympiad_list.html"
+    current_nav = "events"
 
     card_images = [
         "web/img/olympiads/card-1.jpg",
@@ -615,10 +619,54 @@ class OlympiadListView(PartialTemplateMixin, ListView):
         return context
 
 
+class CalendarView(PartialTemplateMixin, TemplateView):
+    template_name = "web/calendar.html"
+    current_nav = "calendar"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["upcoming_events"] = (
+            Event.objects.filter(is_active=True)
+            .select_related("event_type", "level")
+            .prefetch_related("profiles")
+            .order_by(
+                F("registration_deadline").asc(nulls_last=True),
+                "-created_at",
+                "-id",
+            )[:6]
+        )
+        return context
+
+
+class ProfileView(PartialTemplateMixin, TemplateView):
+    template_name = "web/profile.html"
+    current_nav = "profile"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["recommended_events"] = (
+            Event.objects.filter(is_active=True)
+            .select_related("event_type", "level")
+            .prefetch_related("profiles")
+            .order_by(
+                F("registration_deadline").asc(nulls_last=True),
+                "-created_at",
+                "-id",
+            )[:3]
+        )
+        context["user_display_name"] = (
+            _user_display_name(self.request.user)
+            if self.request.user.is_authenticated
+            else _("Гость Bloom")
+        )
+        return context
+
+
 class EventDetailView(PartialTemplateMixin, DetailView):
     model = Event
     context_object_name = "event"
     template_name = "web/event_detail.html"
+    current_nav = "events"
 
     def get_queryset(self):
         return (
@@ -642,9 +690,10 @@ class EventDetailView(PartialTemplateMixin, DetailView):
         return context
 
 
-class EventTeamCreateView(LoginRequiredMixin, FormView):
+class EventTeamCreateView(LoginRequiredMixin, PartialTemplateMixin, FormView):
     form_class = TeamCreateForm
     template_name = "web/team_create.html"
+    current_nav = "events"
 
     def dispatch(self, request, *args, **kwargs):
         self.event = get_object_or_404(Event, pk=self.kwargs["pk"])
@@ -691,6 +740,7 @@ class TeamDetailView(PartialTemplateMixin, DetailView):
     model = Team
     context_object_name = "team"
     template_name = "web/team_detail.html"
+    current_nav = "events"
 
     def get_queryset(self):
         return Team.objects.select_related("event", "owner")

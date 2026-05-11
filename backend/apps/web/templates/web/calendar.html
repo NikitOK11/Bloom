@@ -1,0 +1,65 @@
+{% extends base_template|default:"web/base.html" %}
+{% load i18n web_labels %}
+
+{% block title %}{% trans "Календарь — Bloom" %}{% endblock %}
+
+{% block content %}
+<section class="catalog-hero">
+    <div class="hero-content">
+        <p class="hero-kicker">{% trans "Timeline" %}</p>
+        <h1 class="page-title">{% trans "Календарь контрольных точек по событиям" %}</h1>
+        <p class="page-copy">
+            {% trans "Следите за дедлайнами регистрации и ближайшими сезонами в одном ритме: здесь собраны ближайшие активные события, которые требуют внимания." %}
+        </p>
+    </div>
+</section>
+
+<section class="two-column-grid page-section">
+    <article class="card-elevated stack">
+        <div class="section-heading">
+            <div class="stack">
+                <p class="eyebrow">{% trans "Ближайшие даты" %}</p>
+                <h2>{% trans "Что важно не пропустить" %}</h2>
+            </div>
+            <a class="btn btn-secondary" href="{% url 'web:event-list' %}" data-spa-link>{% trans "Смотреть каталог" %}</a>
+        </div>
+
+        {% if upcoming_events %}
+            <div class="event-list-stack">
+                {% for event in upcoming_events %}
+                    <article class="event-row stack">
+                        <div class="stack">
+                            <strong>{{ event.name|default:event.title }}</strong>
+                            <div class="meta-row">
+                                <span class="badge badge-accent">{{ event.event_type_code|event_type_label }}</span>
+                                {% if event.level_code %}
+                                    <span class="badge">{{ event.level_code|event_level_label }}</span>
+                                {% endif %}
+                                {% if event.registration_deadline %}
+                                    <span class="badge badge-muted">{% trans "До" %} {{ event.registration_deadline|date:"d.m.Y" }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <a class="btn btn-secondary" href="{% url 'web:event-detail' event.pk %}" data-spa-link>{% trans "Открыть" %}</a>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty-state">{% trans "Пока нет активных событий с датами, которые можно показать в календаре." %}</p>
+        {% endif %}
+    </article>
+
+    <article class="card-elevated stack">
+        <p class="eyebrow">{% trans "Навигация" %}</p>
+        <h2>{% trans "Как использовать timeline" %}</h2>
+        <dl class="definition-grid">
+            <dt>{% trans "Шаг 1" %}</dt>
+            <dd>{% trans "Откройте событие и проверьте дедлайн регистрации." %}</dd>
+            <dt>{% trans "Шаг 2" %}</dt>
+            <dd>{% trans "Сравните форматы участия и уровень события в каталоге." %}</dd>
+            <dt>{% trans "Шаг 3" %}</dt>
+            <dd>{% trans "Возвращайтесь в календарь, чтобы удерживать сезон под контролем." %}</dd>
+        </dl>
+    </article>
+</section>
+{% endblock %}

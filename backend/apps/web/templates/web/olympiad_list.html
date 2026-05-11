@@ -4,33 +4,15 @@
 {% block title %}{% trans "Олимпиады — Bloom" %}{% endblock %}
 {% block body_class %}olympiad-body{% endblock %}
 {% block main_class %}olympiad-shell{% endblock %}
-{% block site_header %}{% endblock %}
-{% block site_footer %}{% endblock %}
 
 {% block content %}
 <section class="olympiad-page" aria-labelledby="olympiad-title">
-    <header class="figma-home-header olympiad-topbar">
-        <a class="figma-brand" href="{% url 'web:home' %}" aria-label="{% trans 'Bloom, главная' %}">
-            <img src="{% static 'web/img/home/bloom-logomark.png' %}" alt="" width="32" height="32">
-            <span>Bloom</span>
-        </a>
-
-        <nav class="figma-home-nav" aria-label="{% trans 'Навигация по странице олимпиад' %}">
-            <a href="{% url 'web:olympiad-list' %}" aria-current="page">{% trans "Участвовать в олимпиадах" %}</a>
-            <a href="{% url 'web:event-list' %}" data-spa-link>{% trans "Календарь событий" %}</a>
-            <a href="{% url 'web:home' %}#about">{% trans "О Bloom" %}</a>
-        </nav>
-
-        <div class="figma-social-icons" aria-hidden="true">
-            <span><img src="{% static 'web/img/home/social-instagram.svg' %}" alt="" width="24" height="24"></span>
-            <span><img src="{% static 'web/img/home/social-linkedin.svg' %}" alt="" width="24" height="24"></span>
-            <span><img src="{% static 'web/img/home/social-x.svg' %}" alt="" width="24" height="24"></span>
-        </div>
-    </header>
-
     <div class="olympiad-container">
         <header class="olympiad-hero">
-            <h1 id="olympiad-title">{% trans "Олимпиады" %}</h1>
+            <div class="stack">
+                <h1 id="olympiad-title">{% trans "Олимпиады" %}</h1>
+                <p class="page-copy">{% trans "Участвовать в олимпиадах можно через отдельную подборку профилей, уровней и форматов участия." %}</p>
+            </div>
         </header>
 
         <form class="olympiad-filter-panel{% if selected_filters.q %} is-search-active{% endif %}" action="{% url 'web:olympiad-list' %}" method="get" aria-label="{% trans 'Фильтры и поиск олимпиад' %}" data-olympiad-filters data-olympiad-controls>
@@ -152,7 +134,7 @@
             <ul>
                 <li>Email</li>
                 <li>Instagram</li>
-                <li>Linkedin</li>
+                <li>LinkedIn</li>
             </ul>
         </footer>
     </div>

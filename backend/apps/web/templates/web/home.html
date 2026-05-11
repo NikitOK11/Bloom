@@ -4,30 +4,9 @@
 {% block title %}{% trans "Bloom — от олимпиадника олимпиадникам" %}{% endblock %}
 {% block body_class %}home-body{% endblock %}
 {% block main_class %}figma-home-shell{% endblock %}
-{% block site_header %}{% endblock %}
-{% block site_footer %}{% endblock %}
 
 {% block content %}
 <div class="figma-home">
-    <header class="figma-home-header">
-        <a class="figma-brand" href="{% url 'web:home' %}" aria-label="{% trans 'Bloom, главная' %}">
-            <img src="{% static 'web/img/home/bloom-logomark.png' %}" alt="" width="32" height="32">
-            <span>Bloom</span>
-        </a>
-
-        <nav class="figma-home-nav" aria-label="{% trans 'Навигация по главной странице' %}">
-            <a href="{% url 'web:olympiad-list' %}">{% trans "Участвовать в олимпиадах" %}</a>
-            <a href="{% url 'web:event-list' %}" data-spa-link>{% trans "Календарь событий" %}</a>
-            <a href="#about">{% trans "О Bloom" %}</a>
-        </nav>
-
-        <div class="figma-social-icons" aria-hidden="true">
-            <span><img src="{% static 'web/img/home/social-instagram.svg' %}" alt="" width="24" height="24"></span>
-            <span><img src="{% static 'web/img/home/social-linkedin.svg' %}" alt="" width="24" height="24"></span>
-            <span><img src="{% static 'web/img/home/social-x.svg' %}" alt="" width="24" height="24"></span>
-        </div>
-    </header>
-
     <section class="figma-hero" aria-labelledby="home-title">
         <picture class="figma-hero-bg" aria-hidden="true">
             <source srcset="{% static 'web/img/home/hero-mobile.jpg' %}" media="(max-width: 700px)">
@@ -37,11 +16,14 @@
         <div class="figma-hero-content">
             <h1 id="home-title">{% trans "От Олимпиадника Олимпиадникам" %}</h1>
             <div class="figma-hero-actions">
-                <a class="figma-btn figma-btn-primary" href="{% url 'web:olympiad-list' %}">
+                <a class="figma-btn figma-btn-primary" href="{% url 'web:event-list' %}" data-spa-link>
+                    {% trans "Перейти к событиям" %}
+                </a>
+                <a class="figma-btn figma-btn-secondary" href="{% url 'web:olympiad-list' %}">
                     {% trans "Найти олимпиаду по душе" %}
                 </a>
-                <a class="figma-btn figma-btn-secondary" href="#about">
-                    {% trans "Узнать о проекте" %}
+                <a class="figma-btn figma-btn-secondary" href="{% url 'web:calendar' %}" data-spa-link>
+                    {% trans "Открыть календарь" %}
                 </a>
             </div>
         </div>
@@ -52,19 +34,19 @@
         </picture>
     </section>
 
-    <section id="participate" class="figma-feature-section" aria-label="{% trans 'Как Bloom помогает с олимпиадами' %}">
-        <article class="figma-feature-row" id="about">
+    <section id="participate" class="figma-feature-section" aria-label="{% trans 'Как Bloom помогает со событиями' %}">
+        <article class="figma-feature-row">
             <picture class="figma-feature-media">
                 <source srcset="{% static 'web/img/home/feature-olympiad-mobile.jpg' %}" media="(max-width: 700px)">
-                <img src="{% static 'web/img/home/feature-olympiad-desktop.jpg' %}" alt="{% trans 'Экран олимпиадного события с таймером и визуальными материалами' %}">
+                <img src="{% static 'web/img/home/feature-olympiad-desktop.jpg' %}" alt="{% trans 'Экран события с таймером и визуальными материалами' %}">
             </picture>
 
             <div class="figma-feature-content">
                 <div class="figma-feature-text">
-                    <h2>{% trans "Каждый из нас хочет взять олимпиаду..." %}</h2>
+                    <h2>{% trans "Участвовать в олимпиадах и других событиях проще с единым каталогом" %}</h2>
                     <p>
                         {% blocktrans trimmed %}
-                            ...но не каждый может найти то, что ему нравится. Bloom - это точка старта для тех ребят, кто уже решился писать олимпиады, и хочет попробовать всё!
+                            Bloom собирает олимпиады, хакатоны и кейс-чемпионаты в одном рабочем слое, чтобы проще сравнивать форматы участия, дедлайны и преференции.
                         {% endblocktrans %}
                     </p>
                 </div>
@@ -77,10 +59,10 @@
         <article class="figma-feature-row figma-feature-row-reverse">
             <div class="figma-feature-content">
                 <div class="figma-feature-text">
-                    <h2>{% trans "И конечно все хотят себе БВИ..." %}</h2>
+                    <h2>{% trans "Следите за сезонной нагрузкой в календаре" %}</h2>
                     <p>
                         {% blocktrans trimmed %}
-                            ... поэтому здесь каждый сможет найти себе именно то, что ему нужно, чтобы поступить в вуз мечты!
+                            Отдельная лента дат помогает увидеть регистрацию, этапы и контрольные точки заранее, чтобы не пропускать важные окна подачи.
                         {% endblocktrans %}
                     </p>
                 </div>
@@ -91,7 +73,7 @@
 
             <picture class="figma-feature-media">
                 <source srcset="{% static 'web/img/home/feature-preferences-mobile.jpg' %}" media="(max-width: 700px)">
-                <img src="{% static 'web/img/home/feature-preferences-desktop.jpg' %}" alt="{% trans 'Дипломы олимпиадников на столе' %}">
+                <img src="{% static 'web/img/home/feature-preferences-desktop.jpg' %}" alt="{% trans 'Дипломы и рабочие материалы участников' %}">
             </picture>
         </article>
 
@@ -100,7 +82,7 @@
             <ul>
                 <li>Email</li>
                 <li>Instagram</li>
-                <li>Linkedin</li>
+                <li>LinkedIn</li>
             </ul>
         </section>
     </section>

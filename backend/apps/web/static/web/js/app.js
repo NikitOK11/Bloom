@@ -64,10 +64,14 @@
         document.querySelectorAll(".nav-link[data-nav-key]").forEach((link) => {
             const key = link.dataset.navKey;
             const active =
-                (key === "home" && url.pathname === "/") ||
-                (key === "olympiads" && url.pathname === "/olympiads/") ||
                 (key === "events" &&
-                    (url.pathname.startsWith("/events/") || url.pathname.startsWith("/teams/")));
+                    (
+                        url.pathname.startsWith("/events/") ||
+                        url.pathname.startsWith("/teams/") ||
+                        url.pathname.startsWith("/olympiads/")
+                    )) ||
+                (key === "calendar" && url.pathname.startsWith("/calendar/")) ||
+                (key === "profile" && url.pathname.startsWith("/profile/"));
             link.classList.toggle("nav-link-primary", active);
         });
     }
