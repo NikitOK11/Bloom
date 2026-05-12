@@ -19,7 +19,7 @@
                 <a class="figma-btn figma-btn-primary" href="{% url 'web:event-list' %}" data-spa-link>
                     {% trans "Перейти к событиям" %}
                 </a>
-                <a class="figma-btn figma-btn-secondary" href="{% url 'web:olympiad-list' %}">
+                <a class="figma-btn figma-btn-secondary" href="{% url 'web:event-list' %}?event_type_code=olympiad" data-spa-link>
                     {% trans "Найти олимпиаду по душе" %}
                 </a>
                 <a class="figma-btn figma-btn-secondary" href="{% url 'web:calendar' %}" data-spa-link>
@@ -50,7 +50,7 @@
                         {% endblocktrans %}
                     </p>
                 </div>
-                <a class="figma-btn figma-btn-dark" href="{% url 'web:olympiad-list' %}">
+                <a class="figma-btn figma-btn-dark" href="{% url 'web:event-list' %}?event_type_code=olympiad" data-spa-link>
                     {% trans "Найти олимпиаду по душе" %}
                 </a>
             </div>
@@ -66,7 +66,7 @@
                         {% endblocktrans %}
                     </p>
                 </div>
-                <a class="figma-btn figma-btn-dark figma-btn-wide" href="{% url 'web:olympiad-list' %}">
+                <a class="figma-btn figma-btn-dark figma-btn-wide" href="{% url 'web:event-list' %}?event_type_code=olympiad" data-spa-link>
                     {% trans "Изучить преференции олимпиад" %}
                 </a>
             </div>

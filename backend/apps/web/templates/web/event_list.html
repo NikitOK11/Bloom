@@ -4,121 +4,208 @@
 {% block title %}{% trans "События" %}{% endblock %}
 
 {% block content %}
-<section class="catalog-hero">
-    <div class="hero-content">
-        <p class="hero-kicker">{% trans "Поиск событий" %}</p>
-        <h1 class="page-title">{% trans "Каталог олимпиад, хакатонов и кейс-чемпионатов" %}</h1>
-        <p class="page-copy">
-            {% trans "Отберите события по профилю, уровню и формату участия. Командные возможности показываются только там, где они действительно подходят." %}
-        </p>
-        <div class="hero-trust">
-            <a class="btn btn-secondary" href="{% url 'web:olympiad-list' %}">{% trans "Участвовать в олимпиадах" %}</a>
+<div class="event-catalog-page" data-filter-focus-root>
+    <section class="catalog-hero">
+        <div class="hero-content">
+            <p class="hero-kicker">{% trans "Поиск событий" %}</p>
+            <h1 class="page-title">{% trans "Каталог олимпиад, хакатонов и кейс-чемпионатов" %}</h1>
+            <p class="page-copy">
+                {% trans "Отберите события по профилю, уровню и формату участия. Командные возможности показываются только там, где они действительно подходят." %}
+            </p>
+            <div class="hero-trust">
+                <a class="btn btn-secondary" href="{% url 'web:event-list' %}?event_type_code=olympiad" data-spa-link>{% trans "Участвовать в олимпиадах" %}</a>
+            </div>
         </div>
-    </div>
-</section>
-
-<form class="filter-panel" method="get" role="search">
-    <div class="filter-grid">
-        <p class="form-field">
-            <label for="id_q">{% trans "Поиск" %}</label>
-            <input id="id_q" type="search" name="q" value="{{ selected_filters.q }}" placeholder="{% trans 'Название или организатор' %}">
-        </p>
-
-        <p class="form-field">
-            <label for="id_profile">{% trans "Профиль" %}</label>
-            <select id="id_profile" name="profile_code">
-                <option value="">{% trans "Все профили" %}</option>
-                {% for value, label in profile_code_choices %}
-                    <option value="{{ value }}"{% if selected_filters.profile_code == value %} selected{% endif %}>
-                        {{ label|profile_label }}
-                    </option>
-                {% endfor %}
-            </select>
-        </p>
-
-        <p class="form-field">
-            <label for="id_event_type">{% trans "Тип события" %}</label>
-            <select id="id_event_type" name="event_type_code">
-                <option value="">{% trans "Все типы" %}</option>
-                {% for value, label in event_type_code_choices %}
-                    <option value="{{ value }}"{% if selected_filters.event_type_code == value %} selected{% endif %}>
-                        {{ label }}
-                    </option>
-                {% endfor %}
-            </select>
-        </p>
-
-        <p class="form-field">
-            <label for="id_level">{% trans "Уровень" %}</label>
-            <select id="id_level" name="level_code">
-                <option value="">{% trans "Все уровни" %}</option>
-                {% for value, label in level_code_choices %}
-                    <option value="{{ value }}"{% if selected_filters.level_code == value %} selected{% endif %}>
-                        {{ label }}
-                    </option>
-                {% endfor %}
-            </select>
-        </p>
-
-        <p class="form-field">
-            <label for="id_participation_mode">{% trans "Формат участия" %}</label>
-            <select id="id_participation_mode" name="participation_mode">
-                <option value="">{% trans "Любой формат" %}</option>
-                {% for value, label in participation_mode_choices %}
-                    <option value="{{ value }}"{% if selected_filters.participation_mode == value %} selected{% endif %}>
-                        {{ label }}
-                    </option>
-                {% endfor %}
-            </select>
-        </p>
-    </div>
-
-    <div class="form-actions">
-        <button class="btn btn-primary" type="submit">{% trans "Применить фильтры" %}</button>
-        <a class="btn btn-secondary" href="{% url 'web:event-list' %}">{% trans "Сбросить" %}</a>
-    </div>
-</form>
-
-{% if events %}
-    <section class="event-grid page-section" aria-label="{% trans 'Список событий' %}">
-        {% for event in events %}
-            <article class="card-elevated event-card">
-                <div class="event-card-header">
-                    <div class="stack">
-                        <p class="eyebrow">{% trans "Событие" %}</p>
-                        <h2 class="event-title">
-                            <a href="{% url 'web:event-detail' event.pk %}" data-spa-link>{% firstof event.name event.title %}</a>
-                        </h2>
-                    </div>
-                    <a class="btn btn-secondary" href="{% url 'web:event-detail' event.pk %}" data-spa-link>{% trans "Подробнее" %}</a>
-                </div>
-                <div class="meta-row">
-                    <span class="badge badge-accent">{{ event.event_type_code|event_type_label }}</span>
-                    <span class="badge">{{ event.level_code|event_level_label }}</span>
-                    <span class="badge badge-gold">{{ event.participation_mode|participation_mode_label }}</span>
-                    {% if event.profile_code %}
-                        <span class="badge badge-muted">{{ event.profile_code|profile_label }}</span>
-                    {% else %}
-                        {% for profile in event.profiles.all %}
-                            <span class="badge badge-muted">{{ profile.name }}</span>
-                        {% empty %}
-                            <span class="badge badge-muted">{% trans "Профиль не указан" %}</span>
-                        {% endfor %}
-                    {% endif %}
-                    {% if event.registration_deadline %}
-                        <span class="badge badge-muted">{% trans "Регистрация до" %} {{ event.registration_deadline|date:"Y-m-d" }}</span>
-                    {% endif %}
-                </div>
-                {% if event.short_description %}
-                    <p class="muted">{{ event.short_description }}</p>
-                {% endif %}
-                {% if event.official_url %}
-                    <a class="btn btn-secondary" href="{{ event.official_url }}">{% trans "Официальный сайт" %}</a>
-                {% endif %}
-            </article>
-        {% endfor %}
     </section>
-{% else %}
-    <p class="empty-state page-section">{% trans "По выбранным фильтрам событий пока нет." %}</p>
-{% endif %}
+
+    <form class="filter-panel catalog-filter-panel{% if selected_filters.q %} is-search-active{% endif %}" method="get" role="search" aria-label="{% trans 'Фильтры и поиск событий' %}" data-filter-controls data-enhanced-filter-form>
+        <div class="catalog-control-bar">
+            <button class="catalog-filter-compact-toggle" type="button" aria-expanded="false" aria-controls="catalog-filter-drawer" data-filter-compact-toggle>
+                {% trans "Фильтры" %}
+            </button>
+            <div class="catalog-search-shell" data-search-shell>
+                <label class="sr-only" for="catalog-search-input">{% trans "Поиск" %}</label>
+                <input id="catalog-search-input" class="catalog-search-input" type="search" name="q" value="{{ selected_filters.q }}" placeholder="{% trans 'Название или организатор' %}" data-search-input>
+                <button class="catalog-search-submit" type="submit" aria-label="{% trans 'Найти событие' %}">
+                    <span class="catalog-search-icon" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+
+        <div class="catalog-filter-drawer" id="catalog-filter-drawer" data-filter-drawer>
+            <div class="catalog-filter-fields-grid">
+                {% for filter in event_filter_configs %}
+                    <div class="catalog-filter-field" data-filter-field data-filter-name="{{ filter.name }}" data-filter-empty-label="{{ filter.all_label }}">
+                        <span class="catalog-filter-label" id="catalog-filter-{{ filter.name }}-label">{{ filter.label }}</span>
+                        <span data-filter-inputs>
+                            <input type="hidden" name="{{ filter.name }}" value="{{ filter.selected_value }}" data-filter-input>
+                        </span>
+                        <button
+                            class="catalog-filter-trigger"
+                            type="button"
+                            aria-haspopup="listbox"
+                            aria-expanded="false"
+                            aria-labelledby="catalog-filter-{{ filter.name }}-label catalog-filter-{{ filter.name }}-value"
+                            aria-controls="catalog-filter-{{ filter.name }}-menu"
+                            data-filter-trigger
+                        >
+                            <span id="catalog-filter-{{ filter.name }}-value" data-filter-value>{{ filter.selected_label }}</span>
+                            <span class="catalog-filter-chevron" aria-hidden="true"></span>
+                        </button>
+                        <div class="catalog-filter-menu" id="catalog-filter-{{ filter.name }}-menu" role="listbox" aria-labelledby="catalog-filter-{{ filter.name }}-label" data-filter-menu>
+                            <button class="catalog-filter-option" type="button" role="option" data-filter-option data-value="" aria-selected="{% if not filter.selected_value %}true{% else %}false{% endif %}">
+                                {{ filter.all_label }}
+                            </button>
+                            {% for option in filter.options %}
+                                <button class="catalog-filter-option" type="button" role="option" data-filter-option data-value="{{ option.value }}" aria-selected="{% if option.selected %}true{% else %}false{% endif %}">
+                                    <span>{{ option.label }}</span>
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="catalog-filter-actions">
+                <button class="catalog-filter-submit" type="submit">{% trans "Показать" %}</button>
+                <button class="catalog-search-toggle" type="button" aria-expanded="{% if selected_filters.q %}true{% else %}false{% endif %}" aria-controls="catalog-search-input" aria-label="{% trans 'Поиск' %}" data-search-toggle>
+                    <span class="catalog-search-icon" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <noscript>
+        <form class="filter-panel catalog-native-fallback" method="get" role="search">
+            <div class="filter-grid">
+                <p class="form-field">
+                    <label for="id_q">{% trans "Поиск" %}</label>
+                    <input id="id_q" type="search" name="q" value="{{ selected_filters.q }}" placeholder="{% trans 'Название или организатор' %}">
+                </p>
+
+                <p class="form-field">
+                    <label for="id_profile">{% trans "Профиль" %}</label>
+                    <select id="id_profile" name="profile_code">
+                        <option value="">{% trans "Все профили" %}</option>
+                        {% for value, label in profile_code_choices %}
+                            <option value="{{ value }}"{% if selected_filters.profile_code == value %} selected{% endif %}>
+                                {{ label|profile_label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </p>
+
+                <p class="form-field">
+                    <label for="id_event_type">{% trans "Тип события" %}</label>
+                    <select id="id_event_type" name="event_type_code">
+                        <option value="">{% trans "Все типы" %}</option>
+                        {% for value, label in event_type_code_choices %}
+                            <option value="{{ value }}"{% if selected_filters.event_type_code == value %} selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </p>
+
+                <p class="form-field">
+                    <label for="id_level">{% trans "Уровень" %}</label>
+                    <select id="id_level" name="level_code">
+                        <option value="">{% trans "Все уровни" %}</option>
+                        {% for value, label in level_code_choices %}
+                            <option value="{{ value }}"{% if selected_filters.level_code == value %} selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </p>
+
+                <p class="form-field">
+                    <label for="id_participation_mode">{% trans "Формат участия" %}</label>
+                    <select id="id_participation_mode" name="participation_mode">
+                        <option value="">{% trans "Любой формат" %}</option>
+                        {% for value, label in participation_mode_choices %}
+                            <option value="{{ value }}"{% if selected_filters.participation_mode == value %} selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </p>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit">{% trans "Применить фильтры" %}</button>
+                <a class="btn btn-secondary" href="{% url 'web:event-list' %}">{% trans "Сбросить" %}</a>
+            </div>
+        </form>
+    </noscript>
+
+    {% if applied_filter_chips %}
+        <section class="catalog-applied-filters" aria-labelledby="catalog-applied-filters-title" data-applied-filters>
+            <div class="catalog-applied-filters-heading">
+                <h2 id="catalog-applied-filters-title">{% trans "Применённые фильтры" %}</h2>
+                {% if applied_filter_chips|length > 1 %}
+                    <a class="catalog-applied-clear" href="{{ clear_all_filters_url }}" data-spa-link>{% trans "Сбросить всё" %}</a>
+                {% endif %}
+            </div>
+            <ul class="catalog-applied-filter-list">
+                {% for chip in applied_filter_chips %}
+                    <li>
+                        <span class="catalog-applied-chip" data-applied-filter-chip="{{ chip.name }}">
+                            <span class="catalog-applied-chip-text">
+                                <span class="catalog-applied-chip-label">{{ chip.label }}:</span>
+                                <span>{{ chip.value_label }}</span>
+                            </span>
+                            <a class="catalog-applied-chip-remove" href="{{ chip.remove_url }}" aria-label="{{ chip.remove_label }}" data-spa-link>
+                                <span aria-hidden="true">×</span>
+                            </a>
+                        </span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+    {% endif %}
+
+    {% if events %}
+        <section class="event-grid page-section" aria-label="{% trans 'Список событий' %}">
+            {% for event in events %}
+                <article class="card-elevated event-card">
+                    <div class="event-card-header">
+                        <div class="stack">
+                            <p class="eyebrow">{% trans "Событие" %}</p>
+                            <h2 class="event-title">
+                                <a href="{% url 'web:event-detail' event.pk %}" data-spa-link>{% firstof event.name event.title %}</a>
+                            </h2>
+                        </div>
+                        <a class="btn btn-secondary" href="{% url 'web:event-detail' event.pk %}" data-spa-link>{% trans "Подробнее" %}</a>
+                    </div>
+                    <div class="meta-row">
+                        <span class="badge badge-accent">{{ event.event_type_code|event_type_label }}</span>
+                        <span class="badge">{{ event.level_code|event_level_label }}</span>
+                        <span class="badge badge-gold">{{ event.participation_mode|participation_mode_label }}</span>
+                        {% if event.profile_code %}
+                            <span class="badge badge-muted">{{ event.profile_code|profile_label }}</span>
+                        {% else %}
+                            {% for profile in event.profiles.all %}
+                                <span class="badge badge-muted">{{ profile.name }}</span>
+                            {% empty %}
+                                <span class="badge badge-muted">{% trans "Профиль не указан" %}</span>
+                            {% endfor %}
+                        {% endif %}
+                        {% if event.registration_deadline %}
+                            <span class="badge badge-muted">{% trans "Регистрация до" %} {{ event.registration_deadline|date:"Y-m-d" }}</span>
+                        {% endif %}
+                    </div>
+                    {% if event.short_description %}
+                        <p class="muted">{{ event.short_description }}</p>
+                    {% endif %}
+                    {% if event.official_url %}
+                        <a class="btn btn-secondary" href="{{ event.official_url }}">{% trans "Официальный сайт" %}</a>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        </section>
+    {% else %}
+        <p class="empty-state page-section">{% trans "По выбранным фильтрам событий пока нет." %}</p>
+    {% endif %}
+</div>
 {% endblock %}

@@ -332,21 +332,153 @@ class EventListView(PartialTemplateMixin, ListView):
             .values_list("profile_code", flat=True)
             .distinct()
         )
+        profile_code_choices = [
+            (profile_code, _code_label(profile_code)) for profile_code in profile_codes
+        ]
+        event_type_code_choices = _event_type_code_choices()
+        level_code_choices = _event_level_code_choices()
+        participation_mode_choices = _participation_mode_choices()
+        selected_profile = self.request.GET.get("profile_code", "").strip()
+        selected_event_type = self.request.GET.get("event_type_code", "").strip()
+        selected_level = self.request.GET.get("level_code", "").strip()
+        selected_participation_mode = self.request.GET.get("participation_mode", "").strip()
+        selected_search_query = self.request.GET.get("q", "").strip()
+        if selected_event_type not in EventTypeCode.values:
+            selected_event_type = ""
+        if selected_level not in EventLevelCode.values:
+            selected_level = ""
+        if selected_participation_mode not in EventParticipationMode.values:
+            selected_participation_mode = ""
+
+        selected_profile_label = _selected_choice_label(
+            profile_code_choices,
+            selected_profile,
+            _code_label(selected_profile) if selected_profile else _("Все профили"),
+        )
+        selected_event_type_label = _selected_choice_label(
+            event_type_code_choices,
+            selected_event_type,
+            _("Все типы"),
+        )
+        selected_level_label = _selected_choice_label(
+            level_code_choices,
+            selected_level,
+            _("Все уровни"),
+        )
+        selected_participation_mode_label = _selected_choice_label(
+            participation_mode_choices,
+            selected_participation_mode,
+            _("Любой формат"),
+        )
+        applied_filter_chips = [
+            chip
+            for chip in [
+                _applied_filter_chip(
+                    self.request,
+                    name="profile_code",
+                    label=_("Профиль"),
+                    value=selected_profile,
+                    value_label=selected_profile_label,
+                    remove_keys=["profile_code"],
+                ),
+                _applied_filter_chip(
+                    self.request,
+                    name="event_type_code",
+                    label=_("Тип события"),
+                    value=selected_event_type,
+                    value_label=selected_event_type_label,
+                    remove_keys=["event_type_code"],
+                ),
+                _applied_filter_chip(
+                    self.request,
+                    name="level_code",
+                    label=_("Уровень"),
+                    value=selected_level,
+                    value_label=selected_level_label,
+                    remove_keys=["level_code"],
+                ),
+                _applied_filter_chip(
+                    self.request,
+                    name="participation_mode",
+                    label=_("Формат"),
+                    value=selected_participation_mode,
+                    value_label=selected_participation_mode_label,
+                    remove_keys=["participation_mode"],
+                ),
+            ]
+            if chip is not None
+        ]
         context.update(
             {
-                "profile_code_choices": [
-                    (profile_code, _code_label(profile_code)) for profile_code in profile_codes
-                ],
-                "event_type_code_choices": _event_type_code_choices(),
-                "level_code_choices": _event_level_code_choices(),
-                "participation_mode_choices": _participation_mode_choices(),
+                "profile_code_choices": profile_code_choices,
+                "event_type_code_choices": event_type_code_choices,
+                "level_code_choices": level_code_choices,
+                "participation_mode_choices": participation_mode_choices,
                 "selected_filters": {
-                    "profile_code": self.request.GET.get("profile_code", "").strip(),
-                    "event_type_code": self.request.GET.get("event_type_code", "").strip(),
-                    "level_code": self.request.GET.get("level_code", "").strip(),
-                    "participation_mode": self.request.GET.get("participation_mode", "").strip(),
-                    "q": self.request.GET.get("q", "").strip(),
+                    "profile_code": selected_profile,
+                    "event_type_code": selected_event_type,
+                    "level_code": selected_level,
+                    "participation_mode": selected_participation_mode,
+                    "q": selected_search_query,
                 },
+                "event_filter_configs": [
+                    {
+                        "name": "profile_code",
+                        "label": _("Профиль"),
+                        "all_label": _("Все профили"),
+                        "multiple": False,
+                        "selected_value": selected_profile,
+                        "selected_values": [selected_profile] if selected_profile else [],
+                        "selected_label": selected_profile_label,
+                        "options": _filter_options(
+                            profile_code_choices,
+                            [selected_profile] if selected_profile else [],
+                        ),
+                    },
+                    {
+                        "name": "event_type_code",
+                        "label": _("Тип события"),
+                        "all_label": _("Все типы"),
+                        "multiple": False,
+                        "selected_value": selected_event_type,
+                        "selected_values": [selected_event_type] if selected_event_type else [],
+                        "selected_label": selected_event_type_label,
+                        "options": _filter_options(
+                            event_type_code_choices,
+                            [selected_event_type] if selected_event_type else [],
+                        ),
+                    },
+                    {
+                        "name": "level_code",
+                        "label": _("Уровень"),
+                        "all_label": _("Все уровни"),
+                        "multiple": False,
+                        "selected_value": selected_level,
+                        "selected_values": [selected_level] if selected_level else [],
+                        "selected_label": selected_level_label,
+                        "options": _filter_options(
+                            level_code_choices,
+                            [selected_level] if selected_level else [],
+                        ),
+                    },
+                    {
+                        "name": "participation_mode",
+                        "label": _("Формат участия"),
+                        "all_label": _("Любой формат"),
+                        "multiple": False,
+                        "selected_value": selected_participation_mode,
+                        "selected_values": (
+                            [selected_participation_mode] if selected_participation_mode else []
+                        ),
+                        "selected_label": selected_participation_mode_label,
+                        "options": _filter_options(
+                            participation_mode_choices,
+                            [selected_participation_mode] if selected_participation_mode else [],
+                        ),
+                    },
+                ],
+                "applied_filter_chips": applied_filter_chips,
+                "clear_all_filters_url": self.request.path,
             }
         )
         return context

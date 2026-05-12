@@ -1,4 +1,6 @@
 (function () {
+    document.documentElement.classList.add("js-enabled");
+
     const content = document.querySelector("#app-content");
     const status = document.querySelector("#app-status");
 
@@ -83,7 +85,15 @@
         }
     }
 
-    function closeOlympiadFilters(exceptField) {
+    function filterPanelSelector() {
+        return "[data-filter-controls], [data-olympiad-controls]";
+    }
+
+    function filterFocusRoot(field) {
+        return field.closest("[data-filter-focus-root], .olympiad-page");
+    }
+
+    function closeFilters(exceptField) {
         document.querySelectorAll("[data-filter-field].is-active").forEach((field) => {
             if (field === exceptField) {
                 return;
@@ -92,24 +102,32 @@
             field.querySelector("[data-filter-trigger]")?.setAttribute("aria-expanded", "false");
         });
 
-        document.querySelectorAll(".olympiad-page.filter-focus-active").forEach((page) => {
-            if (!exceptField || !page.contains(exceptField)) {
-                page.classList.remove("filter-focus-active");
-            }
-        });
+        document
+            .querySelectorAll("[data-filter-focus-root].filter-focus-active, .olympiad-page.filter-focus-active")
+            .forEach((root) => {
+                if (!exceptField || !root.contains(exceptField)) {
+                    root.classList.remove("filter-focus-active");
+                }
+            });
     }
 
-    function setOlympiadFilterActive(field, isActive) {
-        const page = field.closest(".olympiad-page");
+    function setFilterActive(field, isActive) {
+        const root = filterFocusRoot(field);
         const trigger = field.querySelector("[data-filter-trigger]");
 
-        closeOlympiadFilters(isActive ? field : null);
+        closeFilters(isActive ? field : null);
         field.classList.toggle("is-active", isActive);
         trigger?.setAttribute("aria-expanded", isActive ? "true" : "false");
-        page?.classList.toggle("filter-focus-active", isActive);
+        root?.classList.toggle("filter-focus-active", isActive);
+
+        if (isActive) {
+            window.setTimeout(() => {
+                field.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }, 50);
+        }
     }
 
-    function selectOlympiadFilterOption(option) {
+    function selectFilterOption(option) {
         const field = option.closest("[data-filter-field]");
         if (!field) {
             return;
@@ -165,20 +183,23 @@
             item.setAttribute("aria-selected", item === option ? "true" : "false");
         });
 
-        setOlympiadFilterActive(field, false);
+        setFilterActive(field, false);
         trigger?.focus({ preventScroll: true });
     }
 
-    function setOlympiadSearchMode(panel, isActive, shouldFocus) {
+    function setSearchMode(panel, isActive, shouldFocus) {
         const searchToggle = panel.querySelector("[data-search-toggle]");
         const searchInput = panel.querySelector("[data-search-input]");
         const compactToggle = panel.querySelector("[data-filter-compact-toggle]");
         const firstFilterTrigger = panel.querySelector("[data-filter-trigger]");
 
         panel.classList.toggle("is-search-active", isActive);
+        if (isActive) {
+            panel.classList.remove("is-filter-compact-open");
+        }
         searchToggle?.setAttribute("aria-expanded", isActive ? "true" : "false");
         compactToggle?.setAttribute("aria-expanded", "false");
-        closeOlympiadFilters();
+        closeFilters();
 
         if (isActive && shouldFocus && searchInput) {
             window.setTimeout(() => searchInput.focus({ preventScroll: true }), 180);
@@ -191,11 +212,11 @@
     }
 
     function toggleCompactFilters(button) {
-        const panel = button.closest("[data-olympiad-controls]");
+        const panel = button.closest(filterPanelSelector());
         if (!panel) {
             return;
         }
-        setOlympiadSearchMode(panel, false, true);
+        setSearchMode(panel, false, true);
     }
 
     async function loadPage(url, options) {
@@ -238,9 +259,9 @@
         const searchToggle = event.target.closest("[data-search-toggle]");
         if (searchToggle) {
             event.preventDefault();
-            const panel = searchToggle.closest("[data-olympiad-controls]");
+            const panel = searchToggle.closest(filterPanelSelector());
             if (panel) {
-                setOlympiadSearchMode(panel, true, true);
+                setSearchMode(panel, true, true);
             }
             return;
         }
@@ -257,7 +278,7 @@
             event.preventDefault();
             const field = filterTrigger.closest("[data-filter-field]");
             if (field) {
-                setOlympiadFilterActive(field, !field.classList.contains("is-active"));
+                setFilterActive(field, !field.classList.contains("is-active"));
             }
             return;
         }
@@ -265,12 +286,12 @@
         const filterOption = event.target.closest("[data-filter-option]");
         if (filterOption) {
             event.preventDefault();
-            selectOlympiadFilterOption(filterOption);
+            selectFilterOption(filterOption);
             return;
         }
 
         if (!event.target.closest("[data-filter-field]")) {
-            closeOlympiadFilters();
+            closeFilters();
         }
 
         const link = event.target.closest("a");
@@ -293,15 +314,17 @@
         const activeField = document.querySelector("[data-filter-field].is-active");
         if (activeField) {
             event.preventDefault();
-            setOlympiadFilterActive(activeField, false);
+            setFilterActive(activeField, false);
             activeField.querySelector("[data-filter-trigger]")?.focus({ preventScroll: true });
             return;
         }
 
-        const searchActivePanel = document.querySelector("[data-olympiad-controls].is-search-active");
+        const searchActivePanel = document.querySelector(
+            "[data-filter-controls].is-search-active, [data-olympiad-controls].is-search-active"
+        );
         if (searchActivePanel) {
             event.preventDefault();
-            setOlympiadSearchMode(searchActivePanel, false, true);
+            setSearchMode(searchActivePanel, false, true);
         }
     });
 

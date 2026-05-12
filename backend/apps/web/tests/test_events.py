@@ -104,7 +104,8 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, reverse("web:olympiad-list"))
+        self.assertContains(response, f'{reverse("web:event-list")}?event_type_code=olympiad')
+        self.assertNotContains(response, 'href="/olympiads/"', html=False)
         self.assertContains(response, "Найти олимпиаду по душе")
         self.assertContains(response, "Участвовать в олимпиадах")
 
@@ -128,7 +129,7 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'href="/static/web/styles.css?v=olympiad-search-polish-20260502"')
+        self.assertContains(response, 'href="/static/web/styles.css?v=unified-event-filters-20260513"')
 
     def test_home_partial_request_returns_content_without_base_layout(self):
         response = self.client.get(reverse("web:home"), HTTP_X_PARTIAL_REQUEST="true")
@@ -532,8 +533,17 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:event-list"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, reverse("web:olympiad-list"))
+        self.assertContains(response, f'{reverse("web:event-list")}?event_type_code=olympiad')
         self.assertContains(response, "Участвовать в олимпиадах")
+
+    def test_event_catalog_uses_custom_filter_controls(self):
+        response = self.client.get(reverse("web:event-list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "data-enhanced-filter-form", html=False)
+        self.assertContains(response, 'data-filter-name="event_type_code"', html=False)
+        self.assertContains(response, 'data-filter-trigger', html=False)
+        self.assertContains(response, 'class="catalog-filter-menu"', html=False)
 
     def test_language_switch_route_keeps_home_rendering(self):
         response = self.client.post(
@@ -596,6 +606,28 @@ class EventCatalogTests(TestCase):
 
         self.assertContains(response, "International Event")
         self.assertNotContains(response, "Default Event")
+
+    def test_event_catalog_applied_filter_chips_preserve_other_filters(self):
+        response = self.client.get(
+            reverse("web:event-list"),
+            {
+                "event_type_code": "olympiad",
+                "level_code": EventLevelCode.LEVEL_1,
+                "participation_mode": EventParticipationMode.TEAM,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'data-applied-filter-chip="event_type_code"', html=False)
+        self.assertContains(response, 'data-applied-filter-chip="level_code"', html=False)
+        self.assertContains(response, "Олимпиада")
+        self.assertContains(response, "Уровень 1")
+        self.assertContains(response, "Командно")
+        self.assertContains(
+            response,
+            'href="/events/?level_code=level_1&amp;participation_mode=team"',
+            html=False,
+        )
 
     def test_event_detail_renders_successfully(self):
         event = self.create_event(
