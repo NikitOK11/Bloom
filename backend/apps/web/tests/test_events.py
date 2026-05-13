@@ -129,7 +129,7 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'href="/static/web/styles.css?v=flat-navbar-20260513"')
+        self.assertContains(response, 'href="/static/web/styles.css?v=flat-filter-cleanup-20260513"')
 
     def test_home_partial_request_returns_content_without_base_layout(self):
         response = self.client.get(reverse("web:home"), HTTP_X_PARTIAL_REQUEST="true")
@@ -161,6 +161,7 @@ class EventCatalogTests(TestCase):
         self.assertContains(response, 'aria-label="Поиск"', html=False)
         self.assertContains(response, "data-filter-compact-toggle", html=False)
         self.assertContains(response, 'id="olympiad-search-input"', html=False)
+        self.assertContains(response, 'class="filter-search-icon"', count=2, html=False)
         self.assertNotContains(response, ">Сбросить<", html=False)
         self.assertContains(response, "Наши контакты")
 
@@ -544,6 +545,7 @@ class EventCatalogTests(TestCase):
         self.assertContains(response, 'data-filter-name="event_type_code"', html=False)
         self.assertContains(response, 'data-filter-trigger', html=False)
         self.assertContains(response, 'class="catalog-filter-menu"', html=False)
+        self.assertContains(response, 'class="filter-search-icon"', count=2, html=False)
 
     def test_language_switch_route_keeps_home_rendering(self):
         response = self.client.post(

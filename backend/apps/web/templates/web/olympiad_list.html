@@ -24,7 +24,9 @@
                     <label class="sr-only" for="olympiad-search-input">{% trans "Поиск по названию" %}</label>
                     <input id="olympiad-search-input" class="olympiad-search-input" type="search" name="q" value="{{ selected_filters.q }}" placeholder="{% trans 'Поиск по названию' %}" data-search-input>
                     <button class="olympiad-search-submit" type="submit" aria-label="{% trans 'Найти олимпиаду' %}">
-                        <span class="olympiad-search-icon" aria-hidden="true"></span>
+                        <svg class="filter-search-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M11 5a6 6 0 1 0 0 12a6 6 0 0 0 0-12Zm8 14-4.35-4.35" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                        </svg>
                     </button>
                 </div>
             </div>
@@ -77,7 +79,9 @@
                 <div class="olympiad-filter-actions">
                     <button class="olympiad-filter-submit" type="submit">{% trans "Показать" %}</button>
                     <button class="olympiad-search-toggle" type="button" aria-expanded="{% if selected_filters.q %}true{% else %}false{% endif %}" aria-controls="olympiad-search-input" aria-label="{% trans 'Поиск' %}" data-search-toggle>
-                        <span class="olympiad-search-icon" aria-hidden="true"></span>
+                        <svg class="filter-search-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M11 5a6 6 0 1 0 0 12a6 6 0 0 0 0-12Zm8 14-4.35-4.35" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                        </svg>
                     </button>
                 </div>
             </div>

@@ -27,7 +27,9 @@
                 <label class="sr-only" for="catalog-search-input">{% trans "Поиск" %}</label>
                 <input id="catalog-search-input" class="catalog-search-input" type="search" name="q" value="{{ selected_filters.q }}" placeholder="{% trans 'Название или организатор' %}" data-search-input>
                 <button class="catalog-search-submit" type="submit" aria-label="{% trans 'Найти событие' %}">
-                    <span class="catalog-search-icon" aria-hidden="true"></span>
+                    <svg class="filter-search-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M11 5a6 6 0 1 0 0 12a6 6 0 0 0 0-12Zm8 14-4.35-4.35" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                    </svg>
                 </button>
             </div>
         </div>
@@ -69,7 +71,9 @@
             <div class="catalog-filter-actions">
                 <button class="catalog-filter-submit" type="submit">{% trans "Показать" %}</button>
                 <button class="catalog-search-toggle" type="button" aria-expanded="{% if selected_filters.q %}true{% else %}false{% endif %}" aria-controls="catalog-search-input" aria-label="{% trans 'Поиск' %}" data-search-toggle>
-                    <span class="catalog-search-icon" aria-hidden="true"></span>
+                    <svg class="filter-search-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M11 5a6 6 0 1 0 0 12a6 6 0 0 0 0-12Zm8 14-4.35-4.35" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                    </svg>
                 </button>
             </div>
         </div>
