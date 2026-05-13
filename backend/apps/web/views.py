@@ -6,6 +6,7 @@ from django.db import transaction
 from django.db.models import F, Prefetch, Q
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, FormView, ListView, TemplateView
@@ -496,6 +497,24 @@ class OlympiadListView(PartialTemplateMixin, ListView):
         "web/img/olympiads/card-3.jpg",
         "web/img/olympiads/card-4.jpg",
     ]
+
+    def get(self, request, *args, **kwargs):
+        query = request.GET.copy()
+
+        if "profile" in query and "profile_code" not in query:
+            query.setlist("profile_code", request.GET.getlist("profile"))
+        if "level" in query and "level_code" not in query:
+            query.setlist("level_code", request.GET.getlist("level"))
+
+        for key in ("profile", "level", "eligible_group"):
+            if key in query:
+                del query[key]
+
+        query["event_type_code"] = EventTypeCode.OLYMPIAD
+
+        target = reverse("web:event-list")
+        query_string = query.urlencode()
+        return redirect(f"{target}?{query_string}" if query_string else target)
 
     def get_queryset(self):
         queryset = (

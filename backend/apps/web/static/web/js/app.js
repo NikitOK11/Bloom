@@ -53,8 +53,7 @@
         if (
             document.body.classList.contains("home-body") ||
             document.body.classList.contains("olympiad-body") ||
-            url.pathname === "/" ||
-            url.pathname === "/olympiads/"
+            url.pathname === "/"
         ) {
             return false;
         }
@@ -69,8 +68,7 @@
                 (key === "events" &&
                     (
                         url.pathname.startsWith("/events/") ||
-                        url.pathname.startsWith("/teams/") ||
-                        url.pathname.startsWith("/olympiads/")
+                        url.pathname.startsWith("/teams/")
                     )) ||
                 (key === "calendar" && url.pathname.startsWith("/calendar/")) ||
                 (key === "profile" && url.pathname.startsWith("/profile/"));
@@ -187,16 +185,90 @@
         trigger?.focus({ preventScroll: true });
     }
 
+    const searchRestoreState = new WeakMap();
+
+    function clearSearchRestoreState(panel) {
+        const state = searchRestoreState.get(panel);
+        if (!state) {
+            return;
+        }
+
+        if (state.timeoutId) {
+            window.clearTimeout(state.timeoutId);
+        }
+
+        if (state.shell && state.onTransitionEnd) {
+            state.shell.removeEventListener("transitionend", state.onTransitionEnd);
+        }
+
+        searchRestoreState.delete(panel);
+    }
+
+    function restoreSearchMode(panel, shouldFocus) {
+        const searchToggle = panel.querySelector("[data-search-toggle]");
+        const compactToggle = panel.querySelector("[data-filter-compact-toggle]");
+        const firstFilterTrigger = panel.querySelector("[data-filter-trigger]");
+        const searchShell = panel.querySelector("[data-search-shell]");
+
+        clearSearchRestoreState(panel);
+        closeFilters();
+        panel.classList.add("is-filter-compact-open");
+        compactToggle?.setAttribute("aria-expanded", "true");
+        searchToggle?.setAttribute("aria-expanded", "false");
+
+        const finishRestore = () => {
+            clearSearchRestoreState(panel);
+            panel.classList.remove("is-filter-compact-open");
+            compactToggle?.setAttribute("aria-expanded", "false");
+
+            if (shouldFocus && firstFilterTrigger) {
+                window.setTimeout(() => firstFilterTrigger.focus({ preventScroll: true }), 40);
+            }
+        };
+
+        const onTransitionEnd = (event) => {
+            if (event.target !== searchShell || event.propertyName !== "max-width") {
+                return;
+            }
+            finishRestore();
+        };
+
+        const timeoutId = window.setTimeout(finishRestore, 320);
+        searchRestoreState.set(panel, {
+            shell: searchShell,
+            timeoutId,
+            onTransitionEnd,
+        });
+        searchShell?.addEventListener("transitionend", onTransitionEnd);
+
+        window.requestAnimationFrame(() => {
+            panel.classList.remove("is-search-active");
+        });
+    }
+
     function setSearchMode(panel, isActive, shouldFocus) {
         const searchToggle = panel.querySelector("[data-search-toggle]");
         const searchInput = panel.querySelector("[data-search-input]");
         const compactToggle = panel.querySelector("[data-filter-compact-toggle]");
         const firstFilterTrigger = panel.querySelector("[data-filter-trigger]");
 
-        panel.classList.toggle("is-search-active", isActive);
-        if (isActive) {
-            panel.classList.remove("is-filter-compact-open");
+        if (!isActive) {
+            if (!panel.classList.contains("is-search-active")) {
+                panel.classList.remove("is-filter-compact-open");
+                compactToggle?.setAttribute("aria-expanded", "false");
+                if (shouldFocus && firstFilterTrigger) {
+                    window.setTimeout(() => firstFilterTrigger.focus({ preventScroll: true }), 40);
+                }
+                return;
+            }
+
+            restoreSearchMode(panel, shouldFocus);
+            return;
         }
+
+        clearSearchRestoreState(panel);
+        panel.classList.toggle("is-search-active", isActive);
+        panel.classList.remove("is-filter-compact-open");
         searchToggle?.setAttribute("aria-expanded", isActive ? "true" : "false");
         compactToggle?.setAttribute("aria-expanded", "false");
         closeFilters();
@@ -204,10 +276,6 @@
         if (isActive && shouldFocus && searchInput) {
             window.setTimeout(() => searchInput.focus({ preventScroll: true }), 180);
             return;
-        }
-
-        if (!isActive && shouldFocus && firstFilterTrigger) {
-            window.setTimeout(() => firstFilterTrigger.focus({ preventScroll: true }), 180);
         }
     }
 

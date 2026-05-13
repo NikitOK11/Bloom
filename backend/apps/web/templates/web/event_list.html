@@ -19,62 +19,68 @@
     </section>
 
     <form class="filter-panel catalog-filter-panel{% if selected_filters.q %} is-search-active{% endif %}" method="get" role="search" aria-label="{% trans 'Фильтры и поиск событий' %}" data-filter-controls data-enhanced-filter-form>
-        <div class="catalog-control-bar">
-            <button class="catalog-filter-compact-toggle" type="button" aria-expanded="false" aria-controls="catalog-filter-drawer" data-filter-compact-toggle>
-                {% trans "Фильтры" %}
-            </button>
-            <div class="catalog-search-shell" data-search-shell>
-                <label class="sr-only" for="catalog-search-input">{% trans "Поиск" %}</label>
-                <input id="catalog-search-input" class="catalog-search-input" type="search" name="q" value="{{ selected_filters.q }}" placeholder="{% trans 'Название или организатор' %}" data-search-input>
-                <button class="catalog-search-submit" type="submit" aria-label="{% trans 'Найти событие' %}">
-                    <svg class="filter-search-icon" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M11 5a6 6 0 1 0 0 12a6 6 0 0 0 0-12Zm8 14-4.35-4.35" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
-                    </svg>
-                </button>
-            </div>
-        </div>
-
-        <div class="catalog-filter-drawer" id="catalog-filter-drawer" data-filter-drawer>
-            <div class="catalog-filter-fields-grid">
-                {% for filter in event_filter_configs %}
-                    <div class="catalog-filter-field" data-filter-field data-filter-name="{{ filter.name }}" data-filter-empty-label="{{ filter.all_label }}">
-                        <span class="catalog-filter-label" id="catalog-filter-{{ filter.name }}-label">{{ filter.label }}</span>
-                        <span data-filter-inputs>
-                            <input type="hidden" name="{{ filter.name }}" value="{{ filter.selected_value }}" data-filter-input>
-                        </span>
-                        <button
-                            class="catalog-filter-trigger"
-                            type="button"
-                            aria-haspopup="listbox"
-                            aria-expanded="false"
-                            aria-labelledby="catalog-filter-{{ filter.name }}-label catalog-filter-{{ filter.name }}-value"
-                            aria-controls="catalog-filter-{{ filter.name }}-menu"
-                            data-filter-trigger
-                        >
-                            <span id="catalog-filter-{{ filter.name }}-value" data-filter-value>{{ filter.selected_label }}</span>
-                            <span class="catalog-filter-chevron" aria-hidden="true"></span>
-                        </button>
-                        <div class="catalog-filter-menu" id="catalog-filter-{{ filter.name }}-menu" role="listbox" aria-labelledby="catalog-filter-{{ filter.name }}-label" data-filter-menu>
-                            <button class="catalog-filter-option" type="button" role="option" data-filter-option data-value="" aria-selected="{% if not filter.selected_value %}true{% else %}false{% endif %}">
-                                {{ filter.all_label }}
-                            </button>
-                            {% for option in filter.options %}
-                                <button class="catalog-filter-option" type="button" role="option" data-filter-option data-value="{{ option.value }}" aria-selected="{% if option.selected %}true{% else %}false{% endif %}">
-                                    <span>{{ option.label }}</span>
+        <div class="catalog-toolbar">
+            <div class="catalog-filter-drawer-shell" data-filter-drawer-shell>
+                <div class="catalog-filter-drawer" id="catalog-filter-drawer" data-filter-drawer>
+                    <div class="catalog-filter-fields-grid">
+                        {% for filter in event_filter_configs %}
+                            <div class="catalog-filter-field" data-filter-field data-filter-name="{{ filter.name }}" data-filter-empty-label="{{ filter.all_label }}">
+                                <span class="catalog-filter-label" id="catalog-filter-{{ filter.name }}-label">{{ filter.label }}</span>
+                                <span data-filter-inputs>
+                                    <input type="hidden" name="{{ filter.name }}" value="{{ filter.selected_value }}" data-filter-input>
+                                </span>
+                                <button
+                                    class="catalog-filter-trigger"
+                                    type="button"
+                                    aria-haspopup="listbox"
+                                    aria-expanded="false"
+                                    aria-labelledby="catalog-filter-{{ filter.name }}-label catalog-filter-{{ filter.name }}-value"
+                                    aria-controls="catalog-filter-{{ filter.name }}-menu"
+                                    data-filter-trigger
+                                >
+                                    <span id="catalog-filter-{{ filter.name }}-value" data-filter-value>{{ filter.selected_label }}</span>
+                                    <span class="catalog-filter-chevron" aria-hidden="true"></span>
                                 </button>
-                            {% endfor %}
-                        </div>
+                                <div class="catalog-filter-menu" id="catalog-filter-{{ filter.name }}-menu" role="listbox" aria-labelledby="catalog-filter-{{ filter.name }}-label" data-filter-menu>
+                                    <button class="catalog-filter-option" type="button" role="option" data-filter-option data-value="" aria-selected="{% if not filter.selected_value %}true{% else %}false{% endif %}">
+                                        {{ filter.all_label }}
+                                    </button>
+                                    {% for option in filter.options %}
+                                        <button class="catalog-filter-option" type="button" role="option" data-filter-option data-value="{{ option.value }}" aria-selected="{% if option.selected %}true{% else %}false{% endif %}">
+                                            <span>{{ option.label }}</span>
+                                        </button>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
                     </div>
-                {% endfor %}
+
+                    <div class="catalog-filter-actions">
+                        <button class="catalog-filter-submit" type="submit">{% trans "Показать" %}</button>
+                    </div>
+                </div>
             </div>
 
-            <div class="catalog-filter-actions">
-                <button class="catalog-filter-submit" type="submit">{% trans "Показать" %}</button>
-                <button class="catalog-search-toggle" type="button" aria-expanded="{% if selected_filters.q %}true{% else %}false{% endif %}" aria-controls="catalog-search-input" aria-label="{% trans 'Поиск' %}" data-search-toggle>
-                    <svg class="filter-search-icon" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M11 5a6 6 0 1 0 0 12a6 6 0 0 0 0-12Zm8 14-4.35-4.35" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
-                    </svg>
+            <div class="catalog-control-bar">
+                <button class="catalog-filter-compact-toggle" type="button" aria-expanded="false" aria-controls="catalog-filter-drawer" data-filter-compact-toggle>
+                    {% trans "Фильтры" %}
                 </button>
+                <div class="catalog-search-morph">
+                    <button class="catalog-search-toggle" type="button" aria-expanded="{% if selected_filters.q %}true{% else %}false{% endif %}" aria-controls="catalog-search-input" aria-label="{% trans 'Поиск' %}" data-search-toggle>
+                        <svg class="filter-search-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M11 5a6 6 0 1 0 0 12a6 6 0 0 0 0-12Zm8 14-4.35-4.35" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                        </svg>
+                    </button>
+                    <div class="catalog-search-shell" data-search-shell>
+                        <label class="sr-only" for="catalog-search-input">{% trans "Поиск" %}</label>
+                        <input id="catalog-search-input" class="catalog-search-input" type="search" name="q" value="{{ selected_filters.q }}" placeholder="{% trans 'Название или организатор' %}" data-search-input>
+                        <button class="catalog-search-submit" type="submit" aria-label="{% trans 'Найти событие' %}">
+                            <svg class="filter-search-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M11 5a6 6 0 1 0 0 12a6 6 0 0 0 0-12Zm8 14-4.35-4.35" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </form>
