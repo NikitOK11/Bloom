@@ -16,6 +16,18 @@ class SharedNavbarTests(TestCase):
         self.assertNotContains(response, ">Главная<", html=False)
         self.assertNotContains(response, ">Команды<", html=False)
 
+    def test_header_brand_is_text_only(self):
+        response = self.client.get(reverse("web:home"))
+
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode(response.charset or "utf-8")
+        header_start = html.index('<header class="site-header">')
+        footer_start = html.index('<footer class="site-footer">')
+        header_markup = html[header_start:footer_start]
+
+        self.assertIn('class="brand header-brand"', header_markup)
+        self.assertNotIn('class="brand-mark"', header_markup)
+
     def test_calendar_route_renders_safely(self):
         response = self.client.get(reverse("web:calendar"))
 

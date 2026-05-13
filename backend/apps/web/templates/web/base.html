@@ -7,15 +7,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{% trans "Bloom" %}{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'web/styles.css' %}?v=unified-event-filters-20260513">
-    <script src="{% static 'web/js/app.js' %}?v=unified-event-filters-20260513" defer></script>
+    <link rel="stylesheet" href="{% static 'web/styles.css' %}?v=flat-navbar-20260513">
+    <script src="{% static 'web/js/app.js' %}?v=flat-navbar-20260513" defer></script>
 </head>
 <body class="{% block body_class %}{% endblock %}">
     {% block site_header %}
     <header class="site-header">
         <nav class="nav-shell" aria-label="{% trans 'Основная навигация' %}">
-            <a class="brand" href="{% url 'web:home' %}" data-spa-link>
-                <span class="brand-mark" aria-hidden="true">B</span>
+            <a class="brand header-brand" href="{% url 'web:home' %}" data-spa-link>
                 <span>Bloom</span>
             </a>
 
