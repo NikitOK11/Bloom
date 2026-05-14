@@ -190,6 +190,7 @@
     function clearSearchRestoreState(panel) {
         const state = searchRestoreState.get(panel);
         if (!state) {
+            panel.classList.remove("is-restoring-filters");
             return;
         }
 
@@ -202,6 +203,7 @@
         }
 
         searchRestoreState.delete(panel);
+        panel.classList.remove("is-restoring-filters");
     }
 
     function restoreSearchMode(panel, shouldFocus) {
@@ -213,6 +215,7 @@
         clearSearchRestoreState(panel);
         closeFilters();
         panel.classList.add("is-filter-compact-open");
+        panel.classList.add("is-restoring-filters");
         compactToggle?.setAttribute("aria-expanded", "true");
         searchToggle?.setAttribute("aria-expanded", "false");
 

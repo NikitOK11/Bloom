@@ -912,6 +912,17 @@ h3 {
     align-self: end;
     justify-content: flex-end;
     min-width: 0;
+    transition: transform 220ms ease, align-self 220ms ease;
+}
+
+.catalog-filter-panel.is-search-active .catalog-control-bar {
+    align-self: center;
+    transform: translateY(-3px);
+}
+
+.catalog-filter-panel.is-filter-compact-open .catalog-control-bar {
+    align-self: end;
+    transform: translateY(0);
 }
 
 .catalog-filter-compact-toggle,
@@ -969,6 +980,16 @@ h3 {
     pointer-events: auto;
 }
 
+.catalog-filter-panel.is-restoring-filters .catalog-filter-compact-toggle {
+    max-width: 0;
+    min-width: 0;
+    padding-right: 0;
+    padding-left: 0;
+    border: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
 .catalog-filter-compact-toggle:hover,
 .catalog-filter-compact-toggle:focus-visible,
 .catalog-search-toggle:hover,
@@ -1002,8 +1023,8 @@ h3 {
 
 .catalog-search-shell {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 8px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
     align-items: center;
     max-width: 0;
     width: min(360px, calc(100vw - 168px));
@@ -1021,8 +1042,12 @@ h3 {
     visibility: visible;
     opacity: 1;
     pointer-events: auto;
-    transform: scaleX(1);
+    transform: translateY(-2px) scaleX(1);
     transition-delay: 0s, 0s, 0s, 0s;
+}
+
+.catalog-filter-panel.is-restoring-filters .catalog-search-shell {
+    transform: translateY(0) scaleX(0.96);
 }
 
 .catalog-filter-panel.is-filter-compact-open .catalog-search-shell {
@@ -1034,6 +1059,7 @@ h3 {
 }
 
 .catalog-search-input {
+    width: 100%;
     min-width: 0;
     min-height: 44px;
     padding: 10px 14px;

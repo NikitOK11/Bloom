@@ -188,7 +188,7 @@ class EventCatalogTests(TestCase):
         self.assertContains(response, "data-filter-compact-toggle", html=False)
         self.assertContains(response, 'id="catalog-search-input"', html=False)
         self.assertContains(response, "data-search-toggle", html=False)
-        self.assertContains(response, 'class="filter-search-icon"', count=2, html=False)
+        self.assertContains(response, 'class="filter-search-icon"', count=1, html=False)
 
     def test_event_catalog_renders_search_mode_when_query_present(self):
         response = self.client.get(reverse("web:event-list"), {"q": "мат"})
