@@ -1,0 +1,112 @@
+{% extends base_template|default:"web/base.html" %}
+{% load web_labels %}
+
+{% block title %}О Bloom{% endblock %}
+
+{% block content %}
+<section class="catalog-hero glass-card inner-glow">
+    <div class="hero-content">
+        <p class="hero-kicker">О Bloom</p>
+        <h1 class="page-title">Bloom превращает разрозненные дедлайны и события в понятную академическую систему.</h1>
+        <p class="page-copy">
+            Мы проектируем интерфейс для студентов, которым нужен один рабочий слой для поиска возможностей, оценки нагрузки и движения по этапам без лишнего информационного шума.
+        </p>
+    </div>
+
+    <div class="catalog-hero-card glass-card">
+        <div>
+            <span class="label-kicker">Подход</span>
+            <strong>Academic Tech</strong>
+            <p class="muted">Чистая и строгая визуальная система с акцентом на данные, контраст и глубину.</p>
+        </div>
+        <div>
+            <span class="label-kicker">Результат</span>
+            <strong>Одна точка обзора</strong>
+            <p class="muted">Каталог, календарь, дедлайны и командный контекст собираются в единый маршрут.</p>
+        </div>
+    </div>
+</section>
+
+<section class="page-section feature-grid">
+    <article class="glass-card quick-link-card">
+        <p class="hero-kicker">1</p>
+        <h2>Находить релевантные события быстрее</h2>
+        <p class="muted">Фильтры и карточки помогают быстро отделить нужные форматы от всего лишнего и не тонуть в списках.</p>
+    </article>
+
+    <article class="glass-card quick-link-card">
+        <p class="hero-kicker">2</p>
+        <h2>Держать сезон в календарном масштабе</h2>
+        <p class="muted">Система должна показывать не только список, но и временную картину: где регистрация закрывается, где начинается этап, где накапливается риск.</p>
+    </article>
+
+    <article class="glass-card quick-link-card">
+        <p class="hero-kicker">3</p>
+        <h2>Не терять командные сценарии</h2>
+        <p class="muted">Детальные страницы и командные потоки остаются частью общего интерфейса, а не отдельным несогласованным миром.</p>
+    </article>
+</section>
+
+<section class="page-section dark-band">
+    <div class="stack">
+        <p class="eyebrow">Что делает платформа</p>
+        <h2>Bloom помогает увидеть академический маршрут как продукт, а не как набор случайных ссылок.</h2>
+        <p class="page-copy">Пользователь должен быстро понять, куда идти сейчас, какой дедлайн следующий и какие страницы действительно нужны для принятия решения.</p>
+    </div>
+
+    <div class="stat-grid">
+        <div class="stat-card">
+            <strong>Каталог</strong>
+            <span class="muted">Собирает олимпиады, хакатоны и кейс-чемпионаты в одном фильтруемом слое.</span>
+        </div>
+        <div class="stat-card">
+            <strong>Календарь</strong>
+            <span class="muted">Подсвечивает ключевые даты и помогает распределять внимание по сезону.</span>
+        </div>
+        <div class="stat-card">
+            <strong>Детали</strong>
+            <span class="muted">Не прячут официальный URL, этапы, командные возможности и контекст события.</span>
+        </div>
+        <div class="stat-card">
+            <strong>Согласованность</strong>
+            <span class="muted">Один навбар, одна система карточек и один визуальный ритм для всех публичных экранов.</span>
+        </div>
+    </div>
+</section>
+
+<section class="page-section glass-card inner-glow">
+    <div class="results-header">
+        <div>
+            <p class="hero-kicker">Примеры из каталога</p>
+            <h2>События, с которыми работает платформа</h2>
+        </div>
+    </div>
+
+    {% if featured_events %}
+        <div class="catalog-card-grid">
+            {% for event in featured_events %}
+                <article class="catalog-card">
+                    <div class="catalog-card-top">
+                        <span class="badge badge-accent">{{ event.event_type_code|event_type_label }}</span>
+                        {% if event.registration_deadline %}
+                            <span class="badge badge-muted">{{ event.registration_deadline|date:"d.m.Y" }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="catalog-card-section">
+                        <h3 class="catalog-card-title">{{ event.name|default:event.title }}</h3>
+                        <p class="catalog-card-copy">{{ event.short_description|default:"Подробная карточка покажет описание, этапы и режим участия." }}</p>
+                    </div>
+                    <div class="catalog-card-actions">
+                        <a class="btn btn-secondary" href="{% url 'web:event-detail' event.pk %}" data-spa-link>Открыть событие</a>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <h2>Каталог пока пуст</h2>
+            <p>Как только появятся реальные события, эта секция станет витриной для текущих примеров.</p>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

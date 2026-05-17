@@ -48,6 +48,7 @@ class EventTypeCode(models.TextChoices):
     OLYMPIAD = "olympiad", "Olympiad"
     HACKATHON = "hackathon", "Hackathon"
     CASE_CHAMPIONSHIP = "case_championship", "Case championship"
+    COMPETITION = "competition", "Competition"
 
 
 class EventLevelCode(models.TextChoices):

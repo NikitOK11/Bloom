@@ -98,6 +98,7 @@
             }
             field.classList.remove("is-active");
             field.querySelector("[data-filter-trigger]")?.setAttribute("aria-expanded", "false");
+            resetFilterStack(field);
         });
 
         document
@@ -119,7 +120,9 @@
         root?.classList.toggle("filter-focus-active", isActive);
 
         if (isActive) {
+            resetFilterStack(field);
             window.setTimeout(() => {
+                syncFilterStackHeights(field);
                 field.scrollIntoView({ behavior: "smooth", block: "nearest" });
             }, 50);
         }
@@ -290,6 +293,123 @@
         setSearchMode(panel, false, true);
     }
 
+    function syncFilterStackHeight(stack) {
+        if (!stack) {
+            return;
+        }
+
+        const activeIndex = Number.parseInt(stack.dataset.activePage || "0", 10);
+        const activePage = stack.querySelector(`[data-filter-stack-page="${activeIndex}"]`);
+        if (!activePage) {
+            return;
+        }
+
+        stack.style.height = `${activePage.scrollHeight}px`;
+    }
+
+    function syncFilterStackHeights(scope) {
+        scope?.querySelectorAll("[data-filter-stack]").forEach((stack) => {
+            syncFilterStackHeight(stack);
+        });
+    }
+
+    function setFilterStackState(stack, pageIndex) {
+        const toggles = stack?.querySelectorAll("[data-filter-group-toggle]");
+        if (!stack) {
+            return;
+        }
+
+        const pageCount = Number.parseInt(stack.dataset.filterStackPages || "1", 10);
+        stack.style.setProperty("--filter-stack-pages", String(pageCount > 0 ? pageCount : 1));
+        const normalizedIndex = Number.isFinite(pageIndex) && pageIndex > 0 ? pageIndex : 0;
+        stack.style.setProperty("--filter-stack-page-index", String(normalizedIndex));
+        stack.dataset.activePage = String(normalizedIndex);
+        toggles?.forEach((toggle) => {
+            const target = Number.parseInt(toggle.dataset.filterGroupTarget || "0", 10);
+            toggle.setAttribute("aria-expanded", target === normalizedIndex ? "true" : "false");
+        });
+        window.requestAnimationFrame(() => syncFilterStackHeight(stack));
+    }
+
+    function resetFilterStack(scope) {
+        scope?.querySelectorAll("[data-filter-stack]").forEach((stack) => {
+            setFilterStackState(stack, 0);
+        });
+    }
+
+    function openFilterGroup(button) {
+        const stack = button.closest("[data-filter-stack]");
+        if (!stack) {
+            return;
+        }
+
+        const targetIndex = Number.parseInt(button.dataset.filterGroupTarget || "0", 10);
+        setFilterStackState(stack, targetIndex);
+    }
+
+    function closeFilterGroup(button) {
+        const stack = button.closest("[data-filter-stack]");
+        if (!stack) {
+            return;
+        }
+
+        const targetIndex = Number.parseInt(button.dataset.filterGroupBackTarget || "0", 10);
+        setFilterStackState(stack, targetIndex);
+    }
+
+    function replaceEventResults(html) {
+        const parser = new DOMParser();
+        const nextDocument = parser.parseFromString(html, "text/html");
+        const currentPage = content.querySelector(".event-catalog-page");
+        const nextPage = nextDocument.querySelector(".event-catalog-page");
+        const currentResults = currentPage?.querySelector("[data-event-results]");
+        const nextResults = nextPage?.querySelector("[data-event-results]");
+        const currentPanel = currentPage?.querySelector("[data-enhanced-filter-form]");
+        const nextPanel = nextPage?.querySelector("[data-enhanced-filter-form]");
+
+        if (!currentPage || !nextPage || !currentResults || !nextResults || !currentPanel || !nextPanel) {
+            return false;
+        }
+
+        currentPanel.replaceWith(nextPanel);
+        currentResults.replaceWith(nextResults);
+        return true;
+    }
+
+    async function loadFilterResults(url, options) {
+        const shouldPush = options?.push !== false;
+        setLoading(true);
+
+        try {
+            const response = await fetch(url.href, {
+                headers: {
+                    "X-Partial-Request": "true",
+                    "X-Requested-With": "fetch",
+                },
+                credentials: "same-origin",
+            });
+
+            if (!response.ok) {
+                throw new Error(`Unexpected response ${response.status}`);
+            }
+
+            const html = await response.text();
+            if (!replaceEventResults(html)) {
+                throw new Error("Unable to replace event results");
+            }
+
+            closeFilters();
+            if (shouldPush) {
+                window.history.pushState({ partial: true, filterResultsOnly: true }, "", url.href);
+            }
+        } catch (_) {
+            window.location.href = url.href;
+            return;
+        }
+
+        setLoading(false);
+    }
+
     async function loadPage(url, options) {
         const shouldPush = options?.push !== false;
         setLoading(true);
@@ -361,8 +481,34 @@
             return;
         }
 
+        const filterGroupToggle = event.target.closest("[data-filter-group-toggle]");
+        if (filterGroupToggle) {
+            event.preventDefault();
+            openFilterGroup(filterGroupToggle);
+            return;
+        }
+
+        const filterGroupBack = event.target.closest("[data-filter-group-back]");
+        if (filterGroupBack) {
+            event.preventDefault();
+            closeFilterGroup(filterGroupBack);
+            return;
+        }
+
         if (!event.target.closest("[data-filter-field]")) {
             closeFilters();
+        }
+
+        const filterUpdateLink = event.target.closest("[data-filter-update-link]");
+        if (filterUpdateLink) {
+            const filterUrl = sameOriginUrl(filterUpdateLink.href);
+            if (!filterUrl) {
+                return;
+            }
+
+            event.preventDefault();
+            loadFilterResults(filterUrl);
+            return;
         }
 
         const link = event.target.closest("a");
@@ -375,6 +521,31 @@
         if (url) {
             loadPage(url);
         }
+    });
+
+    document.addEventListener("submit", (event) => {
+        const form = event.target.closest("[data-enhanced-filter-form]");
+        if (!form) {
+            return;
+        }
+
+        const url = sameOriginUrl(form.getAttribute("action") || window.location.href);
+        if (!url) {
+            return;
+        }
+
+        event.preventDefault();
+        const formData = new FormData(form);
+        const query = new URLSearchParams();
+        for (const [key, value] of formData.entries()) {
+            const normalized = typeof value === "string" ? value.trim() : "";
+            if (!normalized) {
+                continue;
+            }
+            query.append(key, normalized);
+        }
+        url.search = query.toString();
+        loadFilterResults(url);
     });
 
     document.addEventListener("keydown", (event) => {
@@ -402,6 +573,11 @@
     window.addEventListener("popstate", () => {
         const url = sameOriginUrl(window.location.href);
         if (url) {
+            const currentEventPage = content.querySelector(".event-catalog-page");
+            if (currentEventPage && url.pathname.startsWith("/events/")) {
+                loadFilterResults(url, { push: false });
+                return;
+            }
             loadPage(url, { push: false });
         }
     });

@@ -11,39 +11,77 @@ def _humanize_code(value: str) -> str:
 @register.filter
 def event_type_label(value):
     labels = {
-        "olympiad": _("Олимпиада"),
-        "hackathon": _("Хакатон"),
-        "case_championship": _("Кейс-чемпионат"),
-        "case-championship": _("Кейс-чемпионат"),
+        "olympiad": _("??????????????????"),
+        "hackathon": _("??????????????"),
+        "case_championship": _("????????-??????????????????"),
+        "case-championship": _("????????-??????????????????"),
+        "competition": _("??????????????"),
     }
-    return labels.get(value, _humanize_code(value) if value else _("Не указано"))
+    return labels.get(value, _humanize_code(value) if value else _("???? ??????????????"))
 
 
 @register.filter
 def event_level_label(value):
     labels = {
-        "international": _("Международный"),
-        "vsosh": _("ВсОШ"),
-        "level_1": _("Уровень 1"),
-        "level-1": _("Уровень 1"),
-        "level_2": _("Уровень 2"),
-        "level-2": _("Уровень 2"),
-        "level_3": _("Уровень 3"),
-        "level-3": _("Уровень 3"),
+        "international": _("??????????????????????????"),
+        "vsosh": _("????????"),
+        "level_1": _("1 ??????????????"),
+        "level-1": _("1 ??????????????"),
+        "level_2": _("2 ??????????????"),
+        "level-2": _("2 ??????????????"),
+        "level_3": _("3 ??????????????"),
+        "level-3": _("3 ??????????????"),
     }
-    return labels.get(value, _humanize_code(value) if value else _("Не указано"))
+    return labels.get(value, _humanize_code(value) if value else _("???? ??????????????"))
 
 
 @register.filter
 def participation_mode_label(value):
     labels = {
-        "individual": _("Индивидуально"),
-        "team": _("Командно"),
-        "hybrid": _("Индивидуально или командно"),
+        "individual": _("????????????????????????????"),
+        "team": _("??????????????????"),
+        "hybrid": _("???????????????????????????? + ??????????????????"),
     }
-    return labels.get(value, _humanize_code(value) if value else _("Не указано"))
+    return labels.get(value, _humanize_code(value) if value else _("???? ??????????????"))
 
 
 @register.filter
 def profile_label(value):
-    return _humanize_code(value) if value else _("Не указано")
+    labels = {
+        "math": _("Математика"),
+        "financial_literacy": _("Финансовая Грамотность"),
+        "design": _("Дизайн"),
+        "engineering_sciences": _("Инженерные Науки"),
+        "business_fundamentals": _("Основы Бизнеса"),
+        "international_relations": _("Международные Отношения"),
+        "data_analysis": _("Анализ Данных"),
+        "physics": _("Физика"),
+        "geography": _("География"),
+        "biology": _("Биология"),
+        "chemistry": _("Химия"),
+        "astronomy": _("Астрономия"),
+        "artificial_intelligence": _("Искусственный Интеллект"),
+        "olymp_prog": _("Ол. Прога"),
+        "infosec": _("Инфобез"),
+        "robotics": _("Робототехника"),
+        "english": _("Английский Язык"),
+        "spanish": _("Испанский Язык"),
+        "french": _("Французский Язык"),
+        "german": _("Немецкий Язык"),
+        "italian": _("Итальянский Язык"),
+        "chinese": _("Китайский Язык"),
+        "history": _("История"),
+        "art_history": _("История Искусств"),
+        "cultural_studies": _("Культурология"),
+        "oriental_studies": _("Востоковедение"),
+        "russian_language": _("Русский Язык"),
+        "philology": _("Филология"),
+        "eastern_languages": _("Восточные Языки"),
+        "social_studies": _("Обществознание"),
+        "economics": _("Экономика"),
+        "philosophy": _("Философия"),
+        "psychology": _("Психология"),
+        "law": _("Право"),
+        "journalism": _("Журналистика"),
+    }
+    return labels.get(value, _humanize_code(value) if value else _("Не указано"))

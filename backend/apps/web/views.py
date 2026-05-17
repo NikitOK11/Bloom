@@ -100,28 +100,95 @@ def _code_label(value: str) -> str:
     return value.replace("_", " ").title()
 
 
+def _event_profile_code_choices():
+    return [
+        ("math", _("Математика")),
+        ("financial_literacy", _("Финансовая Грамотность")),
+        ("design", _("Дизайн")),
+        ("engineering_sciences", _("Инженерные Науки")),
+        ("business_fundamentals", _("Основы Бизнеса")),
+        ("international_relations", _("Международные Отношения")),
+        ("data_analysis", _("Анализ Данных")),
+        ("physics", _("Физика")),
+        ("geography", _("География")),
+        ("biology", _("Биология")),
+        ("chemistry", _("Химия")),
+        ("astronomy", _("Астрономия")),
+        ("artificial_intelligence", _("Искусственный Интеллект")),
+        ("olymp_prog", _("Ол. Прога")),
+        ("infosec", _("Инфобез")),
+        ("robotics", _("Робототехника")),
+        ("english", _("Английский Язык")),
+        ("spanish", _("Испанский Язык")),
+        ("french", _("Французский Язык")),
+        ("german", _("Немецкий Язык")),
+        ("italian", _("Итальянский Язык")),
+        ("chinese", _("Китайский Язык")),
+        ("history", _("История")),
+        ("art_history", _("История Искусств")),
+        ("cultural_studies", _("Культурология")),
+        ("oriental_studies", _("Востоковедение")),
+        ("russian_language", _("Русский Язык")),
+        ("philology", _("Филология")),
+        ("eastern_languages", _("Восточные Языки")),
+        ("social_studies", _("Обществознание")),
+        ("economics", _("Экономика")),
+        ("philosophy", _("Философия")),
+        ("psychology", _("Психология")),
+        ("law", _("Право")),
+        ("journalism", _("Журналистика")),
+    ]
+
+
+def _natural_science_profile_codes():
+    return ["physics", "geography", "biology", "chemistry", "astronomy"]
+
+
+def _computer_science_profile_codes():
+    return ["artificial_intelligence", "olymp_prog", "infosec", "robotics"]
+
+
+def _language_profile_codes():
+    return ["english", "spanish", "french", "german", "italian", "chinese"]
+
+
+
+
+def _humanities_history_profile_codes():
+    return ["history", "art_history", "cultural_studies", "oriental_studies"]
+
+
+def _humanities_language_profile_codes():
+    return ["russian_language", "philology", "eastern_languages"]
+
+
+def _humanities_society_profile_codes():
+    return ["social_studies", "economics", "philosophy", "psychology", "law", "journalism"]
+
+
 def _event_type_code_choices():
     return [
         (EventTypeCode.OLYMPIAD, _("Олимпиада")),
+        (EventTypeCode.CASE_CHAMPIONSHIP, _("Кейс-Чемпионат")),
         (EventTypeCode.HACKATHON, _("Хакатон")),
-        (EventTypeCode.CASE_CHAMPIONSHIP, _("Кейс-чемпионат")),
+        (EventTypeCode.COMPETITION, _("Конкурс")),
     ]
 
 
 def _event_level_code_choices():
     return [
-        (EventLevelCode.INTERNATIONAL, _("Международный")),
-        (EventLevelCode.VSOSH, _("ВсОШ")),
-        (EventLevelCode.LEVEL_1, _("Уровень 1")),
-        (EventLevelCode.LEVEL_2, _("Уровень 2")),
-        (EventLevelCode.LEVEL_3, _("Уровень 3")),
+        (EventLevelCode.INTERNATIONAL, _("Международная")),
+        (EventLevelCode.VSOSH, _("ВСОШ")),
+        (EventLevelCode.LEVEL_1, _("1 уровень")),
+        (EventLevelCode.LEVEL_2, _("2 уровень")),
+        (EventLevelCode.LEVEL_3, _("3 уровень")),
     ]
 
 
 def _olympiad_level_code_choices():
     return [
         (EventLevelCode.INTERNATIONAL, _("Международная")),
-        (EventLevelCode.VSOSH, _("ВсОШ")),
+        (EventLevelCode.VSOSH, _("ВСОШ")),
         (EventLevelCode.LEVEL_1, _("1 уровень")),
         (EventLevelCode.LEVEL_2, _("2 уровень")),
         (EventLevelCode.LEVEL_3, _("3 уровень")),
@@ -130,9 +197,9 @@ def _olympiad_level_code_choices():
 
 def _participation_mode_choices():
     return [
-        (EventParticipationMode.INDIVIDUAL, _("Индивидуально")),
-        (EventParticipationMode.TEAM, _("Командно")),
-        (EventParticipationMode.HYBRID, _("Индивидуально или командно")),
+        (EventParticipationMode.INDIVIDUAL, _("Индивидуальный")),
+        (EventParticipationMode.TEAM, _("Командный")),
+        (EventParticipationMode.HYBRID, _("Индивидуальный + Командный")),
     ]
 
 
@@ -140,7 +207,7 @@ def _olympiad_participation_mode_choices():
     return [
         (EventParticipationMode.INDIVIDUAL, _("Индивидуальный")),
         (EventParticipationMode.TEAM, _("Командный")),
-        (EventParticipationMode.HYBRID, _("Индивидуальный + командный")),
+        (EventParticipationMode.HYBRID, _("Индивидуальный + Командный")),
     ]
 
 
@@ -163,6 +230,18 @@ def _query_filter_value(request: HttpRequest, primary_name: str, legacy_name: st
     if value or legacy_name is None:
         return value
     return request.GET.get(legacy_name, "").strip()
+
+
+def _query_filter_values(
+    request: HttpRequest,
+    primary_name: str,
+    valid_values,
+    legacy_name: str | None = None,
+) -> list[str]:
+    selected_values = _valid_query_values(request, primary_name, valid_values)
+    if selected_values or legacy_name is None:
+        return selected_values
+    return _valid_query_values(request, legacy_name, valid_values)
 
 
 def _selected_choice_label(choices, selected_value: str, default_label: str) -> str:
@@ -295,21 +374,37 @@ class EventListView(PartialTemplateMixin, ListView):
             .prefetch_related("profiles")
         )
 
-        profile_code = self.request.GET.get("profile_code", "").strip()
-        if profile_code:
-            queryset = queryset.filter(profile_code=profile_code)
+        selected_profiles = _query_filter_values(
+            self.request,
+            "profile_code",
+            [value for value, _label in _event_profile_code_choices()],
+        )
+        if selected_profiles:
+            queryset = queryset.filter(profile_code__in=selected_profiles)
 
-        event_type_code = self.request.GET.get("event_type_code", "").strip()
-        if event_type_code in EventTypeCode.values:
-            queryset = queryset.filter(event_type_code=event_type_code)
+        selected_event_types = _query_filter_values(
+            self.request,
+            "event_type_code",
+            EventTypeCode.values,
+        )
+        if selected_event_types:
+            queryset = queryset.filter(event_type_code__in=selected_event_types)
 
-        level_code = self.request.GET.get("level_code", "").strip()
-        if level_code in EventLevelCode.values:
-            queryset = queryset.filter(level_code=level_code)
+        selected_levels = _query_filter_values(
+            self.request,
+            "level_code",
+            EventLevelCode.values,
+        )
+        if selected_levels:
+            queryset = queryset.filter(level_code__in=selected_levels)
 
-        participation_mode = self.request.GET.get("participation_mode", "").strip()
-        if participation_mode in EventParticipationMode.values:
-            queryset = queryset.filter(participation_mode=participation_mode)
+        selected_participation_modes = _query_filter_values(
+            self.request,
+            "participation_mode",
+            EventParticipationMode.values,
+        )
+        if selected_participation_modes:
+            queryset = queryset.filter(participation_mode__in=selected_participation_modes)
 
         search_query = self.request.GET.get("q", "").strip()
         if search_query:
@@ -325,101 +420,223 @@ class EventListView(PartialTemplateMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        profile_codes = (
-            Event.objects.filter(is_active=True)
-            .exclude(profile_code__isnull=True)
-            .exclude(profile_code="")
-            .order_by("profile_code")
-            .values_list("profile_code", flat=True)
-            .distinct()
-        )
-        profile_code_choices = [
-            (profile_code, _code_label(profile_code)) for profile_code in profile_codes
+        profile_code_choices = _event_profile_code_choices()
+        natural_science_profile_codes = _natural_science_profile_codes()
+        computer_science_profile_codes = _computer_science_profile_codes()
+        language_profile_codes = _language_profile_codes()
+        humanities_history_profile_codes = _humanities_history_profile_codes()
+        humanities_language_profile_codes = _humanities_language_profile_codes()
+        humanities_society_profile_codes = _humanities_society_profile_codes()
+        natural_science_profile_choices = [
+            choice for choice in profile_code_choices if choice[0] in natural_science_profile_codes
         ]
+        computer_science_profile_choices = [
+            choice for choice in profile_code_choices if choice[0] in computer_science_profile_codes
+        ]
+        language_profile_choices = [
+            choice for choice in profile_code_choices if choice[0] in language_profile_codes
+        ]
+        humanities_history_profile_choices = [
+            choice for choice in profile_code_choices if choice[0] in humanities_history_profile_codes
+        ]
+        humanities_language_profile_choices = [
+            choice for choice in profile_code_choices if choice[0] in humanities_language_profile_codes
+        ]
+        humanities_society_profile_choices = [
+            choice for choice in profile_code_choices if choice[0] in humanities_society_profile_codes
+        ]
+        grouped_profile_codes = set(
+            natural_science_profile_codes
+            + computer_science_profile_codes
+            + language_profile_codes
+            + humanities_history_profile_codes
+            + humanities_language_profile_codes
+            + humanities_society_profile_codes
+        )
+        primary_profile_choices = [
+            choice for choice in profile_code_choices if choice[0] not in grouped_profile_codes
+        ]
+        valid_profile_codes = [value for value, _label in profile_code_choices]
         event_type_code_choices = _event_type_code_choices()
         level_code_choices = _event_level_code_choices()
         participation_mode_choices = _participation_mode_choices()
-        selected_profile = self.request.GET.get("profile_code", "").strip()
-        selected_event_type = self.request.GET.get("event_type_code", "").strip()
-        selected_level = self.request.GET.get("level_code", "").strip()
-        selected_participation_mode = self.request.GET.get("participation_mode", "").strip()
+        selected_profiles = _query_filter_values(
+            self.request,
+            "profile_code",
+            valid_profile_codes,
+        )
+        selected_event_types = _query_filter_values(
+            self.request,
+            "event_type_code",
+            EventTypeCode.values,
+        )
+        selected_levels = _query_filter_values(
+            self.request,
+            "level_code",
+            EventLevelCode.values,
+        )
+        selected_participation_modes = _query_filter_values(
+            self.request,
+            "participation_mode",
+            EventParticipationMode.values,
+        )
         selected_search_query = self.request.GET.get("q", "").strip()
-        if selected_event_type not in EventTypeCode.values:
-            selected_event_type = ""
-        if selected_level not in EventLevelCode.values:
-            selected_level = ""
-        if selected_participation_mode not in EventParticipationMode.values:
-            selected_participation_mode = ""
 
-        selected_profile_label = _selected_choice_label(
-            profile_code_choices,
-            selected_profile,
-            _code_label(selected_profile) if selected_profile else _("Все профили"),
-        )
-        selected_event_type_label = _selected_choice_label(
+        selected_profile_labels = _selected_choice_labels(profile_code_choices, selected_profiles)
+        if not selected_profiles:
+            selected_profile_summary = _("Все профили")
+        elif len(selected_profiles) == 1:
+            selected_profile_summary = selected_profile_labels[0]
+        else:
+            selected_profile_summary = _("%(count)s выбрано") % {"count": len(selected_profiles)}
+
+        selected_event_type_labels = _selected_choice_labels(
             event_type_code_choices,
-            selected_event_type,
-            _("Все типы"),
+            selected_event_types,
         )
-        selected_level_label = _selected_choice_label(
-            level_code_choices,
-            selected_level,
-            _("Все уровни"),
-        )
-        selected_participation_mode_label = _selected_choice_label(
+        if not selected_event_types:
+            selected_event_type_summary = _("Все типы")
+        elif len(selected_event_types) == 1:
+            selected_event_type_summary = selected_event_type_labels[0]
+        else:
+            selected_event_type_summary = _("%(count)s выбрано") % {"count": len(selected_event_types)}
+
+        selected_level_labels = _selected_choice_labels(level_code_choices, selected_levels)
+        if not selected_levels:
+            selected_level_summary = _("Все уровни")
+        elif len(selected_levels) == 1:
+            selected_level_summary = selected_level_labels[0]
+        else:
+            selected_level_summary = _("%(count)s выбрано") % {"count": len(selected_levels)}
+
+        selected_participation_mode_labels = _selected_choice_labels(
             participation_mode_choices,
-            selected_participation_mode,
-            _("Любой формат"),
+            selected_participation_modes,
         )
+        if not selected_participation_modes:
+            selected_participation_mode_summary = _("Любой формат")
+        elif len(selected_participation_modes) == 1:
+            selected_participation_mode_summary = selected_participation_mode_labels[0]
+        else:
+            selected_participation_mode_summary = _("%(count)s выбрано") % {
+                "count": len(selected_participation_modes)
+            }
+
         applied_filter_chips = [
             chip
             for chip in [
-                _applied_filter_chip(
-                    self.request,
-                    name="profile_code",
-                    label=_("Профиль"),
-                    value=selected_profile,
-                    value_label=selected_profile_label,
-                    remove_keys=["profile_code"],
-                ),
-                _applied_filter_chip(
-                    self.request,
-                    name="event_type_code",
-                    label=_("Тип события"),
-                    value=selected_event_type,
-                    value_label=selected_event_type_label,
-                    remove_keys=["event_type_code"],
-                ),
-                _applied_filter_chip(
-                    self.request,
-                    name="level_code",
-                    label=_("Уровень"),
-                    value=selected_level,
-                    value_label=selected_level_label,
-                    remove_keys=["level_code"],
-                ),
-                _applied_filter_chip(
-                    self.request,
-                    name="participation_mode",
-                    label=_("Формат"),
-                    value=selected_participation_mode,
-                    value_label=selected_participation_mode_label,
-                    remove_keys=["participation_mode"],
-                ),
+                *[
+                    _applied_filter_chip(
+                        self.request,
+                        name="profile_code",
+                        label=_("Профиль"),
+                        value=selected_profile,
+                        value_label=selected_profile_label,
+                        remove_url=_query_without_value(
+                            self.request,
+                            "profile_code",
+                            selected_profile,
+                        ),
+                    )
+                    for selected_profile, selected_profile_label in zip(
+                        selected_profiles,
+                        selected_profile_labels,
+                    )
+                ],
+                *[
+                    _applied_filter_chip(
+                        self.request,
+                        name="event_type_code",
+                        label=_("Тип события"),
+                        value=selected_event_type,
+                        value_label=selected_event_type_label,
+                        remove_url=_query_without_value(
+                            self.request,
+                            "event_type_code",
+                            selected_event_type,
+                        ),
+                    )
+                    for selected_event_type, selected_event_type_label in zip(
+                        selected_event_types,
+                        selected_event_type_labels,
+                    )
+                ],
+                *[
+                    _applied_filter_chip(
+                        self.request,
+                        name="level_code",
+                        label=_("Уровень"),
+                        value=selected_level,
+                        value_label=selected_level_label,
+                        remove_url=_query_without_value(
+                            self.request,
+                            "level_code",
+                            selected_level,
+                        ),
+                    )
+                    for selected_level, selected_level_label in zip(
+                        selected_levels,
+                        selected_level_labels,
+                    )
+                ],
+                *[
+                    _applied_filter_chip(
+                        self.request,
+                        name="participation_mode",
+                        label=_("Формат"),
+                        value=selected_participation_mode,
+                        value_label=selected_participation_mode_label,
+                        remove_url=_query_without_value(
+                            self.request,
+                            "participation_mode",
+                            selected_participation_mode,
+                        ),
+                    )
+                    for selected_participation_mode, selected_participation_mode_label in zip(
+                        selected_participation_modes,
+                        selected_participation_mode_labels,
+                    )
+                ],
             ]
             if chip is not None
         ]
         context.update(
             {
                 "profile_code_choices": profile_code_choices,
+                "primary_profile_choices": primary_profile_choices,
+                "natural_science_profile_choices": natural_science_profile_choices,
+                "computer_science_profile_choices": computer_science_profile_choices,
+                "language_profile_choices": language_profile_choices,
+                "humanities_history_profile_choices": humanities_history_profile_choices,
+                "humanities_language_profile_choices": humanities_language_profile_choices,
+                "humanities_society_profile_choices": humanities_society_profile_choices,
+                "natural_science_group_label": _("\u0415\u0441\u0442\u0435\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u0435 \u041d\u0430\u0443\u043a\u0438"),
+                "computer_science_group_label": _("\u0418\u043d\u0444\u043e\u0440\u043c\u0430\u0442\u0438\u043a\u0430"),
+                "language_group_label": _("\u0418\u043d\u043e\u0441\u0442\u0440\u0430\u043d\u043d\u044b\u0435 \u044f\u0437\u044b\u043a\u0438"),
+                "humanities_group_label": _("\u0413\u0443\u043c\u0430\u043d\u0438\u0442\u0430\u0440\u043d\u044b\u0435 \u043d\u0430\u0443\u043a\u0438"),
+                "humanities_history_group_label": _("\u0418\u0441\u0442\u043e\u0440\u0438\u044f \u0438 \u041a\u0443\u043b\u044c\u0442\u0443\u0440\u0430"),
+                "humanities_language_group_label": _("\u041b\u0438\u043d\u0433\u0432\u0438\u0441\u0442\u0438\u043a\u0430 \u0438 \u042f\u0437\u044b\u043a\u0438"),
+                "humanities_society_group_label": _("\u041e\u0431\u0449\u0435\u0441\u0442\u0432\u043e \u0438 \u0427\u0435\u043b\u043e\u0432\u0435\u043a"),
+                "computer_science_profile_choices": computer_science_profile_choices,
+                "language_profile_choices": language_profile_choices,
+                "humanities_history_profile_choices": humanities_history_profile_choices,
+                "humanities_language_profile_choices": humanities_language_profile_choices,
+                "humanities_society_profile_choices": humanities_society_profile_choices,
+                "natural_science_group_label": _("\u0415\u0441\u0442\u0435\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u0435 \u041d\u0430\u0443\u043a\u0438"),
+                "computer_science_group_label": _("\u0418\u043d\u0444\u043e\u0440\u043c\u0430\u0442\u0438\u043a\u0430"),
+                "language_group_label": _("\u0418\u043d\u043e\u0441\u0442\u0440\u0430\u043d\u043d\u044b\u0435 \u044f\u0437\u044b\u043a\u0438"),
+                "humanities_group_label": _("\u0413\u0443\u043c\u0430\u043d\u0438\u0442\u0430\u0440\u043d\u044b\u0435 \u043d\u0430\u0443\u043a\u0438"),
+                "humanities_history_group_label": _("\u0418\u0441\u0442\u043e\u0440\u0438\u044f \u0438 \u041a\u0443\u043b\u044c\u0442\u0443\u0440\u0430"),
+                "humanities_language_group_label": _("\u041b\u0438\u043d\u0433\u0432\u0438\u0441\u0442\u0438\u043a\u0430 \u0438 \u042f\u0437\u044b\u043a\u0438"),
+                "humanities_society_group_label": _("\u041e\u0431\u0449\u0435\u0441\u0442\u0432\u043e \u0438 \u0427\u0435\u043b\u043e\u0432\u0435\u043a"),
                 "event_type_code_choices": event_type_code_choices,
                 "level_code_choices": level_code_choices,
                 "participation_mode_choices": participation_mode_choices,
                 "selected_filters": {
-                    "profile_code": selected_profile,
-                    "event_type_code": selected_event_type,
-                    "level_code": selected_level,
-                    "participation_mode": selected_participation_mode,
+                    "profile_code": selected_profiles,
+                    "event_type_code": selected_event_types,
+                    "level_code": selected_levels,
+                    "participation_mode": selected_participation_modes,
                     "q": selected_search_query,
                 },
                 "event_filter_configs": [
@@ -427,54 +644,43 @@ class EventListView(PartialTemplateMixin, ListView):
                         "name": "profile_code",
                         "label": _("Профиль"),
                         "all_label": _("Все профили"),
-                        "multiple": False,
-                        "selected_value": selected_profile,
-                        "selected_values": [selected_profile] if selected_profile else [],
-                        "selected_label": selected_profile_label,
-                        "options": _filter_options(
-                            profile_code_choices,
-                            [selected_profile] if selected_profile else [],
-                        ),
+                        "multiple": True,
+                        "selected_value": "",
+                        "selected_values": selected_profiles,
+                        "selected_label": selected_profile_summary,
+                        "options": _filter_options(profile_code_choices, selected_profiles),
                     },
                     {
                         "name": "event_type_code",
                         "label": _("Тип события"),
                         "all_label": _("Все типы"),
-                        "multiple": False,
-                        "selected_value": selected_event_type,
-                        "selected_values": [selected_event_type] if selected_event_type else [],
-                        "selected_label": selected_event_type_label,
-                        "options": _filter_options(
-                            event_type_code_choices,
-                            [selected_event_type] if selected_event_type else [],
-                        ),
+                        "multiple": True,
+                        "selected_value": "",
+                        "selected_values": selected_event_types,
+                        "selected_label": selected_event_type_summary,
+                        "options": _filter_options(event_type_code_choices, selected_event_types),
                     },
                     {
                         "name": "level_code",
                         "label": _("Уровень"),
                         "all_label": _("Все уровни"),
-                        "multiple": False,
-                        "selected_value": selected_level,
-                        "selected_values": [selected_level] if selected_level else [],
-                        "selected_label": selected_level_label,
-                        "options": _filter_options(
-                            level_code_choices,
-                            [selected_level] if selected_level else [],
-                        ),
+                        "multiple": True,
+                        "selected_value": "",
+                        "selected_values": selected_levels,
+                        "selected_label": selected_level_summary,
+                        "options": _filter_options(level_code_choices, selected_levels),
                     },
                     {
                         "name": "participation_mode",
                         "label": _("Формат участия"),
                         "all_label": _("Любой формат"),
-                        "multiple": False,
-                        "selected_value": selected_participation_mode,
-                        "selected_values": (
-                            [selected_participation_mode] if selected_participation_mode else []
-                        ),
-                        "selected_label": selected_participation_mode_label,
+                        "multiple": True,
+                        "selected_value": "",
+                        "selected_values": selected_participation_modes,
+                        "selected_label": selected_participation_mode_summary,
                         "options": _filter_options(
                             participation_mode_choices,
-                            [selected_participation_mode] if selected_participation_mode else [],
+                            selected_participation_modes,
                         ),
                     },
                 ],

@@ -24,10 +24,16 @@
                 <div class="catalog-filter-drawer" id="catalog-filter-drawer" data-filter-drawer>
                     <div class="catalog-filter-fields-grid">
                         {% for filter in event_filter_configs %}
-                            <div class="catalog-filter-field" data-filter-field data-filter-name="{{ filter.name }}" data-filter-empty-label="{{ filter.all_label }}">
+                            <div class="catalog-filter-field" data-filter-field data-filter-name="{{ filter.name }}" data-filter-empty-label="{{ filter.all_label }}"{% if filter.multiple %} data-filter-multiple="true"{% endif %}>
                                 <span class="catalog-filter-label" id="catalog-filter-{{ filter.name }}-label">{{ filter.label }}</span>
                                 <span data-filter-inputs>
-                                    <input type="hidden" name="{{ filter.name }}" value="{{ filter.selected_value }}" data-filter-input>
+                                    {% if filter.multiple %}
+                                        {% for selected_value in filter.selected_values %}
+                                            <input type="hidden" name="{{ filter.name }}" value="{{ selected_value }}" data-filter-input>
+                                        {% endfor %}
+                                    {% else %}
+                                        <input type="hidden" name="{{ filter.name }}" value="{{ filter.selected_value }}" data-filter-input>
+                                    {% endif %}
                                 </span>
                                 <button
                                     class="catalog-filter-trigger"
@@ -42,14 +48,148 @@
                                     <span class="catalog-filter-chevron" aria-hidden="true"></span>
                                 </button>
                                 <div class="catalog-filter-menu" id="catalog-filter-{{ filter.name }}-menu" role="listbox" aria-labelledby="catalog-filter-{{ filter.name }}-label" data-filter-menu>
-                                    <button class="catalog-filter-option" type="button" role="option" data-filter-option data-value="" aria-selected="{% if not filter.selected_value %}true{% else %}false{% endif %}">
-                                        {{ filter.all_label }}
-                                    </button>
+                                    {% if not filter.multiple %}
+                                        <button class="catalog-filter-option" type="button" role="option" data-filter-option data-value="" aria-selected="{% if not filter.selected_value %}true{% else %}false{% endif %}">
+                                            {{ filter.all_label }}
+                                        </button>
+                                    {% endif %}
+                                    {% if filter.name == "profile_code" %}
+                                        <div class="catalog-filter-stack" data-filter-stack data-filter-stack-pages="8">
+                                            <div class="catalog-filter-stack-track">
+                                                <div class="catalog-filter-stack-page" data-filter-stack-page="0">
+                                                    <button class="catalog-filter-group-toggle" type="button" aria-expanded="false" data-filter-group-toggle data-filter-group-target="1">
+                                                        <span>{{ natural_science_group_label }}</span>
+                                                        <span class="catalog-filter-group-chevron" aria-hidden="true"></span>
+                                                    </button>
+                                                    <button class="catalog-filter-group-toggle" type="button" aria-expanded="false" data-filter-group-toggle data-filter-group-target="2">
+                                                        <span>{{ computer_science_group_label }}</span>
+                                                        <span class="catalog-filter-group-chevron" aria-hidden="true"></span>
+                                                    </button>
+                                                    <button class="catalog-filter-group-toggle" type="button" aria-expanded="false" data-filter-group-toggle data-filter-group-target="3">
+                                                        <span>{{ language_group_label }}</span>
+                                                        <span class="catalog-filter-group-chevron" aria-hidden="true"></span>
+                                                    </button>
+                                                    <button class="catalog-filter-group-toggle" type="button" aria-expanded="false" data-filter-group-toggle data-filter-group-target="4">
+                                                        <span>{{ humanities_group_label }}</span>
+                                                        <span class="catalog-filter-group-chevron" aria-hidden="true"></span>
+                                                    </button>
+                                                    {% for value, label in primary_profile_choices %}
+                                                        <button class="catalog-filter-option catalog-filter-option-check" type="button" role="option" data-filter-option data-value="{{ value }}" aria-selected="{% if value in filter.selected_values %}true{% else %}false{% endif %}">
+                                                            <span class="catalog-filter-check" aria-hidden="true">
+                                                                <svg viewBox="0 0 24 24" focusable="false">
+                                                                    <path d="M6 12.5l4 4L18 8.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"/>
+                                                                </svg>
+                                                            </span>
+                                                            <span>{{ label }}</span>
+                                                        </button>
+                                                    {% endfor %}
+                                                </div>
+                                                <div class="catalog-filter-stack-page catalog-filter-stack-page-secondary" data-filter-stack-page="1">
+                                                    <button class="catalog-filter-group-back" type="button" data-filter-group-back>
+                                                        <span class="catalog-filter-group-back-chevron" aria-hidden="true"></span>
+                                                        <span>{{ natural_science_group_label }}</span>
+                                                    </button>
+                                                    {% for value, label in natural_science_profile_choices %}
+                                                        <button class="catalog-filter-option catalog-filter-option-check" type="button" role="option" data-filter-option data-value="{{ value }}" aria-selected="{% if value in filter.selected_values %}true{% else %}false{% endif %}">
+                                                            <span class="catalog-filter-check" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M6 12.5l4 4L18 8.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"/></svg></span>
+                                                            <span>{{ label }}</span>
+                                                        </button>
+                                                    {% endfor %}
+                                                </div>
+                                                <div class="catalog-filter-stack-page catalog-filter-stack-page-secondary" data-filter-stack-page="2">
+                                                    <button class="catalog-filter-group-back" type="button" data-filter-group-back>
+                                                        <span class="catalog-filter-group-back-chevron" aria-hidden="true"></span>
+                                                        <span>{{ computer_science_group_label }}</span>
+                                                    </button>
+                                                    {% for value, label in computer_science_profile_choices %}
+                                                        <button class="catalog-filter-option catalog-filter-option-check" type="button" role="option" data-filter-option data-value="{{ value }}" aria-selected="{% if value in filter.selected_values %}true{% else %}false{% endif %}">
+                                                            <span class="catalog-filter-check" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M6 12.5l4 4L18 8.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"/></svg></span>
+                                                            <span>{{ label }}</span>
+                                                        </button>
+                                                    {% endfor %}
+                                                </div>
+                                                <div class="catalog-filter-stack-page catalog-filter-stack-page-secondary" data-filter-stack-page="3">
+                                                    <button class="catalog-filter-group-back" type="button" data-filter-group-back>
+                                                        <span class="catalog-filter-group-back-chevron" aria-hidden="true"></span>
+                                                        <span>{{ language_group_label }}</span>
+                                                    </button>
+                                                    {% for value, label in language_profile_choices %}
+                                                        <button class="catalog-filter-option catalog-filter-option-check" type="button" role="option" data-filter-option data-value="{{ value }}" aria-selected="{% if value in filter.selected_values %}true{% else %}false{% endif %}">
+                                                            <span class="catalog-filter-check" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M6 12.5l4 4L18 8.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"/></svg></span>
+                                                            <span>{{ label }}</span>
+                                                        </button>
+                                                    {% endfor %}
+                                                </div>
+                                                <div class="catalog-filter-stack-page catalog-filter-stack-page-secondary" data-filter-stack-page="4">
+                                                    <button class="catalog-filter-group-back" type="button" data-filter-group-back>
+                                                        <span class="catalog-filter-group-back-chevron" aria-hidden="true"></span>
+                                                        <span>{{ humanities_group_label }}</span>
+                                                    </button>
+                                                    <button class="catalog-filter-group-toggle" type="button" aria-expanded="false" data-filter-group-toggle data-filter-group-target="5">
+                                                        <span>{{ humanities_history_group_label }}</span>
+                                                        <span class="catalog-filter-group-chevron" aria-hidden="true"></span>
+                                                    </button>
+                                                    <button class="catalog-filter-group-toggle" type="button" aria-expanded="false" data-filter-group-toggle data-filter-group-target="6">
+                                                        <span>{{ humanities_language_group_label }}</span>
+                                                        <span class="catalog-filter-group-chevron" aria-hidden="true"></span>
+                                                    </button>
+                                                    <button class="catalog-filter-group-toggle" type="button" aria-expanded="false" data-filter-group-toggle data-filter-group-target="7">
+                                                        <span>{{ humanities_society_group_label }}</span>
+                                                        <span class="catalog-filter-group-chevron" aria-hidden="true"></span>
+                                                    </button>
+                                                </div>
+                                                <div class="catalog-filter-stack-page catalog-filter-stack-page-secondary" data-filter-stack-page="5">
+                                                    <button class="catalog-filter-group-back" type="button" data-filter-group-back data-filter-group-back-target="4">
+                                                        <span class="catalog-filter-group-back-chevron" aria-hidden="true"></span>
+                                                        <span>{{ humanities_history_group_label }}</span>
+                                                    </button>
+                                                    {% for value, label in humanities_history_profile_choices %}
+                                                        <button class="catalog-filter-option catalog-filter-option-check" type="button" role="option" data-filter-option data-value="{{ value }}" aria-selected="{% if value in filter.selected_values %}true{% else %}false{% endif %}">
+                                                            <span class="catalog-filter-check" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M6 12.5l4 4L18 8.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"/></svg></span>
+                                                            <span>{{ label }}</span>
+                                                        </button>
+                                                    {% endfor %}
+                                                </div>
+                                                <div class="catalog-filter-stack-page catalog-filter-stack-page-secondary" data-filter-stack-page="6">
+                                                    <button class="catalog-filter-group-back" type="button" data-filter-group-back data-filter-group-back-target="4">
+                                                        <span class="catalog-filter-group-back-chevron" aria-hidden="true"></span>
+                                                        <span>{{ humanities_language_group_label }}</span>
+                                                    </button>
+                                                    {% for value, label in humanities_language_profile_choices %}
+                                                        <button class="catalog-filter-option catalog-filter-option-check" type="button" role="option" data-filter-option data-value="{{ value }}" aria-selected="{% if value in filter.selected_values %}true{% else %}false{% endif %}">
+                                                            <span class="catalog-filter-check" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M6 12.5l4 4L18 8.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"/></svg></span>
+                                                            <span>{{ label }}</span>
+                                                        </button>
+                                                    {% endfor %}
+                                                </div>
+                                                <div class="catalog-filter-stack-page catalog-filter-stack-page-secondary" data-filter-stack-page="7">
+                                                    <button class="catalog-filter-group-back" type="button" data-filter-group-back data-filter-group-back-target="4">
+                                                        <span class="catalog-filter-group-back-chevron" aria-hidden="true"></span>
+                                                        <span>{{ humanities_society_group_label }}</span>
+                                                    </button>
+                                                    {% for value, label in humanities_society_profile_choices %}
+                                                        <button class="catalog-filter-option catalog-filter-option-check" type="button" role="option" data-filter-option data-value="{{ value }}" aria-selected="{% if value in filter.selected_values %}true{% else %}false{% endif %}">
+                                                            <span class="catalog-filter-check" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M6 12.5l4 4L18 8.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"/></svg></span>
+                                                            <span>{{ label }}</span>
+                                                        </button>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% else %}
                                     {% for option in filter.options %}
-                                        <button class="catalog-filter-option" type="button" role="option" data-filter-option data-value="{{ option.value }}" aria-selected="{% if option.selected %}true{% else %}false{% endif %}">
+                                        <button class="catalog-filter-option{% if filter.multiple %} catalog-filter-option-check{% endif %}" type="button" role="option" data-filter-option data-value="{{ option.value }}" aria-selected="{% if option.selected %}true{% else %}false{% endif %}">
+                                            {% if filter.multiple %}
+                                                <span class="catalog-filter-check" aria-hidden="true">
+                                                    <svg viewBox="0 0 24 24" focusable="false">
+                                                        <path d="M6 12.5l4 4L18 8.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"/>
+                                                    </svg>
+                                                </span>
+                                            {% endif %}
                                             <span>{{ option.label }}</span>
                                         </button>
                                     {% endfor %}
+                                {% endif %}
                                 </div>
                             </div>
                         {% endfor %}
@@ -87,10 +227,9 @@
 
                 <p class="form-field">
                     <label for="id_profile">{% trans "Профиль" %}</label>
-                    <select id="id_profile" name="profile_code">
-                        <option value="">{% trans "Все профили" %}</option>
+                    <select id="id_profile" name="profile_code" multiple>
                         {% for value, label in profile_code_choices %}
-                            <option value="{{ value }}"{% if selected_filters.profile_code == value %} selected{% endif %}>
+                            <option value="{{ value }}"{% if value in selected_filters.profile_code %} selected{% endif %}>
                                 {{ label|profile_label }}
                             </option>
                         {% endfor %}
@@ -99,10 +238,10 @@
 
                 <p class="form-field">
                     <label for="id_event_type">{% trans "Тип события" %}</label>
-                    <select id="id_event_type" name="event_type_code">
+                    <select id="id_event_type" name="event_type_code" multiple>
                         <option value="">{% trans "Все типы" %}</option>
                         {% for value, label in event_type_code_choices %}
-                            <option value="{{ value }}"{% if selected_filters.event_type_code == value %} selected{% endif %}>
+                            <option value="{{ value }}"{% if value in selected_filters.event_type_code %} selected{% endif %}>
                                 {{ label }}
                             </option>
                         {% endfor %}
@@ -111,10 +250,10 @@
 
                 <p class="form-field">
                     <label for="id_level">{% trans "Уровень" %}</label>
-                    <select id="id_level" name="level_code">
+                    <select id="id_level" name="level_code" multiple>
                         <option value="">{% trans "Все уровни" %}</option>
                         {% for value, label in level_code_choices %}
-                            <option value="{{ value }}"{% if selected_filters.level_code == value %} selected{% endif %}>
+                            <option value="{{ value }}"{% if value in selected_filters.level_code %} selected{% endif %}>
                                 {{ label }}
                             </option>
                         {% endfor %}
@@ -123,10 +262,10 @@
 
                 <p class="form-field">
                     <label for="id_participation_mode">{% trans "Формат участия" %}</label>
-                    <select id="id_participation_mode" name="participation_mode">
+                    <select id="id_participation_mode" name="participation_mode" multiple>
                         <option value="">{% trans "Любой формат" %}</option>
                         {% for value, label in participation_mode_choices %}
-                            <option value="{{ value }}"{% if selected_filters.participation_mode == value %} selected{% endif %}>
+                            <option value="{{ value }}"{% if value in selected_filters.participation_mode %} selected{% endif %}>
                                 {{ label }}
                             </option>
                         {% endfor %}
@@ -141,12 +280,13 @@
         </form>
     </noscript>
 
+    <div data-event-results>
     {% if applied_filter_chips %}
         <section class="catalog-applied-filters" aria-labelledby="catalog-applied-filters-title" data-applied-filters>
             <div class="catalog-applied-filters-heading">
                 <h2 id="catalog-applied-filters-title">{% trans "Применённые фильтры" %}</h2>
                 {% if applied_filter_chips|length > 1 %}
-                    <a class="catalog-applied-clear" href="{{ clear_all_filters_url }}" data-spa-link>{% trans "Сбросить всё" %}</a>
+                    <a class="catalog-applied-clear" href="{{ clear_all_filters_url }}" data-filter-update-link>{% trans "Сбросить всё" %}</a>
                 {% endif %}
             </div>
             <ul class="catalog-applied-filter-list">
@@ -157,7 +297,7 @@
                                 <span class="catalog-applied-chip-label">{{ chip.label }}:</span>
                                 <span>{{ chip.value_label }}</span>
                             </span>
-                            <a class="catalog-applied-chip-remove" href="{{ chip.remove_url }}" aria-label="{{ chip.remove_label }}" data-spa-link>
+                            <a class="catalog-applied-chip-remove" href="{{ chip.remove_url }}" aria-label="{{ chip.remove_label }}" data-filter-update-link>
                                 <span aria-hidden="true">×</span>
                             </a>
                         </span>
@@ -209,5 +349,6 @@
     {% else %}
         <p class="empty-state page-section">{% trans "По выбранным фильтрам событий пока нет." %}</p>
     {% endif %}
+    </div>
 </div>
 {% endblock %}

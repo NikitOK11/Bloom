@@ -19,6 +19,12 @@ from apps.events.models import (
     EventType,
 )
 from apps.teams.models import Team, TeamMembership, TeamMembershipRole
+from apps.web.views import (
+    _event_level_code_choices,
+    _event_profile_code_choices,
+    _event_type_code_choices,
+    _participation_mode_choices,
+)
 
 
 class EventCatalogTests(TestCase):
@@ -108,8 +114,8 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'href="/static/web/styles.css?v=events-search-morph-20260513"')
-        self.assertContains(response, 'src="/static/web/js/app.js?v=events-search-morph-20260513"', html=False)
+        self.assertContains(response, 'href="/static/web/styles.css?v=events-search-center-20260517"')
+        self.assertContains(response, 'src="/static/web/js/app.js?v=events-humanities-groups-20260517"', html=False)
 
     def test_home_partial_request_returns_content_without_base_layout(self):
         response = self.client.get(reverse("web:home"), HTTP_X_PARTIAL_REQUEST="true")
@@ -238,14 +244,79 @@ class EventCatalogTests(TestCase):
         self.assertContains(response, "Team Event")
         self.assertNotContains(response, "Individual Event")
 
+    def test_event_catalog_filters_by_multiple_participation_modes(self):
+        self.create_event("Individual Event", participation_mode=EventParticipationMode.INDIVIDUAL)
+        self.create_event("Team Event", participation_mode=EventParticipationMode.TEAM)
+        self.create_event("Hybrid Event", participation_mode=EventParticipationMode.HYBRID)
+
+        response = self.client.get(
+            reverse("web:event-list"),
+            [
+                ("participation_mode", EventParticipationMode.INDIVIDUAL),
+                ("participation_mode", EventParticipationMode.TEAM),
+            ],
+        )
+
+        self.assertContains(response, "Individual Event")
+        self.assertContains(response, "Team Event")
+        self.assertNotContains(response, "Hybrid Event")
+
     def test_event_catalog_filters_by_profile_code(self):
-        self.create_event("Math Event")
-        self.create_event("Science Event", profile_code="science")
+        self.create_event("Math Event", profile_code="math")
+        self.create_event("Design Event", profile_code="design")
 
-        response = self.client.get(reverse("web:event-list"), {"profile_code": "science"})
+        response = self.client.get(reverse("web:event-list"), {"profile_code": "design"})
 
-        self.assertContains(response, "Science Event")
+        self.assertContains(response, "Design Event")
         self.assertNotContains(response, "Math Event")
+
+    def test_event_catalog_renders_natural_science_profile_group(self):
+        response = self.client.get(reverse("web:event-list"))
+
+        self.assertContains(response, "Естественные Науки")
+        self.assertContains(response, "physics")
+        self.assertContains(response, "geography")
+        self.assertContains(response, "biology")
+        self.assertContains(response, "chemistry")
+        self.assertContains(response, "astronomy")
+        self.assertContains(response, "artificial_intelligence")
+        self.assertContains(response, "olymp_prog")
+        self.assertContains(response, "infosec")
+        self.assertContains(response, "robotics")
+        self.assertContains(response, "english")
+        self.assertContains(response, "spanish")
+        self.assertContains(response, "french")
+        self.assertContains(response, "german")
+        self.assertContains(response, "italian")
+        self.assertContains(response, "chinese")
+        self.assertContains(response, "history")
+        self.assertContains(response, "art_history")
+        self.assertContains(response, "cultural_studies")
+        self.assertContains(response, "oriental_studies")
+        self.assertContains(response, "russian_language")
+        self.assertContains(response, "philology")
+        self.assertContains(response, "eastern_languages")
+        self.assertContains(response, "social_studies")
+        self.assertContains(response, "economics")
+        self.assertContains(response, "philosophy")
+        self.assertContains(response, "psychology")
+        self.assertContains(response, "law")
+
+    def test_event_catalog_filters_by_multiple_profile_codes(self):
+        self.create_event("Math Event", profile_code="math")
+        self.create_event("Design Event", profile_code="design")
+        self.create_event("Journalism Event", profile_code="journalism")
+        self.create_event("Physics Event", profile_code="physics")
+
+        response = self.client.get(
+            reverse("web:event-list"),
+            [("profile_code", "math"), ("profile_code", "design")],
+        )
+
+        self.assertContains(response, "Math Event")
+        self.assertContains(response, "Design Event")
+        self.assertNotContains(response, "Journalism Event")
+        self.assertNotContains(response, "Physics Event")
 
     def test_event_catalog_filters_by_event_type_code(self):
         self.create_event("Default Event")
@@ -256,6 +327,29 @@ class EventCatalogTests(TestCase):
         self.assertContains(response, "Hackathon Event")
         self.assertNotContains(response, "Default Event")
 
+    def test_event_catalog_filters_by_multiple_event_type_codes(self):
+        self.create_event("Olympiad Event", event_type_code="olympiad")
+        self.create_event("Hackathon Event", event_type_code="hackathon")
+        self.create_event("Competition Event", event_type_code="competition")
+
+        response = self.client.get(
+            reverse("web:event-list"),
+            [("event_type_code", "olympiad"), ("event_type_code", "hackathon")],
+        )
+
+        self.assertContains(response, "Olympiad Event")
+        self.assertContains(response, "Hackathon Event")
+        self.assertNotContains(response, "Competition Event")
+
+    def test_event_catalog_filters_by_competition_event_type_code(self):
+        self.create_event("Default Event")
+        self.create_event("Competition Event", event_type_code="competition")
+
+        response = self.client.get(reverse("web:event-list"), {"event_type_code": "competition"})
+
+        self.assertContains(response, "Competition Event")
+        self.assertNotContains(response, "Default Event")
+
     def test_event_catalog_filters_by_level_code(self):
         self.create_event("Default Event")
         self.create_event("International Event", level_code="international")
@@ -264,6 +358,20 @@ class EventCatalogTests(TestCase):
 
         self.assertContains(response, "International Event")
         self.assertNotContains(response, "Default Event")
+
+    def test_event_catalog_filters_by_multiple_level_codes(self):
+        self.create_event("International Event", level_code="international")
+        self.create_event("Level 1 Event", level_code="level_1")
+        self.create_event("VSOSH Event", level_code="vsosh")
+
+        response = self.client.get(
+            reverse("web:event-list"),
+            [("level_code", "international"), ("level_code", "level_1")],
+        )
+
+        self.assertContains(response, "International Event")
+        self.assertContains(response, "Level 1 Event")
+        self.assertNotContains(response, "VSOSH Event")
 
     def test_event_catalog_applied_filter_chips_preserve_other_filters(self):
         response = self.client.get(
@@ -278,14 +386,26 @@ class EventCatalogTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'data-applied-filter-chip="event_type_code"', html=False)
         self.assertContains(response, 'data-applied-filter-chip="level_code"', html=False)
-        self.assertContains(response, "Олимпиада")
-        self.assertContains(response, "Уровень 1")
-        self.assertContains(response, "Командно")
+        self.assertContains(response, dict(_event_type_code_choices())["olympiad"])
+        self.assertContains(response, dict(_event_level_code_choices())[EventLevelCode.LEVEL_1])
+        self.assertContains(response, dict(_participation_mode_choices())[EventParticipationMode.TEAM])
         self.assertContains(
             response,
             'href="/events/?level_code=level_1&amp;participation_mode=team"',
             html=False,
         )
+
+    def test_event_catalog_renders_requested_filter_options(self):
+        response = self.client.get(reverse("web:event-list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["level_code_choices"], _event_level_code_choices())
+        self.assertEqual(
+            response.context["participation_mode_choices"],
+            _participation_mode_choices(),
+        )
+        self.assertEqual(response.context["event_type_code_choices"], _event_type_code_choices())
+        self.assertEqual(response.context["profile_code_choices"], _event_profile_code_choices())
 
     def test_event_model_accepts_multiple_eligible_groups(self):
         event = self.create_event(

@@ -884,17 +884,22 @@ h3 {
     flex: 1 1 auto;
     min-width: 0;
     max-width: 1280px;
-    overflow: hidden;
+    overflow: visible;
     opacity: 1;
     transform: translateX(0);
     transition: max-width 260ms ease, opacity 180ms ease, transform 220ms ease;
 }
 
 .catalog-filter-panel.is-search-active .catalog-filter-drawer-shell {
+    flex: 0 0 0;
     max-width: 0;
     opacity: 0;
     pointer-events: none;
     transform: translateX(14px);
+}
+
+.catalog-filter-panel.is-search-active .catalog-toolbar {
+    justify-content: center;
 }
 
 .catalog-filter-panel.is-filter-compact-open .catalog-filter-drawer-shell {
@@ -917,6 +922,7 @@ h3 {
 
 .catalog-filter-panel.is-search-active .catalog-control-bar {
     align-self: center;
+    justify-content: center;
     transform: translateY(-3px);
 }
 
@@ -1227,6 +1233,135 @@ h3 {
 .catalog-filter-option[aria-selected="true"] {
     background: rgba(79, 70, 229, 0.22);
     color: #FFFFFF;
+}
+
+.catalog-filter-option-check {
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+}
+
+.catalog-filter-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border: 1px solid rgba(195, 192, 255, 0.22);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    color: transparent;
+    transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
+}
+
+.catalog-filter-check svg {
+    width: 12px;
+    height: 12px;
+    display: block;
+}
+
+.catalog-filter-option-check[aria-selected="true"] .catalog-filter-check {
+    border-color: rgba(124, 108, 255, 0.95);
+    background: rgba(79, 70, 229, 0.16);
+    color: #7C6CFF;
+}
+
+.catalog-filter-stack {
+    --filter-stack-page-index: 0;
+    height: auto;
+    overflow: hidden;
+    transition: height 220ms cubic-bezier(0.22, 0.8, 0.22, 1);
+}
+
+.catalog-filter-stack-track {
+    display: grid;
+    grid-template-columns: repeat(var(--filter-stack-pages, 3), minmax(0, 100%));
+    align-items: start;
+    width: calc(var(--filter-stack-pages, 3) * 100%);
+    transform: translateX(calc(var(--filter-stack-page-index) * -100% / var(--filter-stack-pages, 3)));
+    transition: transform 240ms cubic-bezier(0.22, 0.8, 0.22, 1);
+    will-change: transform;
+}
+
+.catalog-filter-stack-page {
+    display: grid;
+    align-content: start;
+    align-items: start;
+    grid-auto-rows: max-content;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+    padding-right: 0;
+}
+
+.catalog-filter-stack-page-secondary {
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.catalog-filter-group-toggle,
+.catalog-filter-group-back {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 18px;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    padding: 12px 14px;
+    border: 0;
+    border-radius: calc(var(--radius-sm) - 4px);
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(244, 242, 255, 0.92);
+    font: inherit;
+    font-size: 0.94rem;
+    font-weight: 800;
+    line-height: 1.3;
+    text-align: left;
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+.catalog-filter-group-back {
+    min-height: 40px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.catalog-filter-stack-page .catalog-filter-option {
+    min-height: 40px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.catalog-filter-group-back {
+    grid-template-columns: 18px minmax(0, 1fr);
+}
+
+.catalog-filter-group-toggle:hover,
+.catalog-filter-group-toggle:focus-visible,
+.catalog-filter-group-back:hover,
+.catalog-filter-group-back:focus-visible {
+    background: rgba(255, 255, 255, 0.08);
+    color: #FFFFFF;
+    outline: none;
+    transform: translateX(2px);
+}
+
+.catalog-filter-group-chevron,
+.catalog-filter-group-back-chevron {
+    width: 10px;
+    height: 10px;
+    justify-self: center;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+}
+
+.catalog-filter-group-chevron {
+    transform: rotate(-45deg);
+}
+
+.catalog-filter-group-back-chevron {
+    transform: rotate(135deg);
 }
 
 .catalog-filter-actions {
