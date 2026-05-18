@@ -1,7 +1,38 @@
 from django import forms
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import UserCreationForm
 from django.utils.translation import gettext_lazy as _
 
 from apps.teams.models import Team
+
+
+class SignUpForm(UserCreationForm):
+    email = forms.EmailField(
+        label=_("Email"),
+        widget=forms.EmailInput(
+            attrs={
+                "autocomplete": "email",
+            }
+        ),
+    )
+
+    class Meta(UserCreationForm.Meta):
+        model = get_user_model()
+        fields = ("email",)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["password1"].label = _("Пароль")
+        self.fields["password2"].label = _("Подтверждение пароля")
+        self.fields["password1"].help_text = _("Минимум 8 символов. Не используйте слишком простой пароль.")
+        self.fields["password2"].help_text = _("Введите тот же пароль ещё раз.")
+
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+        User = get_user_model()
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError(_("Пользователь с таким email уже существует."))
+        return email
 
 
 class TeamCreateForm(forms.ModelForm):

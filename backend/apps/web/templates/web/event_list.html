@@ -311,14 +311,14 @@
         <section class="event-grid page-section" aria-label="{% trans 'Список событий' %}">
             {% for event in events %}
                 <article class="card-elevated event-card">
+                    <a class="event-card-overlay-link" href="{% url 'web:event-detail' event.pk %}?back={{ request.get_full_path|urlencode }}" aria-label="{% firstof event.name event.title %}" data-spa-link></a>
                     <div class="event-card-header">
                         <div class="stack">
                             <p class="eyebrow">{% trans "Событие" %}</p>
                             <h2 class="event-title">
-                                <a href="{% url 'web:event-detail' event.pk %}" data-spa-link>{% firstof event.name event.title %}</a>
+                                <span>{% firstof event.name event.title %}</span>
                             </h2>
                         </div>
-                        <a class="btn btn-secondary" href="{% url 'web:event-detail' event.pk %}" data-spa-link>{% trans "Подробнее" %}</a>
                     </div>
                     <div class="meta-row">
                         <span class="badge badge-accent">{{ event.event_type_code|event_type_label }}</span>
@@ -341,7 +341,7 @@
                         <p class="muted">{{ event.short_description }}</p>
                     {% endif %}
                     {% if event.official_url %}
-                        <a class="btn btn-secondary" href="{{ event.official_url }}">{% trans "Официальный сайт" %}</a>
+                        <a class="btn btn-secondary event-card-secondary-action" href="{{ event.official_url }}">{% trans "Официальный сайт" %}</a>
                     {% endif %}
                 </article>
             {% endfor %}

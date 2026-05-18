@@ -1,0 +1,20 @@
+{% extends "web/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Регистрация" %}{% endblock %}
+
+{% block content %}
+<section class="content-panel auth-card">
+<h1>{% trans "Регистрация" %}</h1>
+<p class="muted">{% trans "Создайте аккаунт, чтобы собирать команды и откликаться на события." %}</p>
+<form class="stack" method="post">
+    {% csrf_token %}
+    {% if next_url %}
+        <input type="hidden" name="next" value="{{ next_url }}">
+    {% endif %}
+    {{ form.as_p }}
+    <button class="btn btn-primary" type="submit">{% trans "Зарегистрироваться" %}</button>
+</form>
+<p class="muted">{% trans "Уже есть аккаунт?" %} <a href="{% url 'web:login' %}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}">{% trans "Войти" %}</a></p>
+</section>
+{% endblock %}

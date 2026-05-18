@@ -4,7 +4,7 @@
 {% block title %}{% firstof event.name event.title %}{% endblock %}
 
 {% block content %}
-<p><a class="btn btn-secondary" href="{% url 'web:event-list' %}" data-spa-link>{% trans "Назад к событиям" %}</a></p>
+<p><a class="btn btn-secondary" href="{{ back_to_events_url }}" data-spa-link>{% trans "Назад к событиям" %}</a></p>
 
 <section class="detail-hero page-section">
     <div class="hero-content">

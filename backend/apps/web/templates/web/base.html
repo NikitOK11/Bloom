@@ -7,7 +7,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{% trans "Bloom" %}{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'web/styles.css' %}?v=events-search-center-20260517">
+    <link rel="stylesheet" href="{% static 'web/styles.css' %}?v=filter-blur-lock-20260518">
     <script src="{% static 'web/js/app.js' %}?v=events-humanities-groups-20260517" defer></script>
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -32,7 +32,7 @@
                         <svg class="nav-link-icon" viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M12 7v5l3 3M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
                         </svg>
-                        <span>{% trans "Календарь" %}</span>
+                        <span>{% if LANGUAGE_CODE == 'en' %}Calendar{% else %}Календарь{% endif %}</span>
                     </span>
                 </a>
                 <a class="nav-link{% if current_nav == 'profile' %} nav-link-primary{% endif %}" href="{% url 'web:profile' %}" data-nav-key="profile" data-spa-link>
@@ -68,6 +68,7 @@
                     </form>
                 {% else %}
                     <a class="btn btn-secondary" href="{% url 'web:login' %}">{% trans "Войти" %}</a>
+                    <a class="btn btn-primary" href="{% url 'web:signup' %}">{% trans "Регистрация" %}</a>
                 {% endif %}
             </div>
         </nav>
@@ -102,7 +103,7 @@
             </div>
             <nav class="footer-links" aria-label="{% trans 'Навигация в подвале' %}">
                 <a href="{% url 'web:event-list' %}" data-spa-link>{% trans "События" %}</a>
-                <a href="{% url 'web:calendar' %}" data-spa-link>{% trans "Календарь" %}</a>
+                <a href="{% url 'web:calendar' %}" data-spa-link>{% if LANGUAGE_CODE == 'en' %}Calendar{% else %}Календарь{% endif %}</a>
                 <a href="{% url 'web:profile' %}" data-spa-link>{% trans "Профиль" %}</a>
             </nav>
         </div>

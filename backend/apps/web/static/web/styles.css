@@ -727,6 +727,23 @@ h3 {
     gap: var(--space-4);
 }
 
+.event-card {
+    position: relative;
+}
+
+.event-card-overlay-link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    cursor: pointer;
+}
+
+.event-card-secondary-action {
+    position: relative;
+    z-index: 2;
+}
+
 .event-card-header,
 .detail-header {
     display: flex;
@@ -857,6 +874,7 @@ h3 {
 .event-catalog-page.filter-focus-active .empty-state {
     opacity: 0.48;
     filter: blur(1px);
+    pointer-events: none;
     transition: opacity 200ms ease, filter 200ms ease;
 }
 
@@ -1293,6 +1311,7 @@ h3 {
     width: 100%;
     min-width: 0;
     padding-right: 0;
+    padding-bottom: 12px;
 }
 
 .catalog-filter-stack-page-secondary {
@@ -1559,6 +1578,28 @@ textarea {
     margin: 0 auto;
     display: grid;
     gap: var(--space-4);
+}
+
+.auth-card form > p {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+}
+
+.auth-card form label {
+    display: block;
+    margin-bottom: 2px;
+}
+
+.auth-card form .helptext {
+    color: var(--color-muted);
+    font-size: 0.95rem;
+    line-height: 1.45;
+}
+
+.auth-card form ul {
+    margin: 0;
+    padding-left: 1.1rem;
 }
 
 .team-card {
@@ -2144,6 +2185,7 @@ textarea {
 .olympiad-page.filter-focus-active .olympiad-contact {
     opacity: 0.4;
     filter: blur(2px);
+    pointer-events: none;
     transition: opacity 200ms ease, filter 200ms ease;
 }
 

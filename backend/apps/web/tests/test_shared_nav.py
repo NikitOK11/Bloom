@@ -10,6 +10,7 @@ class SharedNavbarTests(TestCase):
         self.assertContains(response, reverse("web:event-list"))
         self.assertContains(response, reverse("web:calendar"))
         self.assertContains(response, reverse("web:profile"))
+        self.assertContains(response, reverse("web:signup"))
         self.assertContains(response, "События")
         self.assertContains(response, "Календарь")
         self.assertContains(response, "Профиль")
@@ -41,3 +42,11 @@ class SharedNavbarTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Гость Bloom")
         self.assertContains(response, 'class="nav-link nav-link-primary" href="/profile/"', html=False)
+
+    def test_signup_route_renders_safely(self):
+        response = self.client.get(reverse("web:signup"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Регистрация")
+        self.assertContains(response, 'name="password1"', html=False)
+        self.assertContains(response, 'name="password2"', html=False)

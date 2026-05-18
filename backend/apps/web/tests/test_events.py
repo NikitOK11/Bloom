@@ -114,7 +114,7 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'href="/static/web/styles.css?v=events-search-center-20260517"')
+        self.assertContains(response, 'href="/static/web/styles.css?v=filter-blur-lock-20260518"')
         self.assertContains(response, 'src="/static/web/js/app.js?v=events-humanities-groups-20260517"', html=False)
 
     def test_home_partial_request_returns_content_without_base_layout(self):
@@ -281,6 +281,7 @@ class EventCatalogTests(TestCase):
         self.assertContains(response, "astronomy")
         self.assertContains(response, "artificial_intelligence")
         self.assertContains(response, "olymp_prog")
+        self.assertContains(response, "prom_prog")
         self.assertContains(response, "infosec")
         self.assertContains(response, "robotics")
         self.assertContains(response, "english")
@@ -301,6 +302,33 @@ class EventCatalogTests(TestCase):
         self.assertContains(response, "philosophy")
         self.assertContains(response, "psychology")
         self.assertContains(response, "law")
+
+    def test_event_catalog_makes_entire_card_clickable(self):
+        event = self.create_event("Clickable Event")
+
+        response = self.client.get(reverse("web:event-list"))
+
+        self.assertContains(response, 'class="event-card-overlay-link"', html=False)
+        self.assertContains(
+            response,
+            f'href="{reverse("web:event-detail", kwargs={"pk": event.pk})}"',
+            html=False,
+        )
+
+    def test_event_detail_back_link_preserves_event_filters(self):
+        event = self.create_event("Filtered Event")
+
+        response = self.client.get(
+            reverse("web:event-detail", kwargs={"pk": event.pk}),
+            {"back": "/events/?profile_code=math&level_code=vsosh"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            'href="/events/?profile_code=math&amp;level_code=vsosh"',
+            html=False,
+        )
 
     def test_event_catalog_filters_by_multiple_profile_codes(self):
         self.create_event("Math Event", profile_code="math")

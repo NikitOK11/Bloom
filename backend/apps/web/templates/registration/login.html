@@ -12,5 +12,6 @@
     {{ form.as_p }}
     <button class="btn btn-primary" type="submit">{% trans "Войти" %}</button>
 </form>
+<p class="muted">{% trans "Нет аккаунта?" %} <a href="{% url 'web:signup' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">{% trans "Зарегистрироваться" %}</a></p>
 </section>
 {% endblock %}

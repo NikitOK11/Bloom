@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
@@ -7,6 +8,7 @@ from django.db.models import F, Prefetch, Q
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, FormView, ListView, TemplateView
@@ -20,7 +22,7 @@ from apps.events.models import (
     EventTypeCode,
 )
 from apps.teams.models import JoinRequest, JoinRequestStatus, Team, TeamMembership, TeamMembershipRole
-from apps.web.forms import JoinRequestForm, TeamCreateForm
+from apps.web.forms import JoinRequestForm, SignUpForm, TeamCreateForm
 
 
 def _user_display_name(user) -> str:
@@ -103,6 +105,8 @@ def _code_label(value: str) -> str:
 def _event_profile_code_choices():
     return [
         ("math", _("Математика")),
+        ("technology", _("Технология")),
+        ("ecology", _("Экология")),
         ("financial_literacy", _("Финансовая Грамотность")),
         ("design", _("Дизайн")),
         ("engineering_sciences", _("Инженерные Науки")),
@@ -116,6 +120,7 @@ def _event_profile_code_choices():
         ("astronomy", _("Астрономия")),
         ("artificial_intelligence", _("Искусственный Интеллект")),
         ("olymp_prog", _("Ол. Прога")),
+        ("prom_prog", _("Пром. Прога")),
         ("infosec", _("Инфобез")),
         ("robotics", _("Робототехника")),
         ("english", _("Английский Язык")),
@@ -145,7 +150,7 @@ def _natural_science_profile_codes():
 
 
 def _computer_science_profile_codes():
-    return ["artificial_intelligence", "olymp_prog", "infosec", "robotics"]
+    return ["artificial_intelligence", "olymp_prog", "prom_prog", "infosec", "robotics"]
 
 
 def _language_profile_codes():
@@ -1019,6 +1024,32 @@ class ProfileView(PartialTemplateMixin, TemplateView):
         return context
 
 
+class SignUpView(PartialTemplateMixin, FormView):
+    form_class = SignUpForm
+    template_name = "registration/signup.html"
+    current_nav = "profile"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect(self.get_success_url())
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        next_url = self.request.GET.get("next") or self.request.POST.get("next")
+        return next_url or reverse("web:profile")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["next_url"] = self.request.GET.get("next", "")
+        return context
+
+    def form_valid(self, form):
+        user = form.save()
+        login(self.request, user)
+        messages.success(self.request, _("Профиль создан. Добро пожаловать!"))
+        return redirect(self.get_success_url())
+
+
 class EventDetailView(PartialTemplateMixin, DetailView):
     model = Event
     context_object_name = "event"
@@ -1033,6 +1064,17 @@ class EventDetailView(PartialTemplateMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        back_to = self.request.GET.get("back", "")
+        default_back_url = reverse("web:event-list")
+        if not back_to or not url_has_allowed_host_and_scheme(
+            url=back_to,
+            allowed_hosts={self.request.get_host()},
+            require_https=self.request.is_secure(),
+        ):
+            back_to = default_back_url
+        if not back_to.startswith(default_back_url):
+            back_to = default_back_url
+        context["back_to_events_url"] = back_to
         show_teams_block = self.object.participation_mode in TEAM_CAPABLE_PARTICIPATION_MODES
         context["show_teams_block"] = show_teams_block
         context["event_teams"] = (
