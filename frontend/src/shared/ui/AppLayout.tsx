@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
-import { ApiError } from "../api/client";
+import bloomLogomark from "../../assets/home/bloom-logomark.png";
 import { useAuth } from "../../app/AuthProvider";
+import { ApiError } from "../api/client";
 
 const navItems = [
     { to: "/", label: "Главная", end: true },
@@ -45,7 +46,16 @@ export function AppLayout() {
                 <div className="container header-inner">
                     <div className="brand-block">
                         <NavLink className="brand-link" to="/" end>
-                            <span className="brand-mark">Bloom</span>
+                            <span className="brand-lockup">
+                                <img
+                                    className="brand-logo"
+                                    src={bloomLogomark}
+                                    alt=""
+                                    width={40}
+                                    height={40}
+                                />
+                                <span className="brand-mark">Bloom</span>
+                            </span>
                             <span className="brand-subtitle">
                                 Платформа для олимпиад, хакатонов и кейс-чемпионатов
                             </span>
