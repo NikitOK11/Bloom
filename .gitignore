@@ -34,6 +34,11 @@ build/
 dist/
 *.egg-info/
 
+# --- Frontend artifacts ---
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
 # --- Editors / OS ---
 .vscode/
 .idea/

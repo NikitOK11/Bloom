@@ -124,8 +124,9 @@ class CleanEventDataCommandTestCase(TestCase):
         output = self.run_command("--apply")
 
         self.assertIn("Merge exact duplicate Events", output)
-        self.assertEqual(Event.objects.count(), 1)
-        remaining_event = Event.objects.get()
+        remaining_events = Event.objects.filter(title="Math Olympiad")
+        self.assertEqual(remaining_events.count(), 1)
+        remaining_event = remaining_events.get()
         self.assertIn(remaining_event.id, {first.id, second.id})
         self.assertEqual(remaining_event.name, "Math Olympiad")
 
@@ -169,7 +170,7 @@ class CleanEventDataCommandTestCase(TestCase):
         output = self.run_command("--apply")
 
         self.assertIn("Merge exact duplicate Universities", output)
-        self.assertEqual(University.objects.count(), 1)
+        self.assertEqual(University.objects.filter(name="Test University").count(), 1)
         benefit.refresh_from_db()
         program.refresh_from_db()
         self.assertEqual(benefit.university_id, keep_university.id)

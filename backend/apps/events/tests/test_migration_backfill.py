@@ -9,8 +9,10 @@ Note: These tests verify the behavior of the migration by checking that:
 """
 
 from datetime import date
+
 from django.test import TestCase
-from apps.events.models import Event, EventEdition, EventEditionStage, EventType, EventParticipationType
+
+from apps.events.models import Event, EventEdition, EventEditionStage, EventParticipationType, EventType
 
 
 class EventEditionBackfillTestCase(TestCase):
@@ -21,9 +23,9 @@ class EventEditionBackfillTestCase(TestCase):
     
     def setUp(self):
         """Set up test data."""
-        self.event_type = EventType.objects.create(
-            name="Olympiad",
+        self.event_type, _ = EventType.objects.get_or_create(
             slug="olympiad",
+            defaults={"name": "Olympiad"},
         )
     
     def test_event_with_edition_and_stage_have_complete_schema(self):
