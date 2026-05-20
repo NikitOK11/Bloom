@@ -13,5 +13,6 @@ router.register("universities", UniversityViewSet, basename="university")
 
 urlpatterns = [
     path("health/", HealthCheckAPIView.as_view(), name="health"),
+    path("accounts/", include("apps.accounts.urls")),
     path("", include(router.urls)),
 ]
