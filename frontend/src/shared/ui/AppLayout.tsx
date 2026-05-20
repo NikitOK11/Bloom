@@ -94,6 +94,14 @@ export function AppLayout() {
 
                             {!isLoading && isAuthenticated && user && (
                                 <>
+                                    <NavLink
+                                        className={({ isActive }) =>
+                                            isActive ? "nav-link nav-link-active" : "nav-link"
+                                        }
+                                        to="/profile"
+                                    >
+                                        Профиль
+                                    </NavLink>
                                     <span className="auth-pill">{user.email}</span>
                                     <button
                                         className="nav-button"

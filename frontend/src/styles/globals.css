@@ -426,6 +426,33 @@ code {
     margin: 0;
 }
 
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0 0;
+}
+
+.profile-grid div {
+    padding: 1rem;
+    border-radius: 0.95rem;
+    background: rgba(94, 151, 109, 0.08);
+}
+
+.profile-grid dt {
+    margin-bottom: 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #4d725d;
+}
+
+.profile-grid dd {
+    margin: 0;
+    word-break: break-word;
+}
+
 .app-footer {
     border-top: 1px solid rgba(22, 49, 38, 0.08);
     background: rgba(255, 255, 255, 0.72);

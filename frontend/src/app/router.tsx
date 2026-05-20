@@ -6,6 +6,7 @@ import { HomePage } from "../pages/HomePage/HomePage";
 import { LoginPage } from "../pages/LoginPage/LoginPage";
 import { NotFoundPage } from "../pages/NotFoundPage/NotFoundPage";
 import { OlympiadsPage } from "../pages/OlympiadsPage/OlympiadsPage";
+import { ProfilePage } from "../pages/ProfilePage/ProfilePage";
 import { SignupPage } from "../pages/SignupPage/SignupPage";
 import { AppLayout } from "../shared/ui/AppLayout";
 
@@ -37,6 +38,10 @@ export const router = createBrowserRouter([
             {
                 path: "signup",
                 element: <SignupPage />,
+            },
+            {
+                path: "profile",
+                element: <ProfilePage />,
             },
             {
                 path: "*",
