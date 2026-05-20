@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { apiClient } from "../../shared/api/client";
 import { PageLayout } from "../../shared/ui/PageLayout";
@@ -25,14 +26,23 @@ export function HomePage() {
     return (
         <PageLayout
             title="Bloom"
-            description="Платформа для олимпиад, хакатонов и кейс-чемпионатов. Этот frontend — первый шаг к отдельной client-side архитектуре, при этом текущий Django UI остаётся рабочим."
+            description="Платформа для олимпиад, хакатонов и кейс-чемпионатов. Новый React frontend становится удобным основным CSR-каркасом, при этом текущий Django UI пока остаётся рабочим."
         >
             <section className="card">
-                <h2>Зачем нужен новый frontend</h2>
+                <h2>Новый основной каркас</h2>
                 <p>
-                    Мы начинаем перенос product-facing интерфейса к отдельному CSR-приложению на
-                    React + Vite + TypeScript, не ломая существующие Django-страницы.
+                    Мы собираем отдельное CSR-приложение на React + Vite + TypeScript
+                    вокруг канонической сущности Event, не ломая существующие
+                    серверные страницы и пользовательские сценарии.
                 </p>
+                <div className="action-row">
+                    <Link className="button" to="/events">
+                        Открыть события
+                    </Link>
+                    <Link className="button button-secondary" to="/olympiads">
+                        Открыть олимпиады
+                    </Link>
+                </div>
             </section>
 
             <section className="card">

@@ -57,6 +57,8 @@ code {
 
 .app-shell {
     min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
 }
 
 .container {
@@ -77,35 +79,60 @@ code {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem 0;
+    gap: 1.25rem;
+    padding: 1rem 0 0.95rem;
 }
 
-.brand-title {
-    margin: 0;
-    font-size: 1.15rem;
+.brand-block {
+    min-width: 0;
+}
+
+.brand-link {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.brand-mark {
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+}
+
+.brand-subtitle {
+    color: #567364;
+    font-size: 0.92rem;
+    max-width: 32rem;
 }
 
 .nav {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
+    align-items: center;
 }
 
 .nav-link {
+    position: relative;
     padding: 0.65rem 0.95rem;
     border-radius: 999px;
     color: #355645;
-    transition: background-color 120ms ease, color 120ms ease;
+    transition:
+        background-color 120ms ease,
+        color 120ms ease,
+        transform 120ms ease,
+        box-shadow 120ms ease;
 }
 
 .nav-link:hover {
     background: rgba(94, 151, 109, 0.12);
+    transform: translateY(-1px);
 }
 
 .nav-link-active {
     background: #163126;
     color: #f7fbf6;
+    box-shadow: 0 10px 20px rgba(22, 49, 38, 0.16);
 }
 
 .page-content {
@@ -122,6 +149,12 @@ code {
 }
 
 .hero h2 {
+    margin: 0.25rem 0 0.75rem;
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    line-height: 1.05;
+}
+
+.page-title {
     margin: 0.25rem 0 0.75rem;
     font-size: clamp(2rem, 5vw, 3.4rem);
     line-height: 1.05;
@@ -278,19 +311,47 @@ code {
     margin: 0;
 }
 
+.app-footer {
+    border-top: 1px solid rgba(22, 49, 38, 0.08);
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.footer-inner {
+    padding: 1.1rem 0 1.5rem;
+}
+
+.footer-title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.footer-copy {
+    margin: 0.35rem 0 0;
+    color: #567364;
+    max-width: 42rem;
+}
+
 @media (max-width: 720px) {
     .header-inner,
     .card-header,
     .event-card-header {
         flex-direction: column;
+        align-items: stretch;
     }
 
     .nav {
         width: 100%;
+        display: grid;
+        grid-template-columns: 1fr;
     }
 
     .nav-link {
         width: 100%;
         text-align: center;
+    }
+
+    .brand-subtitle {
+        max-width: none;
     }
 }

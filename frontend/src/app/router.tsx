@@ -5,26 +5,33 @@ import { EventsPage } from "../pages/EventsPage/EventsPage";
 import { HomePage } from "../pages/HomePage/HomePage";
 import { NotFoundPage } from "../pages/NotFoundPage/NotFoundPage";
 import { OlympiadsPage } from "../pages/OlympiadsPage/OlympiadsPage";
+import { AppLayout } from "../shared/ui/AppLayout";
 
 export const router = createBrowserRouter([
     {
         path: "/",
-        element: <HomePage />,
-    },
-    {
-        path: "/events",
-        element: <EventsPage />,
-    },
-    {
-        path: "/events/:eventId",
-        element: <EventDetailPage />,
-    },
-    {
-        path: "/olympiads",
-        element: <OlympiadsPage />,
-    },
-    {
-        path: "*",
-        element: <NotFoundPage />,
+        element: <AppLayout />,
+        children: [
+            {
+                index: true,
+                element: <HomePage />,
+            },
+            {
+                path: "events",
+                element: <EventsPage />,
+            },
+            {
+                path: "events/:eventId",
+                element: <EventDetailPage />,
+            },
+            {
+                path: "olympiads",
+                element: <OlympiadsPage />,
+            },
+            {
+                path: "*",
+                element: <NotFoundPage />,
+            },
+        ],
     },
 ]);
