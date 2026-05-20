@@ -298,6 +298,8 @@ h3 {
 .stack {
     display: grid;
     gap: var(--space-4);
+    align-content: start;
+    min-width: 0;
 }
 
 .landing-hero {
@@ -721,6 +723,43 @@ h3 {
     text-align: center;
 }
 
+.detail-panel {
+    display: grid;
+    align-content: start;
+    gap: var(--space-4);
+}
+
+.detail-panel > * {
+    margin: 0;
+}
+
+.detail-panel .page-copy {
+    line-height: 1.6;
+}
+
+.detail-panel .definition-grid {
+    margin: 0;
+    align-items: start;
+}
+
+.detail-panel .definition-grid dt,
+.detail-panel .definition-grid dd {
+    line-height: 1.55;
+}
+
+.detail-timeline-panel .detail-header {
+    margin-bottom: var(--space-1);
+}
+
+.detail-timeline-panel .detail-header > div {
+    display: grid;
+    gap: var(--space-3);
+}
+
+.detail-timeline-panel .empty-state {
+    margin: 0;
+}
+
 .event-card,
 .event-row {
     display: grid;
@@ -756,6 +795,67 @@ h3 {
 .event-title {
     color: var(--color-text);
     font-size: 1.45rem;
+}
+
+.vsosh-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--space-4);
+    align-items: stretch;
+}
+
+.vsosh-overview-card {
+    display: grid;
+    gap: var(--space-5);
+    min-height: 240px;
+    align-content: space-between;
+    overflow: hidden;
+}
+
+.vsosh-overview-card > * {
+    position: relative;
+    z-index: 2;
+}
+
+.vsosh-overview-card-link {
+    color: inherit;
+    text-decoration: none;
+    transition: transform 160ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.vsosh-overview-card-link:hover,
+.vsosh-overview-card-link:focus-visible {
+    transform: translateY(-2px);
+    border-color: rgba(124, 108, 255, 0.28);
+    box-shadow: 0 18px 32px rgba(2, 6, 23, 0.24);
+    outline: none;
+}
+
+.vsosh-overview-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+}
+
+.vsosh-overview-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.8rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid rgba(195, 192, 255, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #FFFFFF;
+    font-weight: 800;
+    transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+
+.vsosh-overview-link:hover,
+.vsosh-overview-link:focus-visible {
+    background: rgba(79, 70, 229, 0.22);
+    border-color: rgba(124, 108, 255, 0.48);
+    outline: none;
+    transform: translateY(-1px);
 }
 
 .meta-row {
@@ -870,10 +970,11 @@ h3 {
 
 .event-catalog-page.filter-focus-active .catalog-hero,
 .event-catalog-page.filter-focus-active .catalog-applied-filters,
+.event-catalog-page.filter-focus-active .vsosh-overview-grid,
 .event-catalog-page.filter-focus-active .event-grid,
 .event-catalog-page.filter-focus-active .empty-state {
-    opacity: 0.48;
-    filter: blur(1px);
+    opacity: 0.22;
+    filter: blur(6px);
     pointer-events: none;
     transition: opacity 200ms ease, filter 200ms ease;
 }
@@ -1206,16 +1307,16 @@ h3 {
     top: calc(100% + 10px);
     right: 0;
     left: 0;
-    z-index: 20;
+    z-index: 80;
     display: none;
     max-height: min(340px, 56vh);
     padding: 10px;
     overflow-y: auto;
     border: 1px solid rgba(195, 192, 255, 0.12);
     border-radius: var(--radius-sm);
-    background: rgba(24, 24, 33, 0.99);
-    box-shadow: 0 12px 24px rgba(2, 6, 23, 0.18);
-    backdrop-filter: none;
+    background: rgba(18, 18, 27, 0.985);
+    box-shadow: 0 18px 36px rgba(2, 6, 23, 0.34);
+    backdrop-filter: blur(18px);
 }
 
 .catalog-filter-field.is-active .catalog-filter-menu {
