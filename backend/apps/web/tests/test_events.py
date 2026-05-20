@@ -93,7 +93,7 @@ class EventCatalogTests(TestCase):
         self.create_event("Visible Event")
         self.create_event("Hidden Event", is_active=False)
 
-        response = self.client.get(reverse("web:event-list"))
+        response = self.client.get(reverse("web:event-list"), {"profile_code": "math"})
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Visible Event")
@@ -127,7 +127,7 @@ class EventCatalogTests(TestCase):
         response = self.client.get(reverse("web:home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'href="/static/web/styles.css?v=filter-blur-lock-20260518"')
+        self.assertContains(response, 'href="/static/web/styles.css?v=olympiad-overview-groups-20260520"')
         self.assertContains(response, 'src="/static/web/js/app.js?v=events-humanities-groups-20260517"', html=False)
 
     def test_home_partial_request_returns_content_without_base_layout(self):
@@ -319,14 +319,56 @@ class EventCatalogTests(TestCase):
     def test_event_catalog_makes_entire_card_clickable(self):
         event = self.create_event("Clickable Event")
 
-        response = self.client.get(reverse("web:event-list"))
+        response = self.client.get(reverse("web:event-list"), {"profile_code": "math"})
 
         self.assertContains(response, 'class="event-card-overlay-link"', html=False)
         self.assertContains(
             response,
-            f'href="{reverse("web:event-detail", kwargs={"pk": event.pk})}"',
+            f'href="{reverse("web:event-detail", kwargs={"pk": event.pk})}?back=/events/%3Fprofile_code%3Dmath"',
             html=False,
         )
+
+    def test_event_catalog_without_filters_shows_vsosh_overview(self):
+        self.create_event("Visible Event")
+
+        response = self.client.get(reverse("web:event-list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "ВСОШ")
+        self.assertContains(response, "Высшая Проба")
+        self.assertContains(response, "Изумруд")
+        self.assertContains(response, 'catalog_group=vsosh', html=False)
+        self.assertContains(response, 'catalog_group=high-probe', html=False)
+        self.assertContains(response, 'catalog_group=izumrud', html=False)
+        self.assertNotContains(response, "Visible Event")
+
+    def test_event_catalog_group_page_shows_profile_links(self):
+        self.create_event("DANO", profile_code="data_analysis")
+
+        response = self.client.get(reverse("web:event-list"), {"catalog_group": "high-probe"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Высшая Проба")
+        self.assertContains(response, "DANO")
+        self.assertContains(response, 'class="vsosh-overview-link"', html=False)
+
+    def test_high_probe_catalog_group_includes_events_by_organizer(self):
+        self.create_event("Право", organizer="Высшая Проба", profile_code="law")
+
+        response = self.client.get(reverse("web:event-list"), {"catalog_group": "high-probe"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Право")
+
+    def test_izumrud_catalog_group_page_shows_profile_links(self):
+        self.create_event("Изумруд. Информатика", organizer="Изумруд", profile_code="olymp_prog")
+
+        response = self.client.get(reverse("web:event-list"), {"catalog_group": "izumrud"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Изумруд")
+        self.assertContains(response, "Ол. Прога")
+        self.assertContains(response, 'class="vsosh-overview-link"', html=False)
 
     def test_event_detail_back_link_preserves_event_filters(self):
         event = self.create_event("Filtered Event")
@@ -470,7 +512,7 @@ class EventCatalogTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Team Case Championship")
         self.assertContains(response, "Event Organizer")
-        self.assertContains(response, "Math")
+        self.assertContains(response, "Математика")
         self.assertContains(response, "Командная поддержка для событий будет развиваться дальше.")
 
     def test_event_detail_partial_request_returns_content_without_base_layout(self):

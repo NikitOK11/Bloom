@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
@@ -129,13 +131,14 @@ def _event_profile_code_choices():
         ("german", _("Немецкий Язык")),
         ("italian", _("Итальянский Язык")),
         ("chinese", _("Китайский Язык")),
-        ("history", _("История")),
-        ("art_history", _("История Искусств")),
+        ("history", _("История и Культура. История")),
+        ("literature", _("Литература")),
+        ("art_history", _("История и Культура. История Искусств")),
         ("cultural_studies", _("Культурология")),
         ("oriental_studies", _("Востоковедение")),
-        ("russian_language", _("Русский Язык")),
-        ("philology", _("Филология")),
-        ("eastern_languages", _("Восточные Языки")),
+        ("russian_language", _("Гуманитарные науки. Русский Язык")),
+        ("philology", _("Гуманитарные науки. Филология")),
+        ("eastern_languages", _("Гуманитарные науки. Восточные Языки")),
         ("social_studies", _("Обществознание")),
         ("economics", _("Экономика")),
         ("philosophy", _("Философия")),
@@ -164,7 +167,7 @@ def _humanities_history_profile_codes():
 
 
 def _humanities_language_profile_codes():
-    return ["russian_language", "philology", "eastern_languages"]
+    return ["russian_language", "literature", "philology", "eastern_languages"]
 
 
 def _humanities_society_profile_codes():
@@ -372,12 +375,52 @@ class EventListView(PartialTemplateMixin, ListView):
     template_name = "web/event_list.html"
     current_nav = "events"
 
+    OLYMPIAD_CATALOG_GROUPS = {
+        "vsosh": {
+            "title": _("ВСОШ"),
+            "description": _("Выберите профиль, чтобы открыть события ВСОШ по нужному направлению."),
+            "filter": Q(event_type_code=EventTypeCode.OLYMPIAD, level_code=EventLevelCode.VSOSH),
+        },
+        "high-probe": {
+            "title": _("Высшая Проба"),
+            "description": _("Выберите профиль, чтобы открыть направления Высшей Пробы и DANO."),
+            "filter": Q(event_type_code=EventTypeCode.OLYMPIAD)
+            & (
+                Q(name__startswith="Высшая Проба.")
+                | Q(title__startswith="Высшая Проба.")
+                | Q(organizer="Высшая Проба")
+                | Q(name="DANO")
+                | Q(title="DANO")
+            ),
+        },
+        "izumrud": {
+            "title": _("Изумруд"),
+            "description": _("Выберите профиль, чтобы открыть направления олимпиады Изумруд."),
+            "filter": Q(event_type_code=EventTypeCode.OLYMPIAD)
+            & (
+                Q(name__startswith="Изумруд.")
+                | Q(title__startswith="Изумруд.")
+                | Q(organizer="Изумруд")
+            ),
+        },
+    }
+
+    def _selected_catalog_group(self):
+        value = self.request.GET.get("catalog_group", "").strip()
+        if value in self.OLYMPIAD_CATALOG_GROUPS:
+            return value
+        return ""
+
     def get_queryset(self):
         queryset = (
             Event.objects.filter(is_active=True)
             .select_related("event_type", "level")
             .prefetch_related("profiles")
         )
+
+        selected_catalog_group = self._selected_catalog_group()
+        if selected_catalog_group:
+            queryset = queryset.filter(self.OLYMPIAD_CATALOG_GROUPS[selected_catalog_group]["filter"])
 
         selected_profiles = _query_filter_values(
             self.request,
@@ -486,6 +529,7 @@ class EventListView(PartialTemplateMixin, ListView):
             EventParticipationMode.values,
         )
         selected_search_query = self.request.GET.get("q", "").strip()
+        selected_catalog_group = self._selected_catalog_group()
 
         selected_profile_labels = _selected_choice_labels(profile_code_choices, selected_profiles)
         if not selected_profiles:
@@ -605,6 +649,73 @@ class EventListView(PartialTemplateMixin, ListView):
             ]
             if chip is not None
         ]
+        show_olympiad_overview = (
+            not selected_catalog_group
+            and not selected_profiles
+            and not selected_levels
+            and not selected_participation_modes
+            and not selected_search_query
+            and (not selected_event_types or selected_event_types == [EventTypeCode.OLYMPIAD])
+        )
+        show_olympiad_group_profiles = (
+            bool(selected_catalog_group)
+            and
+            not selected_profiles
+            and not selected_levels
+            and not selected_participation_modes
+            and not selected_search_query
+            and (not selected_event_types or selected_event_types == [EventTypeCode.OLYMPIAD])
+        )
+        olympiad_overview_cards = []
+        olympiad_profile_group = None
+        for key, definition in self.OLYMPIAD_CATALOG_GROUPS.items():
+            group_queryset = (
+                Event.objects.filter(is_active=True)
+                .filter(definition["filter"])
+            )
+            available_profile_codes = set(
+                group_queryset
+                .exclude(profile_code__isnull=True)
+                .exclude(profile_code="")
+                .values_list("profile_code", flat=True)
+                .distinct()
+            )
+            if not available_profile_codes:
+                continue
+
+            if show_olympiad_overview:
+                olympiad_overview_cards.append(
+                    {
+                        "key": key,
+                        "title": definition["title"],
+                        "description": definition["description"],
+                        "url": f"{self.request.path}?{urlencode([('catalog_group', key)])}",
+                    }
+                )
+
+            if show_olympiad_group_profiles and selected_catalog_group == key:
+                profiles = []
+                for value, label in profile_code_choices:
+                    if value not in available_profile_codes:
+                        continue
+                    display_label = label
+                    if key == "high-probe" and value == "data_analysis":
+                        display_label = "DANO"
+                    profiles.append(
+                        {
+                            "code": value,
+                            "label": display_label,
+                            "url": f"{self.request.path}?{urlencode([('catalog_group', key), ('profile_code', value)])}",
+                        }
+                    )
+                olympiad_profile_group = {
+                    "key": key,
+                    "title": definition["title"],
+                    "description": definition["description"],
+                    "back_url": self.request.path,
+                    "profiles": profiles,
+                }
+
         context.update(
             {
                 "profile_code_choices": profile_code_choices,
@@ -691,6 +802,10 @@ class EventListView(PartialTemplateMixin, ListView):
                 ],
                 "applied_filter_chips": applied_filter_chips,
                 "clear_all_filters_url": self.request.path,
+                "show_olympiad_overview": show_olympiad_overview,
+                "olympiad_overview_cards": olympiad_overview_cards,
+                "show_olympiad_group_profiles": show_olympiad_group_profiles,
+                "olympiad_profile_group": olympiad_profile_group,
             }
         )
         return context

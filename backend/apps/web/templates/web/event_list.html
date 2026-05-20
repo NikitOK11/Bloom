@@ -307,7 +307,35 @@
         </section>
     {% endif %}
 
-    {% if events %}
+    {% if show_olympiad_overview %}
+        <section class="vsosh-overview-grid page-section" aria-label="{% trans 'Обзор олимпиад по профилям' %}">
+            {% for overview_card in olympiad_overview_cards %}
+            <a class="card-elevated vsosh-overview-card vsosh-overview-card-link" href="{{ overview_card.url }}" aria-label="{{ overview_card.title }}" data-filter-update-link>
+                <div class="stack">
+                    <p class="eyebrow">{% trans "Олимпиада" %}</p>
+                    <h2 class="event-title">{{ overview_card.title }}</h2>
+                    <p class="muted">{{ overview_card.description }}</p>
+                </div>
+            </a>
+            {% endfor %}
+        </section>
+    {% elif show_olympiad_group_profiles and olympiad_profile_group %}
+        <section class="vsosh-overview-grid page-section" aria-label="{{ olympiad_profile_group.title }}">
+            <article class="card-elevated vsosh-overview-card">
+                <div class="stack">
+                    <p><a class="btn btn-secondary" href="{{ olympiad_profile_group.back_url }}" data-filter-update-link>{% trans "Назад к олимпиадам" %}</a></p>
+                    <p class="eyebrow">{% trans "Олимпиада" %}</p>
+                    <h2 class="event-title">{{ olympiad_profile_group.title }}</h2>
+                    <p class="muted">{{ olympiad_profile_group.description }}</p>
+                </div>
+                <div class="vsosh-overview-links">
+                    {% for profile in olympiad_profile_group.profiles %}
+                        <a class="vsosh-overview-link" href="{{ profile.url }}" data-filter-update-link>{{ profile.label }}</a>
+                    {% endfor %}
+                </div>
+            </article>
+        </section>
+    {% elif events %}
         <section class="event-grid page-section" aria-label="{% trans 'Список событий' %}">
             {% for event in events %}
                 <article class="card-elevated event-card">
