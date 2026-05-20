@@ -33,8 +33,21 @@ class EventCatalogTests(TestCase):
             slug="olympiad",
             defaults={"name": "olympiad"},
         )
-        self.level = EventLevel.objects.create(name="Level 1", slug="level-1")
-        self.profile = EventProfile.objects.create(name="Math", slug="math")
+        self.level, _ = EventLevel.objects.get_or_create(
+            slug="level-1",
+            defaults={"name": "Level 1"},
+        )
+        if self.level.name != "Level 1":
+            self.level.name = "Level 1"
+            self.level.save(update_fields=["name"])
+
+        self.profile, _ = EventProfile.objects.get_or_create(
+            slug="math",
+            defaults={"name": "Math"},
+        )
+        if self.profile.name != "Math":
+            self.profile.name = "Math"
+            self.profile.save(update_fields=["name"])
 
     def create_event(self, title: str, **kwargs) -> Event:
         event_type = kwargs.pop("event_type", self.event_type)
