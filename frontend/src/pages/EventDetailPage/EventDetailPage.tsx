@@ -44,6 +44,8 @@ export function EventDetailPage() {
     }, [eventId]);
 
     const pageTitle = event?.name || event?.title || "Страница события";
+    const canCreateTeam =
+        event?.participation_mode === "team" || event?.participation_mode === "hybrid";
 
     return (
         <PageLayout
@@ -103,6 +105,11 @@ export function EventDetailPage() {
                             <Link className="button button-secondary" to="/events">
                                 Все события
                             </Link>
+                            {canCreateTeam && (
+                                <Link className="button button-secondary" to={`/teams/new?eventId=${event.id}`}>
+                                    Создать команду
+                                </Link>
+                            )}
                             {event.official_url && (
                                 <a
                                     className="button"
