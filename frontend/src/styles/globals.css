@@ -195,9 +195,93 @@ code {
     font-weight: 600;
 }
 
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.45rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(94, 151, 109, 0.12);
+    color: #2e5641;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.event-list,
+.edition-list {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.event-card,
+.edition-card {
+    padding: 1rem;
+    border-radius: 0.95rem;
+    border: 1px solid rgba(22, 49, 38, 0.08);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), #f8fbf7);
+}
+
+.event-card-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.event-card h3,
+.edition-card h3 {
+    margin: 0.15rem 0 0;
+}
+
+.event-meta {
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #4d725d;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.event-type {
+    flex-shrink: 0;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    background: #163126;
+    color: #f7fbf6;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.event-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.9rem;
+    margin: 1rem 0 0;
+}
+
+.event-facts div {
+    padding: 0.85rem;
+    border-radius: 0.85rem;
+    background: rgba(94, 151, 109, 0.08);
+}
+
+.event-facts dt {
+    margin-bottom: 0.3rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #4d725d;
+}
+
+.event-facts dd {
+    margin: 0;
+}
+
 @media (max-width: 720px) {
     .header-inner,
-    .card-header {
+    .card-header,
+    .event-card-header {
         flex-direction: column;
     }
 
