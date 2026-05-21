@@ -2,6 +2,7 @@ import { API_BASE_URL } from "../config/env";
 
 type RequestOptions = Omit<RequestInit, "body"> & {
     body?: BodyInit | object | null;
+    skipCsrfBootstrap?: boolean;
 };
 
 type ErrorPayload = Record<string, unknown> | string | null;
@@ -38,6 +39,38 @@ function isUnsafeMethod(method?: string | null) {
     return !["GET", "HEAD", "OPTIONS", "TRACE"].includes(normalizedMethod);
 }
 
+let csrfBootstrapPromise: Promise<void> | null = null;
+
+async function ensureCsrfCookie() {
+    if (typeof document === "undefined" || getCookie("csrftoken")) {
+        return;
+    }
+
+    if (!csrfBootstrapPromise) {
+        csrfBootstrapPromise = fetch(buildUrl("/accounts/csrf/"), {
+            method: "GET",
+            credentials: "include",
+            headers: {
+                Accept: "application/json",
+            },
+        })
+            .then(async (response) => {
+                if (!response.ok) {
+                    throw new ApiError(
+                        `API request failed: ${response.status} ${response.statusText}`,
+                        response.status,
+                        await parseResponseBody(response),
+                    );
+                }
+            })
+            .finally(() => {
+                csrfBootstrapPromise = null;
+            });
+    }
+
+    await csrfBootstrapPromise;
+}
+
 async function parseResponseBody(response: Response) {
     if (response.status === 204) {
         return null;
@@ -56,10 +89,15 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     const headers = new Headers(options.headers);
     let body = options.body;
     const method = options.method ?? "GET";
+    const { skipCsrfBootstrap, ...fetchOptions } = options;
 
     if (body && typeof body === "object" && !(body instanceof FormData) && !(body instanceof Blob)) {
         headers.set("Content-Type", "application/json");
         body = JSON.stringify(body);
+    }
+
+    if (isUnsafeMethod(method) && !headers.has("X-CSRFToken") && !skipCsrfBootstrap) {
+        await ensureCsrfCookie();
     }
 
     if (isUnsafeMethod(method) && !headers.has("X-CSRFToken")) {
@@ -70,7 +108,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     }
 
     const response = await fetch(buildUrl(path), {
-        ...options,
+        ...fetchOptions,
         method,
         body: body ?? undefined,
         headers,

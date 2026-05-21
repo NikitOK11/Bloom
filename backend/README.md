@@ -58,6 +58,14 @@ python manage.py runserver
 - The React frontend is the only user-facing UI.
 - The legacy Django `web` app has been removed from the active project architecture.
 
+## Session auth and CSRF
+
+- Bloom uses Django session authentication for the CSR frontend.
+- The frontend sends `credentials: "include"` on API requests and bootstraps a CSRF cookie through `GET /api/accounts/csrf/` before unsafe requests.
+- Login, signup, logout, team creation, and join-request creation require a valid CSRF token header together with the session cookie.
+- In production-style reverse-proxy setups, keep frontend and API on the same public origin when possible.
+- If you terminate HTTPS or serve the app behind another host, configure `CSRF_TRUSTED_ORIGINS`, `SESSION_COOKIE_SECURE`, and `CSRF_COOKIE_SECURE` through environment variables.
+
 ## Docker local development
 
 From the repository root:

@@ -1,6 +1,6 @@
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APIClient, APITestCase
 
 from apps.accounts.models import User
 from apps.events.models import Event, EventParticipationType, EventType
@@ -141,3 +141,88 @@ class TeamAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("team", response.data)
+
+
+class TeamAPICSRFTestCase(APITestCase):
+    def setUp(self):
+        self.client = APIClient(enforce_csrf_checks=True)
+        self.owner = User.objects.create_user(email="owner-csrf@example.com", password="password123")
+        self.joiner = User.objects.create_user(email="joiner-csrf@example.com", password="password123")
+        self.event_type = EventType.objects.create(name="Hackathon", slug="hackathon")
+        self.team_event = Event.objects.create(
+            title="CSRF Team Event",
+            name="CSRF Team Event",
+            event_type=self.event_type,
+            participation_type=EventParticipationType.TEAM,
+            participation_mode="team",
+        )
+        self.team = Team.objects.create(
+            event=self.team_event,
+            owner=self.owner,
+            name="CSRF Alpha Team",
+            description="Core team",
+            is_open=True,
+        )
+        TeamMembership.objects.create(
+            team=self.team,
+            user=self.owner,
+            role=TeamMembershipRole.CAPTAIN,
+        )
+
+    def _login_with_csrf(self, email: str, password: str):
+        csrf_response = self.client.get(reverse("account-csrf"))
+        csrf_token = csrf_response.cookies["csrftoken"].value
+        login_response = self.client.post(
+            reverse("account-login"),
+            data={"email": email, "password": password},
+            format="json",
+            HTTP_X_CSRFTOKEN=csrf_token,
+        )
+        self.assertEqual(login_response.status_code, status.HTTP_200_OK)
+        return self.client.cookies["csrftoken"].value
+
+    def test_create_team_requires_csrf_for_authenticated_session(self):
+        self._login_with_csrf(self.joiner.email, "password123")
+
+        response = self.client.post(
+            reverse("team-list"),
+            data={"event_id": self.team_event.id, "name": "No Csrf Team"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_create_team_succeeds_with_csrf_for_authenticated_session(self):
+        csrf_token = self._login_with_csrf(self.joiner.email, "password123")
+
+        response = self.client.post(
+            reverse("team-list"),
+            data={
+                "event_id": self.team_event.id,
+                "name": "Csrf Team",
+                "description": "Created with CSRF",
+                "is_open": True,
+            },
+            format="json",
+            HTTP_X_CSRFTOKEN=csrf_token,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_join_request_requires_csrf_for_authenticated_session(self):
+        csrf_token = self._login_with_csrf(self.joiner.email, "password123")
+
+        no_csrf_response = self.client.post(
+            reverse("team-join-requests", args=[self.team.id]),
+            data={"message": "Хочу в команду"},
+            format="json",
+        )
+        with_csrf_response = self.client.post(
+            reverse("team-join-requests", args=[self.team.id]),
+            data={"message": "Хочу в команду"},
+            format="json",
+            HTTP_X_CSRFTOKEN=csrf_token,
+        )
+
+        self.assertEqual(no_csrf_response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(with_csrf_response.status_code, status.HTTP_201_CREATED)

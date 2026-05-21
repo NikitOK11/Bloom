@@ -27,17 +27,6 @@ export type SignupPayload = {
     password_confirm: string;
 };
 
-async function primeAuthSession() {
-    try {
-        await apiClient.get<AuthUser>("/accounts/me/");
-    } catch (error) {
-        if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
-            return;
-        }
-        throw error;
-    }
-}
-
 export const authApi = {
     async getCurrentUser() {
         try {
@@ -50,15 +39,12 @@ export const authApi = {
         }
     },
     async login(payload: LoginPayload) {
-        await primeAuthSession();
         return apiClient.post<AuthResponse>("/accounts/login/", payload);
     },
     async signup(payload: SignupPayload) {
-        await primeAuthSession();
         return apiClient.post<AuthResponse>("/accounts/signup/", payload);
     },
     async logout() {
-        await primeAuthSession();
         return apiClient.post<{ detail: string }>("/accounts/logout/", {});
     },
 };

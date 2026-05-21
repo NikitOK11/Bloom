@@ -1,5 +1,6 @@
 from django.contrib.auth import login, logout
 from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework import permissions, status
 from rest_framework.response import Response
@@ -8,6 +9,16 @@ from rest_framework.views import APIView
 from apps.accounts.serializers import LoginSerializer, SignupSerializer, UserSerializer
 
 
+@method_decorator(ensure_csrf_cookie, name="dispatch")
+class CsrfBootstrapAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+        return Response({"detail": "CSRF cookie set."}, status=status.HTTP_200_OK)
+
+
+@method_decorator(csrf_protect, name="dispatch")
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class SignupAPIView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -26,6 +37,7 @@ class SignupAPIView(APIView):
         )
 
 
+@method_decorator(csrf_protect, name="dispatch")
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class LoginAPIView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -43,6 +55,7 @@ class LoginAPIView(APIView):
         )
 
 
+@method_decorator(csrf_protect, name="dispatch")
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class LogoutAPIView(APIView):
     permission_classes = [permissions.AllowAny]

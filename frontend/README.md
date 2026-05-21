@@ -55,8 +55,11 @@ By default, requests go to `/api` and the shared client:
 
 - builds URLs relative to `VITE_API_BASE_URL`;
 - sends `credentials: "include"`;
+- bootstraps a CSRF cookie from `/api/accounts/csrf/` before unsafe requests;
 - handles JSON and empty responses safely;
 - throws useful errors for non-OK responses.
+
+Bloom is expected to run behind one public origin in the production-style setup, so the React app talks to Django through the same host and path split. That means no separate CORS layer is required for the normal Docker/nginx flow.
 
 If Django runs on a separate origin in development, point the variable to the full API base URL, for example:
 
