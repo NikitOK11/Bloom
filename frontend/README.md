@@ -68,14 +68,15 @@ VITE_API_BASE_URL=http://localhost:8000/api
 
 The repository includes a minimal Nginx scaffold for production-like routing:
 
-- `frontend/Dockerfile` builds the React app and serves it with Nginx;
-- `frontend/deploy/nginx/default.conf` proxies `/api/` and `/admin/` to Django;
-- all other paths fall back to `index.html`, so React Router keeps working after refresh on routes like `/events/1`, `/profile`, and `/teams/1`.
+- `frontend/Dockerfile` builds the React app and produces the internal `frontend` static service;
+- `frontend/deploy/nginx/frontend.conf` makes the internal frontend service serve the React build with SPA fallback;
+- `deploy/nginx/default.conf` is the reverse-proxy entrypoint that sends `/api/` and `/admin/` to Django and all other paths to the frontend service;
+- React Router keeps working after refresh on routes like `/events/1`, `/profile`, and `/teams/1`.
 
 Example:
 
 ```bash
-docker compose -f compose.prod.yml up --build
+docker compose up --build
 ```
 
 After that:

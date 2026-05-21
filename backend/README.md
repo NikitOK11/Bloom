@@ -66,7 +66,19 @@ From the repository root:
 docker compose up --build
 ```
 
-The Django app serves API and admin endpoints at `http://127.0.0.1:8000/api/` and `http://127.0.0.1:8000/admin/`.
+Service responsibilities:
+
+- `db` — PostgreSQL;
+- `backend` — Django API + admin app process;
+- `frontend` — built React CSR bundle served internally;
+- `nginx` — reverse proxy that sends `/api/` and `/admin/` to Django, and all normal page routes to React.
+
+The main entrypoint is `http://127.0.0.1:8080/`.
+
+- `http://127.0.0.1:8080/api/` goes to the Django API;
+- `http://127.0.0.1:8080/admin/` goes to Django admin;
+- normal user-facing routes such as `/events/1` and `/profile` go to the React frontend and keep working after browser refresh.
+
 PostgreSQL is exposed on host port `5433` by default to avoid clashing with a local PostgreSQL install.
 Override it with `POSTGRES_HOST_PORT=5432 docker compose up --build` if needed.
 
@@ -79,6 +91,6 @@ docker compose down
 Run management commands:
 
 ```bash
-docker compose exec web python manage.py createsuperuser
-docker compose exec web python manage.py test
+docker compose exec backend python manage.py createsuperuser
+docker compose exec backend python manage.py test
 ```
