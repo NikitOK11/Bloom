@@ -51,7 +51,7 @@ npm run build
 
 - Django продолжает обслуживать `/api/` и `/admin/`;
 - React становится основным UI для обычных пользовательских URL;
-- существующие Django templates и `backend/apps/web/` пока остаются в проекте и не удаляются на этом шаге.
+- существующие Django templates и `backend/apps/web/` пока остаются в проекте и не удаляются на этом шаге, но Django больше не монтирует их как активные root/user-facing маршруты.
 
 Пример запуска scaffolding-конфигурации:
 
@@ -96,8 +96,10 @@ VITE_API_BASE_URL=http://localhost:8000/api
 
 Существующие Django templates и текущий product-facing UI специально не удаляются в этом шаге миграции.
 
-Пока что:
+Сейчас routing responsibility split такой:
 
 - `frontend/` — это новый CSR foundation;
-- `backend/apps/web/` продолжает обслуживать текущие server-rendered страницы;
+- React — единственный intended UI для обычных пользовательских страниц;
+- Django обслуживает только `/api/` и `/admin/`;
+- `backend/apps/web/` остаётся в репозитории как legacy-код переходного периода, но его маршруты больше не подключены в корневой Django URL config;
 - перенос пользовательских экранов из Django в React будет идти постепенно в следующих PR.

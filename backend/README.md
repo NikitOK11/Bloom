@@ -52,6 +52,12 @@ python manage.py runserver
 - `GET http://127.0.0.1:8000/api/health/`
 - Expected response: `{"status":"ok"}`
 
+## Routing responsibility
+
+- Django now serves backend concerns only: `/api/` and `/admin/`.
+- Normal user-facing pages are intended to be served by the React frontend.
+- Legacy code in `backend/apps/web/` is still kept in the repository during the transition, but its template routes are no longer mounted in the root Django URL config.
+
 ## Docker local development
 
 From the repository root:
@@ -60,7 +66,7 @@ From the repository root:
 docker compose up --build
 ```
 
-The app will be available at `http://127.0.0.1:8000/`.
+The Django app serves API and admin endpoints at `http://127.0.0.1:8000/api/` and `http://127.0.0.1:8000/admin/`.
 PostgreSQL is exposed on host port `5433` by default to avoid clashing with a local PostgreSQL install.
 Override it with `POSTGRES_HOST_PORT=5432 docker compose up --build` if needed.
 
