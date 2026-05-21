@@ -54,9 +54,9 @@ python manage.py runserver
 
 ## Routing responsibility
 
-- Django now serves backend concerns only: `/api/` and `/admin/`.
-- Normal user-facing pages are intended to be served by the React frontend.
-- Legacy code in `backend/apps/web/` is still kept in the repository during the transition, but its template routes are no longer mounted in the root Django URL config.
+- Django serves backend concerns only: `/api/` and `/admin/`.
+- The React frontend is the only user-facing UI.
+- The legacy Django `web` app has been removed from the active project architecture.
 
 ## Docker local development
 

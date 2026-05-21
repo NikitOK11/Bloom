@@ -27,7 +27,6 @@ INSTALLED_APPS = [
     "apps.events.apps.EventsConfig",
     "apps.teams.apps.TeamsConfig",
     "apps.competitions.apps.CompetitionsConfig",
-    "apps.web.apps.WebConfig",
 ]
 
 MIDDLEWARE = [
@@ -113,6 +112,6 @@ LOGGING = {
     },
 }
 
-LOGIN_URL = "/login/"
-LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "/"
+LOGIN_URL = "/admin/login/"
+LOGIN_REDIRECT_URL = "/admin/"
+LOGOUT_REDIRECT_URL = "/admin/login/"

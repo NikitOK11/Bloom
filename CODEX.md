@@ -1,7 +1,7 @@
 ﻿# CODEX.md
 
 ## 1) Короткое описание проекта
-- Проект: backend-only платформа на Django для рынка РФ/СНГ, без фронтенда в текущем репозитории.
+- Проект: React CSR frontend + Django API backend платформа для рынка РФ/СНГ.
 - Продуктовое ядро: каталог событий для удобного поиска и выбора.
 - Event — новая центральная доменная сущность; событие может быть олимпиадой, хакатоном или кейс-чемпионатом.
 - Поиск команды — отдельный пользовательский путь только для событий с командным или смешанным участием.
@@ -108,7 +108,7 @@ python manage.py test
 - Legacy olympiad model/app полностью удален из проекта; новые product-facing данные создавать только через `Event`/Событие.
 - `Event`/Событие — основная модель чтения для пользовательских страниц и редактирования в админке.
 - Активное UI-направление: light + deep green academic landing, Russian-first UX, event-first каталог; в product-facing UI не добавлять ссылки на админку; визуальные PR оставлять маленькими и пушить напрямую в `origin main`.
-- Product-facing web использует Django templates с vanilla JS partial navigation как progressive enhancement; обычные Django routes должны оставаться рабочими без JavaScript.
+- Product-facing UI теперь живет во `frontend/` на React CSR; Django отвечает только за `/api/` и `/admin/`.
 - Product-facing UI — Russian-first; English поддерживается как вторичный язык, а переключение языка должно быть простым и быстрым.
 - Event schema находится в переходной фазе: старые richer fields пока остаются, а новые canonical scalar fields добавляются как мост к финальной DB-схеме.
 - Product-facing код теперь считает canonical scalar fields (`name`, `event_type_code`, `profile_code`, `level_code`, `participation_mode`, `official_url`) основным источником; legacy Event fields остаются только для совместимости во время миграции.

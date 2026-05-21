@@ -1,30 +1,29 @@
 # Bloom frontend
 
-`frontend/` — это первый шаг к отдельному client-side frontend для Bloom на React + Vite + TypeScript.
+`frontend/` is the production user-facing application for Bloom, built with React + Vite + TypeScript.
 
-На этом этапе приложение:
+Bloom now uses a split architecture:
 
-- создаёт отдельный CSR-каркас для пользовательских страниц;
-- не удаляет и не переписывает существующий Django UI;
-- подключается к текущему Django API через общий клиент;
-- оставляет server-rendered шаблоны в `backend/apps/web/` рабочими и нетронутыми.
+- `frontend/` serves the normal user-facing UI as a client-side rendered React app;
+- `backend/` serves the Django API under `/api/` and Django admin under `/admin/`;
+- the old Django template-based `backend/apps/web/` UI has been removed from the active architecture.
 
-## Что уже есть
+## Current capabilities
 
-- маршруты `/`, `/events`, `/events/:eventId`, `/olympiads` и fallback 404;
-- общий API-клиент в `src/shared/api/client.ts`;
-- чтение `VITE_API_BASE_URL` с дефолтом `/api`;
-- минимальная проверка доступности backend API на главной странице;
-- базовые глобальные стили без UI-фреймворков.
+- routes for `/`, `/events`, `/events/:eventId`, `/olympiads`, `/login`, `/signup`, `/profile`, `/teams/new`, and `/teams/:teamId`;
+- shared API client in `src/shared/api/client.ts`;
+- session-based auth via the Django accounts API;
+- Event catalog, Event detail, profile, and team flows powered by the Django API;
+- global styling and bundled frontend assets inside `frontend/`.
 
-## Установка зависимостей
+## Install dependencies
 
 ```bash
 cd frontend
 npm install
 ```
 
-## Запуск dev-сервера
+## Run the dev server
 
 ```bash
 cd frontend
@@ -38,68 +37,49 @@ cd frontend
 npm run build
 ```
 
-## Production routing scaffold
+## API connection
 
-Для production routing в репозитории добавлен минимальный Nginx-scaffold:
-
-- `frontend/Dockerfile` собирает React-приложение и кладёт build в Nginx;
-- `frontend/deploy/nginx/default.conf` проксирует `/api/` и `/admin/` в Django backend;
-- все остальные пути отдаются из React build через `try_files ... /index.html`, поэтому refresh на маршрутах вроде `/events/1`, `/profile` и `/teams/1` не ломает React Router;
-- `compose.prod.yml` показывает базовую связку `frontend` + `web` + `db` для production-подобного запуска.
-
-Идея маршрутизации такая:
-
-- Django продолжает обслуживать `/api/` и `/admin/`;
-- React становится основным UI для обычных пользовательских URL;
-- существующие Django templates и `backend/apps/web/` пока остаются в проекте и не удаляются на этом шаге, но Django больше не монтирует их как активные root/user-facing маршруты.
-
-Пример запуска scaffolding-конфигурации:
-
-```bash
-docker compose -f compose.prod.yml up --build
-```
-
-После этого:
-
-- `http://localhost:8080/api/` идёт в Django API;
-- `http://localhost:8080/admin/` идёт в Django admin;
-- `http://localhost:8080/events/1`, `http://localhost:8080/profile` и другие CSR-маршруты открываются через React.
-
-## Подключение к Django API
-
-Frontend использует переменную окружения:
+The frontend uses:
 
 ```bash
 VITE_API_BASE_URL=/api
 ```
 
-Пример файла:
+See:
 
 ```bash
 frontend/.env.example
 ```
 
-По умолчанию запросы идут в `/api`, а клиент:
+By default, requests go to `/api` and the shared client:
 
-- строит URL относительно `VITE_API_BASE_URL`;
-- отправляет `credentials: "include"`;
-- корректно обрабатывает JSON и пустые ответы;
-- выбрасывает понятную ошибку для неуспешных ответов.
+- builds URLs relative to `VITE_API_BASE_URL`;
+- sends `credentials: "include"`;
+- handles JSON and empty responses safely;
+- throws useful errors for non-OK responses.
 
-Если backend запущен отдельно, можно задать полный base URL, например:
+If Django runs on a separate origin in development, point the variable to the full API base URL, for example:
 
 ```bash
 VITE_API_BASE_URL=http://localhost:8000/api
 ```
 
-## Важно для текущей миграции
+## Production routing scaffold
 
-Существующие Django templates и текущий product-facing UI специально не удаляются в этом шаге миграции.
+The repository includes a minimal Nginx scaffold for production-like routing:
 
-Сейчас routing responsibility split такой:
+- `frontend/Dockerfile` builds the React app and serves it with Nginx;
+- `frontend/deploy/nginx/default.conf` proxies `/api/` and `/admin/` to Django;
+- all other paths fall back to `index.html`, so React Router keeps working after refresh on routes like `/events/1`, `/profile`, and `/teams/1`.
 
-- `frontend/` — это новый CSR foundation;
-- React — единственный intended UI для обычных пользовательских страниц;
-- Django обслуживает только `/api/` и `/admin/`;
-- `backend/apps/web/` остаётся в репозитории как legacy-код переходного периода, но его маршруты больше не подключены в корневой Django URL config;
-- перенос пользовательских экранов из Django в React будет идти постепенно в следующих PR.
+Example:
+
+```bash
+docker compose -f compose.prod.yml up --build
+```
+
+After that:
+
+- `http://localhost:8080/api/` goes to the Django API;
+- `http://localhost:8080/admin/` goes to Django admin;
+- normal user-facing URLs go to the React frontend.
