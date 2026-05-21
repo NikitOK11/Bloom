@@ -38,6 +38,33 @@ cd frontend
 npm run build
 ```
 
+## Production routing scaffold
+
+Для production routing в репозитории добавлен минимальный Nginx-scaffold:
+
+- `frontend/Dockerfile` собирает React-приложение и кладёт build в Nginx;
+- `frontend/deploy/nginx/default.conf` проксирует `/api/` и `/admin/` в Django backend;
+- все остальные пути отдаются из React build через `try_files ... /index.html`, поэтому refresh на маршрутах вроде `/events/1`, `/profile` и `/teams/1` не ломает React Router;
+- `compose.prod.yml` показывает базовую связку `frontend` + `web` + `db` для production-подобного запуска.
+
+Идея маршрутизации такая:
+
+- Django продолжает обслуживать `/api/` и `/admin/`;
+- React становится основным UI для обычных пользовательских URL;
+- существующие Django templates и `backend/apps/web/` пока остаются в проекте и не удаляются на этом шаге.
+
+Пример запуска scaffolding-конфигурации:
+
+```bash
+docker compose -f compose.prod.yml up --build
+```
+
+После этого:
+
+- `http://localhost:8080/api/` идёт в Django API;
+- `http://localhost:8080/admin/` идёт в Django admin;
+- `http://localhost:8080/events/1`, `http://localhost:8080/profile` и другие CSR-маршруты открываются через React.
+
 ## Подключение к Django API
 
 Frontend использует переменную окружения:
