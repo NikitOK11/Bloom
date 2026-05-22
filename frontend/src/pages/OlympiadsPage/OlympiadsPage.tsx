@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+import {
+    getLevelLabel,
+    getParticipationModeLabel,
+    getProfileLabel,
+} from "../../shared/api/eventLabels";
 import { eventsApi, type EventListItem } from "../../shared/api/events";
 import { PageLayout } from "../../shared/ui/PageLayout";
 
@@ -40,7 +45,7 @@ export function OlympiadsPage() {
     return (
         <PageLayout
             title="Олимпиады"
-            description="В Bloom олимпиады остаются частью единого event-centric каталога и загружаются как события с типом olympiad."
+            description="В Bloom олимпиады остаются частью единого каталога событий и открываются в таком же плавном, лёгком интерфейсе."
         >
             <section className="card">
                 <div className="card-header">
@@ -73,7 +78,7 @@ export function OlympiadsPage() {
                                         </p>
                                         <h3>{event.name || event.title}</h3>
                                     </div>
-                                    <span className="event-type">olympiad</span>
+                                    <span className="event-type">Олимпиада</span>
                                 </div>
                                 <p className="muted">
                                     {event.short_description || "Краткое описание пока не добавлено."}
@@ -81,15 +86,15 @@ export function OlympiadsPage() {
                                 <dl className="event-facts">
                                     <div>
                                         <dt>Профиль олимпиады</dt>
-                                        <dd>{event.profile_code || "Не указан"}</dd>
+                                        <dd>{getProfileLabel(event.profile_code)}</dd>
                                     </div>
                                     <div>
-                                        <dt>Уровень</dt>
-                                        <dd>{event.level_code || "Не указан"}</dd>
+                                        <dt>Уровень олимпиады</dt>
+                                        <dd>{getLevelLabel(event.level_code)}</dd>
                                     </div>
                                     <div>
                                         <dt>Формат участия</dt>
-                                        <dd>{event.participation_mode || "Не указан"}</dd>
+                                        <dd>{getParticipationModeLabel(event.participation_mode)}</dd>
                                     </div>
                                 </dl>
                                 <div className="action-row">

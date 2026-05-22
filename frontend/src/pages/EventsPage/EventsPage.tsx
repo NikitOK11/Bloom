@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import {
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+    type FormEvent,
+} from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import {
@@ -14,6 +20,18 @@ import { PageLayout } from "../../shared/ui/PageLayout";
 
 type LoadState = "loading" | "success" | "error";
 type FilterParam = "profile" | "level" | "participation_mode";
+type OpenPanel = FilterParam | "search" | null;
+
+type FilterDropdownProps = {
+    dropdownKey: FilterParam;
+    isOpen: boolean;
+    label: string;
+    summary: string;
+    options: FilterOption[];
+    selectedValues: string[];
+    onToggle: () => void;
+    onValueToggle: (value: string) => void;
+};
 
 function SearchIcon({ className }: { className?: string }) {
     return (
@@ -32,6 +50,21 @@ function SearchIcon({ className }: { className?: string }) {
                 stroke="currentColor"
                 strokeWidth="1.6"
                 strokeLinecap="round"
+            />
+        </svg>
+    );
+}
+
+function ChevronIcon({ className, isOpen }: { className?: string; isOpen: boolean }) {
+    return (
+        <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+            <path
+                d={isOpen ? "M7 14 12 9 17 14" : "M7 10 12 15 17 10"}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
             />
         </svg>
     );
@@ -84,12 +117,85 @@ function matchesSearch(event: EventListItem, query: string) {
     return searchSource.includes(normalizedQuery);
 }
 
+function buildSelectedSummary(selectedValues: string[], options: FilterOption[], emptyLabel: string) {
+    if (selectedValues.length === 0) {
+        return emptyLabel;
+    }
+
+    const labels = options
+        .filter((option) => selectedValues.includes(option.value))
+        .map((option) => option.label);
+
+    if (labels.length === 1) {
+        return labels[0];
+    }
+
+    return `${labels[0]} +${labels.length - 1}`;
+}
+
+function FilterDropdown({
+    dropdownKey,
+    isOpen,
+    label,
+    summary,
+    options,
+    selectedValues,
+    onToggle,
+    onValueToggle,
+}: FilterDropdownProps) {
+    return (
+        <div className="filter-dropdown">
+            <button
+                className={isOpen ? "filter-trigger filter-trigger-open" : "filter-trigger"}
+                type="button"
+                aria-expanded={isOpen}
+                aria-controls={`${dropdownKey}-panel`}
+                onClick={onToggle}
+            >
+                <span className="filter-trigger-copy">
+                    <span className="filter-trigger-label">{label}</span>
+                    <span className="filter-trigger-value">{summary}</span>
+                </span>
+                <ChevronIcon className="filter-chevron" isOpen={isOpen} />
+            </button>
+
+            {isOpen && (
+                <div className="filter-popover" id={`${dropdownKey}-panel`}>
+                    <div className="filter-option-list">
+                        {options.map((option) => {
+                            const checked = selectedValues.includes(option.value);
+                            return (
+                                <button
+                                    key={option.value}
+                                    className={
+                                        checked
+                                            ? "filter-option filter-option-active"
+                                            : "filter-option"
+                                    }
+                                    type="button"
+                                    onClick={() => onValueToggle(option.value)}
+                                >
+                                    <span className="filter-option-checkbox" aria-hidden="true">
+                                        {checked && <span className="filter-option-checkbox-mark" />}
+                                    </span>
+                                    <span>{option.label}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 export function EventsPage() {
     const [events, setEvents] = useState<EventListItem[]>([]);
     const [state, setState] = useState<LoadState>("loading");
     const [searchParams, setSearchParams] = useSearchParams();
-    const [isSearchExpanded, setIsSearchExpanded] = useState(Boolean(searchParams.get("q")));
+    const [openPanel, setOpenPanel] = useState<OpenPanel>(null);
     const [searchValue, setSearchValue] = useState(searchParams.get("q") ?? "");
+    const toolbarRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         let isMounted = true;
@@ -121,10 +227,29 @@ export function EventsPage() {
     useEffect(() => {
         const currentQuery = searchParams.get("q") ?? "";
         setSearchValue(currentQuery);
-        if (currentQuery) {
-            setIsSearchExpanded(true);
-        }
     }, [searchParams]);
+
+    useEffect(() => {
+        const handlePointerDown = (event: MouseEvent) => {
+            if (!toolbarRef.current?.contains(event.target as Node)) {
+                setOpenPanel(null);
+            }
+        };
+
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                setOpenPanel(null);
+            }
+        };
+
+        document.addEventListener("mousedown", handlePointerDown);
+        document.addEventListener("keydown", handleEscape);
+
+        return () => {
+            document.removeEventListener("mousedown", handlePointerDown);
+            document.removeEventListener("keydown", handleEscape);
+        };
+    }, []);
 
     const profileOptions = useMemo(
         () => buildFilterOptions(events.map((event) => event.profile_code), getProfileLabel),
@@ -187,6 +312,18 @@ export function EventsPage() {
         selectedParticipationModes.length > 0 ||
         Boolean(searchQuery);
 
+    const profileSummary = buildSelectedSummary(
+        selectedProfiles,
+        profileOptions,
+        "Все профили",
+    );
+    const levelSummary = buildSelectedSummary(selectedLevels, levelOptions, "Все уровни");
+    const participationSummary = buildSelectedSummary(
+        selectedParticipationModes,
+        participationOptions,
+        "Все форматы",
+    );
+
     const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
@@ -205,8 +342,38 @@ export function EventsPage() {
     const handleResetFilters = () => {
         setSearchValue("");
         setSearchParams(new URLSearchParams());
-        setIsSearchExpanded(false);
+        setOpenPanel(null);
     };
+
+    const filterItems: Array<{
+        key: FilterParam;
+        label: string;
+        summary: string;
+        options: FilterOption[];
+        selectedValues: string[];
+    }> = [
+        {
+            key: "profile",
+            label: "Профиль участия",
+            summary: profileSummary,
+            options: profileOptions,
+            selectedValues: selectedProfiles,
+        },
+        {
+            key: "level",
+            label: "Уровень олимпиады",
+            summary: levelSummary,
+            options: levelOptions,
+            selectedValues: selectedLevels,
+        },
+        {
+            key: "participation_mode",
+            label: "Формат участия",
+            summary: participationSummary,
+            options: participationOptions,
+            selectedValues: selectedParticipationModes,
+        },
+    ];
 
     return (
         <PageLayout
@@ -219,143 +386,97 @@ export function EventsPage() {
                         <h2>Активные события</h2>
                         <p className="muted">
                             Здесь собраны олимпиады, хакатоны и кейс-чемпионаты с едиными
-                            карточками, лаконичными фильтрами и быстрым переходом к деталям.
+                            карточками, раскрывающимися фильтрами и быстрым переходом к деталям.
                         </p>
                     </div>
                     <span className="badge">Найдено: {filteredEvents.length}</span>
                 </div>
 
-                <div className="events-toolbar">
-                    <section className="events-filters" aria-label="Фильтры по событиям">
-                        <div className="filter-group">
-                            <p className="filter-label">Профиль участия</p>
-                            <div className="filter-chips">
-                                {profileOptions.map((option) => (
-                                    <button
-                                        key={option.value}
-                                        className={
-                                            selectedProfiles.includes(option.value)
-                                                ? "filter-chip filter-chip-active"
-                                                : "filter-chip"
-                                        }
-                                        type="button"
-                                        onClick={() =>
-                                            toggleFilterValue(
-                                                searchParams,
-                                                setSearchParams,
-                                                "profile",
-                                                option.value,
-                                                selectedProfiles,
-                                            )
-                                        }
-                                    >
-                                        <span className="filter-check" aria-hidden="true" />
-                                        <span>{option.label}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+                <div className="events-toolbar" ref={toolbarRef}>
+                    <section className="events-filter-row" aria-label="Фильтры по событиям">
+                        {filterItems.map((item) => (
+                            <FilterDropdown
+                                key={item.key}
+                                dropdownKey={item.key}
+                                isOpen={openPanel === item.key}
+                                label={item.label}
+                                summary={item.summary}
+                                options={item.options}
+                                selectedValues={item.selectedValues}
+                                onToggle={() =>
+                                    setOpenPanel((current) =>
+                                        current === item.key ? null : item.key,
+                                    )
+                                }
+                                onValueToggle={(value) =>
+                                    toggleFilterValue(
+                                        searchParams,
+                                        setSearchParams,
+                                        item.key,
+                                        value,
+                                        item.selectedValues,
+                                    )
+                                }
+                            />
+                        ))}
 
-                        <div className="filter-group">
-                            <p className="filter-label">Уровень олимпиады</p>
-                            <div className="filter-chips">
-                                {levelOptions.map((option) => (
-                                    <button
-                                        key={option.value}
-                                        className={
-                                            selectedLevels.includes(option.value)
-                                                ? "filter-chip filter-chip-active"
-                                                : "filter-chip"
-                                        }
-                                        type="button"
-                                        onClick={() =>
-                                            toggleFilterValue(
-                                                searchParams,
-                                                setSearchParams,
-                                                "level",
-                                                option.value,
-                                                selectedLevels,
-                                            )
-                                        }
-                                    >
-                                        <span className="filter-check" aria-hidden="true" />
-                                        <span>{option.label}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+                        <div className="events-search-shell">
+                            <button
+                                className={
+                                    openPanel === "search"
+                                        ? "search-toggle search-toggle-open"
+                                        : "search-toggle"
+                                }
+                                type="button"
+                                aria-label="Открыть поиск по событиям"
+                                onClick={() =>
+                                    setOpenPanel((current) =>
+                                        current === "search" ? null : "search",
+                                    )
+                                }
+                            >
+                                <SearchIcon className="search-icon" />
+                                <span className="search-toggle-label">
+                                    {searchQuery ? `Поиск: ${searchQuery}` : "Поиск"}
+                                </span>
+                                <ChevronIcon
+                                    className="filter-chevron"
+                                    isOpen={openPanel === "search"}
+                                />
+                            </button>
 
-                        <div className="filter-group">
-                            <p className="filter-label">Формат участия</p>
-                            <div className="filter-chips">
-                                {participationOptions.map((option) => (
-                                    <button
-                                        key={option.value}
-                                        className={
-                                            selectedParticipationModes.includes(option.value)
-                                                ? "filter-chip filter-chip-active"
-                                                : "filter-chip"
-                                        }
-                                        type="button"
-                                        onClick={() =>
-                                            toggleFilterValue(
-                                                searchParams,
-                                                setSearchParams,
-                                                "participation_mode",
-                                                option.value,
-                                                selectedParticipationModes,
-                                            )
-                                        }
-                                    >
-                                        <span className="filter-check" aria-hidden="true" />
-                                        <span>{option.label}</span>
-                                    </button>
-                                ))}
-                            </div>
+                            {openPanel === "search" && (
+                                <div className="search-popover">
+                                    <form className="search-form" onSubmit={handleSearchSubmit}>
+                                        <input
+                                            className="search-input"
+                                            type="search"
+                                            name="q"
+                                            value={searchValue}
+                                            onChange={(event) => setSearchValue(event.target.value)}
+                                            placeholder="Поиск по событиям"
+                                        />
+                                        <button className="button search-submit" type="submit">
+                                            Найти
+                                        </button>
+                                    </form>
+                                </div>
+                            )}
                         </div>
                     </section>
 
-                    <div
-                        className={
-                            isSearchExpanded ? "events-search events-search-open" : "events-search"
-                        }
-                    >
-                        <button
-                            className="search-toggle"
-                            type="button"
-                            aria-label="Открыть поиск по событиям"
-                            onClick={() => setIsSearchExpanded((current) => !current)}
-                        >
-                            <SearchIcon className="search-icon" />
-                        </button>
-
-                        {isSearchExpanded && (
-                            <form className="search-form" onSubmit={handleSearchSubmit}>
-                                <input
-                                    className="search-input"
-                                    type="search"
-                                    name="q"
-                                    value={searchValue}
-                                    onChange={(event) => setSearchValue(event.target.value)}
-                                    placeholder="Поиск по событиям"
-                                />
-                            </form>
-                        )}
-
-                        {hasActiveFilters && (
+                    {hasActiveFilters && (
+                        <div className="events-toolbar-actions">
                             <button className="search-reset" type="button" onClick={handleResetFilters}>
-                                Сбросить
+                                Сбросить всё
                             </button>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
 
                 {state === "loading" && <p>Загружаем события...</p>}
                 {state === "error" && (
-                    <p>
-                        Не удалось загрузить события. Проверьте доступность API и попробуйте ещё
-                        раз.
-                    </p>
+                    <p>Не удалось загрузить события. Проверьте доступность API и попробуйте ещё раз.</p>
                 )}
                 {state === "success" && filteredEvents.length === 0 && (
                     <p>По выбранным параметрам пока ничего не найдено.</p>
