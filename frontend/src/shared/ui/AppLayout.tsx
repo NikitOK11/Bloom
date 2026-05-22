@@ -1,5 +1,7 @@
+import type { ComponentType } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 
+import { useAuth } from "../../app/AuthProvider";
 import bloomLogomark from "../../assets/home/bloom-logomark.png";
 
 type IconProps = {
@@ -85,14 +87,48 @@ function ProfileIcon({ className }: IconProps) {
     );
 }
 
-const navItems = [
-    { to: "/", label: "Главная", end: true, icon: HomeIcon },
-    { to: "/events/", label: "События", icon: EventsIcon },
-    { to: "/teams/new", label: "Команды", icon: TeamsIcon },
-    { to: "/profile", label: "Профиль", icon: ProfileIcon },
-];
+function AuthIcon({ className }: IconProps) {
+    return (
+        <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+            <path
+                d="M13.5 6.25h3.4a1.85 1.85 0 0 1 1.85 1.85v7.8a1.85 1.85 0 0 1-1.85 1.85h-3.4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path
+                d="M10.25 8.9 13.2 12l-2.95 3.1M13 12H5.6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    );
+}
+
+type NavItem = {
+    to: string;
+    label: string;
+    end?: boolean;
+    icon: ComponentType<IconProps>;
+};
 
 export function AppLayout() {
+    const { isAuthenticated } = useAuth();
+
+    const navItems: NavItem[] = [
+        { to: "/", label: "Главная", end: true, icon: HomeIcon },
+        { to: "/events/", label: "События", icon: EventsIcon },
+        { to: "/teams/new", label: "Команды", icon: TeamsIcon },
+        isAuthenticated
+            ? { to: "/profile", label: "Профиль", icon: ProfileIcon }
+            : { to: "/login", label: "Войти / Регистрация", icon: AuthIcon },
+    ];
+
     return (
         <div className="app-shell">
             <header className="app-header">

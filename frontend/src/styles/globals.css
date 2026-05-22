@@ -116,8 +116,8 @@ code {
     justify-content: center;
     align-items: center;
     justify-self: center;
-    min-width: min(100%, 52rem);
-    gap: 1.9rem;
+    min-width: min(100%, 50rem);
+    gap: 1.35rem;
     padding: 0;
     background: transparent;
     border: none;
@@ -130,28 +130,25 @@ code {
     justify-content: center;
     gap: 0.6rem;
     min-height: 2.95rem;
-    padding: 0.65rem 0;
+    padding: 0.68rem 1.15rem;
     border-radius: 999px;
     color: #355645;
     font-size: 0.96rem;
     font-weight: 500;
     transition:
-        background-color 120ms ease,
-        color 120ms ease,
-        transform 120ms ease,
-        box-shadow 120ms ease;
+        background-color 180ms ease,
+        color 180ms ease,
+        opacity 180ms ease;
 }
 
 .nav-link:hover {
     color: #214232;
-    background: transparent;
-    transform: translateY(-1px);
+    background: rgba(22, 49, 38, 0.045);
 }
 
 .nav-link-active {
     background: #163126;
     color: #f7fbf6;
-    padding-inline: 1.35rem;
     box-shadow: none;
 }
 
@@ -567,10 +564,6 @@ code {
         width: 100%;
         text-align: center;
         justify-content: center;
-        padding-inline: 1rem;
-    }
-
-    .nav-link-active {
         padding-inline: 1rem;
     }
 
