@@ -10,18 +10,18 @@ function HomeIcon({ className }: IconProps) {
     return (
         <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
             <path
-                d="M4 10.5 12 4l8 6.5"
+                d="M5.25 10.4 12 5.25l6.75 5.15"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.9"
+                strokeWidth="1.6"
                 strokeLinecap="round"
                 strokeLinejoin="round"
             />
             <path
-                d="M6.5 9.5V20h11V9.5"
+                d="M7.6 9.6V18.5h8.8V9.6"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.9"
+                strokeWidth="1.6"
                 strokeLinecap="round"
                 strokeLinejoin="round"
             />
@@ -32,30 +32,23 @@ function HomeIcon({ className }: IconProps) {
 function EventsIcon({ className }: IconProps) {
     return (
         <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
-            <path
-                d="M7 4v3M17 4v3M5 9h14"
+            <rect
+                x="5.2"
+                y="6.4"
+                width="13.6"
+                height="12"
+                rx="2.2"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.9"
+                strokeWidth="1.6"
+            />
+            <path
+                d="M8.2 4.9v2.8M15.8 4.9v2.8M5.8 9.8h12.4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-            />
-            <rect
-                x="5"
-                y="6"
-                width="14"
-                height="13"
-                rx="2.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.9"
-            />
-            <path
-                d="M9 13h2.5M9 16h6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.9"
-                strokeLinecap="round"
             />
         </svg>
     );
@@ -64,13 +57,13 @@ function EventsIcon({ className }: IconProps) {
 function TeamsIcon({ className }: IconProps) {
     return (
         <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="9" cy="10" r="3" fill="none" stroke="currentColor" strokeWidth="1.9" />
-            <circle cx="16.5" cy="11" r="2.5" fill="none" stroke="currentColor" strokeWidth="1.9" />
+            <circle cx="9" cy="9.8" r="2.3" fill="none" stroke="currentColor" strokeWidth="1.6" />
+            <circle cx="15.8" cy="10.5" r="1.9" fill="none" stroke="currentColor" strokeWidth="1.6" />
             <path
-                d="M4.5 19a4.5 4.5 0 0 1 9 0M14 18.5a3.5 3.5 0 0 1 6 0"
+                d="M5.3 17.8a3.7 3.7 0 0 1 7.4 0M13.4 17.5a3 3 0 0 1 5.1 0"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.9"
+                strokeWidth="1.6"
                 strokeLinecap="round"
             />
         </svg>
@@ -80,12 +73,12 @@ function TeamsIcon({ className }: IconProps) {
 function ProfileIcon({ className }: IconProps) {
     return (
         <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="8.5" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.9" />
+            <circle cx="12" cy="8.3" r="2.9" fill="none" stroke="currentColor" strokeWidth="1.6" />
             <path
-                d="M5.5 19a6.5 6.5 0 0 1 13 0"
+                d="M6.45 18.15a5.55 5.55 0 0 1 11.1 0"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.9"
+                strokeWidth="1.6"
                 strokeLinecap="round"
             />
         </svg>
@@ -130,6 +123,8 @@ export function AppLayout() {
                             );
                         })}
                     </nav>
+
+                    <div className="header-balance" aria-hidden="true" />
                 </div>
             </header>
 
@@ -141,8 +136,7 @@ export function AppLayout() {
                 <div className="container footer-inner">
                     <p className="footer-title">Bloom frontend</p>
                     <p className="footer-copy">
-                        Плоский CSR-интерфейс для каталога событий, команд и профиля на базе
-                        Django API.
+                        Плоский CSR-интерфейс для каталога событий, команд и профиля на базе Django API.
                     </p>
                 </div>
             </footer>

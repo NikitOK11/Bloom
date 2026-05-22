@@ -76,10 +76,10 @@ code {
 }
 
 .header-inner {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    gap: 1.25rem;
+    gap: 1.5rem;
     padding: 1rem 0 0.95rem;
 }
 
@@ -87,6 +87,7 @@ code {
     display: inline-flex;
     align-items: center;
     min-width: 0;
+    justify-self: start;
 }
 
 .brand-lockup {
@@ -104,25 +105,36 @@ code {
 }
 
 .brand-mark {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 800;
     letter-spacing: 0.01em;
 }
 
 .nav {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+    flex-wrap: nowrap;
+    justify-content: center;
     align-items: center;
+    justify-self: center;
+    min-width: min(100%, 52rem);
+    gap: 1.9rem;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
 }
 
 .nav-link {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.6rem;
-    padding: 0.65rem 0.95rem;
+    min-height: 2.95rem;
+    padding: 0.65rem 0;
     border-radius: 999px;
     color: #355645;
+    font-size: 0.96rem;
+    font-weight: 500;
     transition:
         background-color 120ms ease,
         color 120ms ease,
@@ -131,20 +143,34 @@ code {
 }
 
 .nav-link:hover {
-    background: rgba(94, 151, 109, 0.12);
+    color: #214232;
+    background: transparent;
     transform: translateY(-1px);
 }
 
 .nav-link-active {
     background: #163126;
     color: #f7fbf6;
-    box-shadow: 0 10px 20px rgba(22, 49, 38, 0.16);
+    padding-inline: 1.35rem;
+    box-shadow: none;
+}
+
+.nav-link-active:hover {
+    background: #163126;
+    color: #f7fbf6;
+    box-shadow: none;
 }
 
 .nav-icon {
-    width: 1rem;
-    height: 1rem;
+    width: 0.92rem;
+    height: 0.92rem;
     flex-shrink: 0;
+    opacity: 0.88;
+}
+
+.header-balance {
+    justify-self: end;
+    width: 9rem;
 }
 
 .page-content {
@@ -523,15 +549,33 @@ code {
         align-items: stretch;
     }
 
+    .header-inner {
+        display: flex;
+    }
+
     .nav {
         width: 100%;
         display: grid;
         grid-template-columns: 1fr;
+        justify-self: stretch;
+        min-width: 0;
+        gap: 0.35rem;
+        padding: 0;
     }
 
     .nav-link {
         width: 100%;
         text-align: center;
+        justify-content: center;
+        padding-inline: 1rem;
+    }
+
+    .nav-link-active {
+        padding-inline: 1rem;
+    }
+
+    .header-balance {
+        display: none;
     }
 
     .form-row {
