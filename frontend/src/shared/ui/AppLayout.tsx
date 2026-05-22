@@ -1,70 +1,121 @@
-import { useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 
 import bloomLogomark from "../../assets/home/bloom-logomark.png";
-import { useAuth } from "../../app/AuthProvider";
-import { ApiError } from "../api/client";
 
-const navItems = [
-    { to: "/", label: "Главная", end: true },
-    { to: "/events", label: "События" },
-    { to: "/olympiads", label: "Олимпиады" },
-];
+type IconProps = {
+    className?: string;
+};
 
-function getAuthErrorMessage(error: unknown) {
-    if (error instanceof ApiError) {
-        if (typeof error.data === "object" && error.data && "detail" in error.data) {
-            return String(error.data.detail);
-        }
-        return "Не удалось выполнить действие с аккаунтом.";
-    }
-    return "Произошла непредвиденная ошибка.";
+function HomeIcon({ className }: IconProps) {
+    return (
+        <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+            <path
+                d="M4 10.5 12 4l8 6.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.9"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path
+                d="M6.5 9.5V20h11V9.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.9"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    );
 }
 
+function EventsIcon({ className }: IconProps) {
+    return (
+        <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+            <path
+                d="M7 4v3M17 4v3M5 9h14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.9"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <rect
+                x="5"
+                y="6"
+                width="14"
+                height="13"
+                rx="2.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.9"
+            />
+            <path
+                d="M9 13h2.5M9 16h6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.9"
+                strokeLinecap="round"
+            />
+        </svg>
+    );
+}
+
+function TeamsIcon({ className }: IconProps) {
+    return (
+        <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="9" cy="10" r="3" fill="none" stroke="currentColor" strokeWidth="1.9" />
+            <circle cx="16.5" cy="11" r="2.5" fill="none" stroke="currentColor" strokeWidth="1.9" />
+            <path
+                d="M4.5 19a4.5 4.5 0 0 1 9 0M14 18.5a3.5 3.5 0 0 1 6 0"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.9"
+                strokeLinecap="round"
+            />
+        </svg>
+    );
+}
+
+function ProfileIcon({ className }: IconProps) {
+    return (
+        <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="8.5" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.9" />
+            <path
+                d="M5.5 19a6.5 6.5 0 0 1 13 0"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.9"
+                strokeLinecap="round"
+            />
+        </svg>
+    );
+}
+
+const navItems = [
+    { to: "/", label: "Главная", end: true, icon: HomeIcon },
+    { to: "/events/", label: "События", icon: EventsIcon },
+    { to: "/teams/new", label: "Команды", icon: TeamsIcon },
+    { to: "/profile", label: "Профиль", icon: ProfileIcon },
+];
+
 export function AppLayout() {
-    const navigate = useNavigate();
-    const { user, isAuthenticated, isLoading, logout } = useAuth();
-    const [logoutError, setLogoutError] = useState<string | null>(null);
-    const [isLoggingOut, setIsLoggingOut] = useState(false);
-
-    const handleLogout = async () => {
-        setLogoutError(null);
-        setIsLoggingOut(true);
-        try {
-            await logout();
-            navigate("/", { replace: true });
-        } catch (error) {
-            setLogoutError(getAuthErrorMessage(error));
-        } finally {
-            setIsLoggingOut(false);
-        }
-    };
-
     return (
         <div className="app-shell">
             <header className="app-header">
                 <div className="container header-inner">
-                    <div className="brand-block">
-                        <NavLink className="brand-link" to="/" end>
-                            <span className="brand-lockup">
-                                <img
-                                    className="brand-logo"
-                                    src={bloomLogomark}
-                                    alt=""
-                                    width={40}
-                                    height={40}
-                                />
-                                <span className="brand-mark">Bloom</span>
-                            </span>
-                            <span className="brand-subtitle">
-                                Платформа для олимпиад, хакатонов и кейс-чемпионатов
-                            </span>
-                        </NavLink>
-                    </div>
+                    <NavLink className="brand-link" to="/" end>
+                        <span className="brand-lockup">
+                            <img className="brand-logo" src={bloomLogomark} alt="" width={40} height={40} />
+                            <span className="brand-mark">Bloom</span>
+                        </span>
+                    </NavLink>
 
-                    <div className="header-actions">
-                        <nav className="nav" aria-label="Основная навигация">
-                            {navItems.map((item) => (
+                    <nav className="nav" aria-label="Основная навигация">
+                        {navItems.map((item) => {
+                            const Icon = item.icon;
+
+                            return (
                                 <NavLink
                                     key={item.to}
                                     className={({ isActive }) =>
@@ -73,64 +124,13 @@ export function AppLayout() {
                                     to={item.to}
                                     end={item.end}
                                 >
-                                    {item.label}
+                                    <Icon className="nav-icon" />
+                                    <span>{item.label}</span>
                                 </NavLink>
-                            ))}
-                        </nav>
-
-                        <div className="nav-auth" aria-live="polite">
-                            {isLoading && <span className="auth-pill">Проверяем сессию...</span>}
-
-                            {!isLoading && !isAuthenticated && (
-                                <>
-                                    <NavLink
-                                        className={({ isActive }) =>
-                                            isActive ? "nav-link nav-link-active" : "nav-link"
-                                        }
-                                        to="/login"
-                                    >
-                                        Войти
-                                    </NavLink>
-                                    <NavLink
-                                        className={({ isActive }) =>
-                                            isActive ? "nav-link nav-link-active" : "nav-link"
-                                        }
-                                        to="/signup"
-                                    >
-                                        Регистрация
-                                    </NavLink>
-                                </>
-                            )}
-
-                            {!isLoading && isAuthenticated && user && (
-                                <>
-                                    <NavLink
-                                        className={({ isActive }) =>
-                                            isActive ? "nav-link nav-link-active" : "nav-link"
-                                        }
-                                        to="/profile"
-                                    >
-                                        Профиль
-                                    </NavLink>
-                                    <span className="auth-pill">{user.email}</span>
-                                    <button
-                                        className="nav-button"
-                                        type="button"
-                                        onClick={() => void handleLogout()}
-                                        disabled={isLoggingOut}
-                                    >
-                                        {isLoggingOut ? "Выходим..." : "Выйти"}
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    </div>
+                            );
+                        })}
+                    </nav>
                 </div>
-                {logoutError && (
-                    <div className="container">
-                        <p className="header-error">{logoutError}</p>
-                    </div>
-                )}
             </header>
 
             <main className="container page-content">
@@ -141,8 +141,8 @@ export function AppLayout() {
                 <div className="container footer-inner">
                     <p className="footer-title">Bloom frontend</p>
                     <p className="footer-copy">
-                        CSR-каркас для каталога событий. Текущий Django UI пока остаётся
-                        рабочим и не переносится в этом PR.
+                        Плоский CSR-интерфейс для каталога событий, команд и профиля на базе
+                        Django API.
                     </p>
                 </div>
             </footer>

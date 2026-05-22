@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import deviceDesktop from "../../assets/home/device-desktop.jpg";
@@ -9,48 +8,29 @@ import featurePreferencesDesktop from "../../assets/home/feature-preferences-des
 import featurePreferencesMobile from "../../assets/home/feature-preferences-mobile.jpg";
 import heroDesktop from "../../assets/home/hero-desktop.jpg";
 import heroMobile from "../../assets/home/hero-mobile.jpg";
-import { apiClient } from "../../shared/api/client";
 import { PageLayout } from "../../shared/ui/PageLayout";
 
-type ApiStatus = "idle" | "loading" | "available" | "unavailable";
-
 export function HomePage() {
-    const [status, setStatus] = useState<ApiStatus>("idle");
-
-    const checkApi = async () => {
-        setStatus("loading");
-        try {
-            await apiClient.get<{ status: string }>("/health/");
-            setStatus("available");
-        } catch {
-            setStatus("unavailable");
-        }
-    };
-
-    useEffect(() => {
-        void checkApi();
-    }, []);
-
     return (
         <PageLayout
             title="Bloom"
-            description="Платформа для олимпиад, хакатонов и кейс-чемпионатов. Теперь React frontend использует собственные assets и остаётся самостоятельным CSR-каркасом."
+            description="Платформа для олимпиад, хакатонов и кейс-чемпионатов с event-centric каталогом, командными сценариями и личным профилем."
         >
             <section className="card home-hero-card">
                 <div className="home-hero-grid">
                     <div className="home-hero-copy">
-                        <h2>Новый основной каркас</h2>
+                        <h2>Единый вход в студенческие возможности</h2>
                         <p>
-                            Мы собираем отдельное CSR-приложение на React + Vite +
-                            TypeScript вокруг канонической сущности Event, не ломая
-                            существующие серверные страницы и пользовательские сценарии.
+                            Bloom помогает быстро перейти от интереса к событию к конкретным
+                            действиям: изучить каталог, открыть детали, собрать команду и держать
+                            профиль под рукой в одном плоском интерфейсе.
                         </p>
                         <div className="action-row">
-                            <Link className="button" to="/events">
+                            <Link className="button" to="/events/">
                                 Открыть события
                             </Link>
-                            <Link className="button button-secondary" to="/olympiads">
-                                Открыть олимпиады
+                            <Link className="button button-secondary" to="/teams/new">
+                                Создать команду
                             </Link>
                         </div>
                     </div>
@@ -68,9 +48,8 @@ export function HomePage() {
                         <p className="eyebrow">События</p>
                         <h2>Каталог и страницы событий</h2>
                         <p>
-                            CSR frontend уже умеет загружать реальные события, открывать
-                            их детальные страницы и запускать командные сценарии там, где
-                            это разрешено форматом участия.
+                            В каталоге собраны реальные события, а каждая карточка ведёт к
+                            подробной странице с форматом участия, профилем и дальнейшими шагами.
                         </p>
                     </div>
                     <picture className="showcase-media">
@@ -88,23 +67,24 @@ export function HomePage() {
                         />
                     </picture>
                     <div className="showcase-copy">
-                        <p className="eyebrow">Олимпиады</p>
-                        <h2>Отдельный вход для олимпиад</h2>
+                        <p className="eyebrow">Детали</p>
+                        <h2>Быстрый переход к нужному событию</h2>
                         <p>
-                            Олимпиады остаются частью event-centric каталога, но получают
-                            собственный маршрут и более ясный пользовательский сценарий.
+                            Интерфейс ведёт пользователя прямо к содержанию: без лишних слоёв, с
+                            акцентом на факты о событии и понятную навигацию между основными
+                            разделами.
                         </p>
                     </div>
                 </article>
 
                 <article className="card showcase-card">
                     <div className="showcase-copy">
-                        <p className="eyebrow">Преференции</p>
-                        <h2>Опора на реальные данные</h2>
+                        <p className="eyebrow">Команды</p>
+                        <h2>Командный сценарий без перегруза</h2>
                         <p>
-                            От auth и профиля до команд и join request, CSR frontend
-                            постепенно переходит на реальные JSON API без зависимости от
-                            Django static assets.
+                            Для событий с командным или смешанным участием можно сразу перейти к
+                            созданию команды, открыть её страницу и управлять откликами через
+                            единый сценарий.
                         </p>
                     </div>
                     <picture className="showcase-media">
@@ -115,26 +95,6 @@ export function HomePage() {
                         />
                     </picture>
                 </article>
-            </section>
-
-            <section className="card">
-                <div className="card-header">
-                    <div>
-                        <h2>Проверка подключения к API</h2>
-                        <p className="muted">
-                            Используется текущий backend endpoint <code>/api/health/</code>.
-                        </p>
-                    </div>
-                    <button className="button" type="button" onClick={() => void checkApi()}>
-                        Проверить API
-                    </button>
-                </div>
-                <p className="status-line">
-                    {status === "idle" && "Проверка API ещё не запускалась"}
-                    {status === "loading" && "Проверяем доступность API..."}
-                    {status === "available" && "API доступен"}
-                    {status === "unavailable" && "API недоступен в dev-режиме"}
-                </p>
             </section>
         </PageLayout>
     );

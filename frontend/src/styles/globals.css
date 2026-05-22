@@ -83,14 +83,10 @@ code {
     padding: 1rem 0 0.95rem;
 }
 
-.brand-block {
-    min-width: 0;
-}
-
 .brand-link {
     display: inline-flex;
-    flex-direction: column;
-    gap: 0.25rem;
+    align-items: center;
+    min-width: 0;
 }
 
 .brand-lockup {
@@ -113,12 +109,6 @@ code {
     letter-spacing: 0.01em;
 }
 
-.brand-subtitle {
-    color: #567364;
-    font-size: 0.92rem;
-    max-width: 32rem;
-}
-
 .nav {
     display: flex;
     flex-wrap: wrap;
@@ -126,24 +116,10 @@ code {
     align-items: center;
 }
 
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.9rem;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-}
-
-.nav-auth {
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-}
-
 .nav-link {
-    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
     padding: 0.65rem 0.95rem;
     border-radius: 999px;
     color: #355645;
@@ -165,48 +141,10 @@ code {
     box-shadow: 0 10px 20px rgba(22, 49, 38, 0.16);
 }
 
-.nav-button,
-.auth-pill {
-    min-height: 2.65rem;
-    padding: 0.6rem 0.95rem;
-    border-radius: 999px;
-}
-
-.nav-button {
-    border: 1px solid rgba(22, 49, 38, 0.12);
-    background: #ffffff;
-    color: #163126;
-    transition:
-        transform 120ms ease,
-        box-shadow 120ms ease,
-        border-color 120ms ease;
-}
-
-.nav-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 20px rgba(22, 49, 38, 0.1);
-    border-color: rgba(22, 49, 38, 0.24);
-}
-
-.nav-button:disabled {
-    cursor: default;
-    opacity: 0.7;
-    transform: none;
-    box-shadow: none;
-}
-
-.auth-pill {
-    display: inline-flex;
-    align-items: center;
-    background: rgba(94, 151, 109, 0.12);
-    color: #234835;
-    font-weight: 600;
-}
-
-.header-error {
-    margin: 0 0 0.8rem;
-    color: #9f2d2d;
-    font-size: 0.95rem;
+.nav-icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
 }
 
 .page-content {
@@ -299,11 +237,6 @@ code {
     flex-wrap: wrap;
     gap: 0.75rem;
     margin-top: 1rem;
-}
-
-.status-line {
-    margin-top: 1rem;
-    font-weight: 600;
 }
 
 .home-hero-card,
@@ -590,11 +523,6 @@ code {
         align-items: stretch;
     }
 
-    .header-actions,
-    .nav-auth {
-        width: 100%;
-    }
-
     .nav {
         width: 100%;
         display: grid;
@@ -606,12 +534,6 @@ code {
         text-align: center;
     }
 
-    .nav-button,
-    .auth-pill {
-        width: 100%;
-        justify-content: center;
-    }
-
     .form-row {
         grid-template-columns: 1fr;
     }
@@ -621,7 +543,4 @@ code {
         grid-template-columns: 1fr;
     }
 
-    .brand-subtitle {
-        max-width: none;
-    }
 }
