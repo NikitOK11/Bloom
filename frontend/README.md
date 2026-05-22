@@ -61,6 +61,14 @@ By default, requests go to `/api` and the shared client:
 
 Bloom is expected to run behind one public origin in the production-style setup, so the React app talks to Django through the same host and path split. That means no separate CORS layer is required for the normal Docker/nginx flow.
 
+In local Vite development, `/api` is proxied to:
+
+```bash
+VITE_DEV_API_PROXY_TARGET=http://127.0.0.1:8080
+```
+
+This makes `npm run dev` work against the Docker stack without rewriting API calls.
+
 If Django runs on a separate origin in development, point the variable to the full API base URL, for example:
 
 ```bash

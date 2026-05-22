@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 
 import { useAuth } from "../../app/AuthProvider";
 import bloomLogomark from "../../assets/home/bloom-logomark.png";
@@ -118,6 +118,7 @@ type NavItem = {
 };
 
 export function AppLayout() {
+    const location = useLocation();
     const { isAuthenticated } = useAuth();
 
     const navItems: NavItem[] = [
@@ -165,7 +166,9 @@ export function AppLayout() {
             </header>
 
             <main className="container page-content">
-                <Outlet />
+                <div key={location.pathname} className="page-stage">
+                    <Outlet />
+                </div>
             </main>
 
             <footer className="app-footer">

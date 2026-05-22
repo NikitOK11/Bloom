@@ -1,4 +1,4 @@
-import { apiClient } from "./client";
+import { ApiError, apiClient } from "./client";
 
 export type EventListItem = {
     id: number;
@@ -13,7 +13,7 @@ export type EventListItem = {
     official_url: string;
     organizer: string;
     registration_deadline: string | null;
-    eligible_groups: string;
+    eligible_groups: string[];
 };
 
 export type EventEditionSummary = {
@@ -37,6 +37,12 @@ type EventListParams = {
     isActive?: boolean;
 };
 
+type EventListResponse =
+    | EventListItem[]
+    | {
+          results?: EventListItem[];
+      };
+
 function buildEventsQuery(params: EventListParams = {}) {
     const searchParams = new URLSearchParams();
 
@@ -52,9 +58,23 @@ function buildEventsQuery(params: EventListParams = {}) {
     return query ? `/events/?${query}` : "/events/";
 }
 
+function normalizeEventListResponse(data: EventListResponse) {
+    if (Array.isArray(data)) {
+        return data;
+    }
+
+    if (data && typeof data === "object" && Array.isArray(data.results)) {
+        return data.results;
+    }
+
+    throw new ApiError("Unexpected events response format.", 200, data as Record<string, unknown>);
+}
+
 export const eventsApi = {
-    list: (params?: EventListParams) =>
-        apiClient.get<EventListItem[]>(buildEventsQuery(params)),
+    async list(params?: EventListParams) {
+        const data = await apiClient.get<EventListResponse>(buildEventsQuery(params));
+        return normalizeEventListResponse(data);
+    },
     getById: (eventId: string | number) =>
         apiClient.get<EventDetail>(`/events/${eventId}/`),
 };
